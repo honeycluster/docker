@@ -1,0 +1,153 @@
+version: "3.8"
+
+services:
+  clio:
+    container_name: clio
+    build:
+      dockerfile: Dockerfile
+      context: "./images/clio"
+    restart: always
+
+  clio-build:
+    container_name: clio-build
+    build:
+      dockerfile: Dockerfile.build
+      context: "./images/clio"
+    restart: always
+
+  xrpl:
+    container_name: xrpl-${TYPE}-${UUID}
+    build:
+      dockerfile: Dockerfile
+      context: "./images/xrpl"
+    restart: always
+    ports:
+      - ${PORT_RPC_ADMIN}:5005
+      - ${PORT_WS}:6005
+      - ${PORT_RPC}:51234
+      - ${PORT_PEER}:51235
+      - ${PORT_GRPC}:50051
+    volumes:
+      - ./data/xrpl/${TYPE}/db:/var/lib/rippled/db
+
+  xrpl-build:
+    container_name: xrpl-build-${TYPE}-${UUID}
+    build:
+      dockerfile: Dockerfile.build
+      context: "./images/xrpl"
+    restart: always
+    ports:
+      - ${PORT_RPC_ADMIN}:5005
+      - ${PORT_WS}:6005
+      - ${PORT_RPC}:51234
+      - ${PORT_PEER}:51235
+      - ${PORT_GRPC}:50051
+    volumes:
+      - ./data/xrpl/build-${TYPE}/db:/var/lib/rippled/db
+
+  cassandra:
+    image: "cassandra:latest"
+    container_name: cassandra
+    restart: always
+    ports:
+      - 9042:9042
+    volumes:
+      - ./data/cassandra/data:/var/lib/cassandra/data
+      - ./data/cassandra/commit:/var/lib/cassandra/commitlog
+      - ./data/cassandra/hints:/var/lib/cassandra/hints
+      - ./data/cassandra/cache:/var/lib/cassandra/saved_caches
+      - ./data/cassandra/logs:/var/log/cassandra
+
+  scylla:
+    image: scylladb/scylla:latest
+    ports:
+      - 9043:9042
+    volumes:
+      - ./data/scylla/data:/var/lib/scylla/data
+      - ./data/scylla/commit:/var/lib/scylla/commitlog
+    command: --smp 1 --memory 1G
+
+  kubo:
+    image: "ipfs/kubo:latest"
+    container_name: kubo
+    restart: unless-stopped
+    volumes:
+      - ./data/kubo/ipfs:/ipfs
+      - ./data/kubo/ipns:/ipns
+      - ./data/kubo/ipfs_data:/data/ipfs
+    ports:
+      - ${IPFS_SWARM_PORT}:${IPFS_SWARM_PORT}/tcp
+      - ${IPFS_SWARM_PORT}:${IPFS_SWARM_PORT}/udp
+      - 0.0.0.0:${IPFS_API}:${IPFS_API}
+      - ${IPFS_LOCAL_GATEWAY}:${IPFS_LOCAL_GATEWAY}
+      - 0.0.0.0:${IPFS_WS}:${IPFS_WS}
+    environment:
+      IPFS_PROFILE: "server"
+      IPFS_PATH: "/data/ipfs"
+
+  api:
+    container_name: ipfs-api
+    build:
+      dockerfile: Dockerfile.api
+      context: "."
+    ports:
+      - ${API_PORT}:${API_PORT}
+    volumes:
+      - /app/node_modules
+      - /app
+    environment:
+      API_PORT: ${API_PORT}
+      API_SECRET: ${API_SECRET}
+
+  proxy-manager-app:
+    image: "jc21/nginx-proxy-manager:latest"
+    restart: unless-stopped
+    ports:
+      # These ports are in format <host-port>:<container-port>
+      - "80:80" # Public HTTP Port
+      - "443:443" # Public HTTPS Port
+      - "81:81" # Admin Web Port
+      # Add any other Stream port you want to expose
+      # - '21:21' # FTP
+    environment:
+      # Mysql/Maria connection parameters:
+      DB_MYSQL_HOST: "proxy-manager-db"
+      DB_MYSQL_PORT: 3306
+      DB_MYSQL_USER: ${SQL_USER}
+      DB_MYSQL_PASSWORD: ${SQL_PASS}
+      DB_MYSQL_NAME: ${SQL_NAME}
+      # Uncomment this if IPv6 is not enabled on your host
+      # DISABLE_IPV6: 'true'
+    volumes:
+      - ./data/proxy-app:/data
+      - ./data/proxy-app/letsencrypt:/etc/letsencrypt
+    depends_on:
+      - proxy-manager-db
+    healthcheck:
+      test: ["CMD", "/bin/check-health"]
+      interval: 10s
+      timeout: 3s
+
+  proxy-manager-db:
+    image: "jc21/mariadb-aria:latest"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${SQL_ROOT_PASS}
+      MYSQL_DATABASE: ${SQL_NAME}
+      MYSQL_USER: ${SQL_USER}
+      MYSQL_PASSWORD: ${SQL_PASS}
+    volumes:
+      - ./data/proxy-db:/var/lib/mysql
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data/portainer:/data
+    ports:
+      - 9000:9000

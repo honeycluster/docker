@@ -1,0 +1,5 @@
+[validator_list_sites]
+http://vlamm.devnet.rippletest.net/
+
+[validator_list_keys]
+03553F67DC5A6FE0EBFE1B3B4742833D14AF7C65E79E5760EC76EC56EAFD254CE9
