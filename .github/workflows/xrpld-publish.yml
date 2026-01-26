@@ -1,5 +1,5 @@
 name: Build and Publish Docker Images for XRPLD
-description: Build and publish the base and min XRPLD Docker images
+description: Build and publish the base and slim XRPLD Docker images
 
 on:
   workflow_dispatch:
@@ -26,9 +26,12 @@ env:
   # Base image (envsubst, templates)
   DOCKER_IMAGE_BASE: ${{ secrets.DOCKER_ORG }}/xrpld
   GHCR_IMAGE_BASE: xrpld
-  # Min image (static config, no injection)
-  DOCKER_IMAGE_MIN: ${{ secrets.DOCKER_ORG }}/xrpld-slim
-  GHCR_IMAGE_MIN: xrpld-min
+  # Slim image (static config, no injection)
+  DOCKER_IMAGE_SLIM: ${{ secrets.DOCKER_ORG }}/xrpld-slim
+  GHCR_IMAGE_SLIM: xrpld-slim
+  # GHCR: ghcr.io/OWNER/IMAGE. We use repository_owner + GHCR_IMAGE_* so we can
+  # publish two images (xrpld, xrpld-slim). github.repository would yield a
+  # single image per repo (ghcr.io/owner/repo) and isn’t suitable here.
   BUILD_CONTEXT: ./docker/xrpld
 
 jobs:
@@ -82,7 +85,7 @@ jobs:
         id: meta-ghcr-base
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_IMAGE_BASE }}
+          images: ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_BASE }}
           tags: |
             type=raw,value=${{ steps.branch.outputs.tag }}
             type=raw,value=latest
@@ -101,36 +104,36 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # --- Publish min image ---
-      - name: Extract metadata for min (Docker Hub)
-        id: meta-docker-min
+      # --- Publish slim image ---
+      - name: Extract metadata for slim (Docker Hub)
+        id: meta-docker-slim
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.DOCKER_IMAGE_MIN }}
+          images: ${{ env.DOCKER_IMAGE_SLIM }}
           tags: |
             type=raw,value=${{ steps.branch.outputs.tag }}
             type=raw,value=latest
 
-      - name: Extract metadata for min (GHCR)
-        id: meta-ghcr-min
+      - name: Extract metadata for slim (GHCR)
+        id: meta-ghcr-slim
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_IMAGE_MIN }}
+          images: ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_SLIM }}
           tags: |
             type=raw,value=${{ steps.branch.outputs.tag }}
             type=raw,value=latest
 
-      - name: Build and push min image
-        id: build-min
+      - name: Build and push slim image
+        id: build-slim
         uses: docker/build-push-action@v5
         with:
           context: ${{ env.BUILD_CONTEXT }}
-          file: ${{ env.BUILD_CONTEXT }}/images/min.dockerfile
+          file: ${{ env.BUILD_CONTEXT }}/images/slim.dockerfile
           push: true
           tags: |
-            ${{ steps.meta-docker-min.outputs.tags }}
-            ${{ steps.meta-ghcr-min.outputs.tags }}
-          labels: ${{ steps.meta-docker-min.outputs.labels }}
+            ${{ steps.meta-docker-slim.outputs.tags }}
+            ${{ steps.meta-ghcr-slim.outputs.tags }}
+          labels: ${{ steps.meta-docker-slim.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -145,12 +148,12 @@ jobs:
           echo "| Registry | Image |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| Docker Hub | \`${{ env.DOCKER_IMAGE_BASE }}:${{ steps.branch.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| GHCR | \`${{ env.GHCR_REGISTRY }}/${{ env.GHCR_IMAGE_BASE }}:${{ steps.branch.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| GHCR | \`${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_BASE }}:${{ steps.branch.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "**Digest:** \`${{ steps.build-base.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Min (xrpld-min)" >> $GITHUB_STEP_SUMMARY
+          echo "### Slim (xrpld-slim)" >> $GITHUB_STEP_SUMMARY
           echo "| Registry | Image |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Docker Hub | \`${{ env.DOCKER_IMAGE_MIN }}:${{ steps.branch.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| GHCR | \`${{ env.GHCR_REGISTRY }}/${{ env.GHCR_IMAGE_MIN }}:${{ steps.branch.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "**Digest:** \`${{ steps.build-min.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "| Docker Hub | \`${{ env.DOCKER_IMAGE_SLIM }}:${{ steps.branch.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| GHCR | \`${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_SLIM }}:${{ steps.branch.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "**Digest:** \`${{ steps.build-slim.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY

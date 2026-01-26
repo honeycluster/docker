@@ -20,7 +20,7 @@ docker build --build-arg PLATFORM=linux/arm64 -f images/slim.dockerfile -t xrpld
 ## Runtime
 
 - **Workdir:** `/opt/xrpl`
-- **Entrypoint:** `./scripts/entrypoint.min.sh` — starts `rippled` (no config injection).
+- **Entrypoint:** `./scripts/entrypoint.slim.sh` — starts `rippled` (no config injection).
 - **Config:** `/opt/xrpl/etc/xrpld.cfg`, `/opt/xrpl/etc/validators.txt` (from `xrpld-example.cfg` and `validators-exmple.txt` in the image).
 
 ### Mounts
