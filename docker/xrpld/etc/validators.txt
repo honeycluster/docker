@@ -1,0 +1,5 @@
+[validator_list_sites]
+${VALIDATOR_LIST_SITES}
+
+[validator_list_keys]
+${VALIDATOR_LIST_KEYS}

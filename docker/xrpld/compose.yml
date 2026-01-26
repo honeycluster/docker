@@ -1,0 +1,86 @@
+services:
+  mainnet:
+    build:
+      context: .
+      dockerfile: ./images/base.dockerfile
+    container_name: mainnet
+    restart: unless-stopped
+    labels:
+      - "com.docker.compose.project=simulate"
+      - "com.docker.compose.service=mainnet"
+      - "description=Rippled Basic Image"
+    healthcheck:
+      test: [ "CMD", "rippled", "server_info" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    ports:
+      - "8000:51234"
+      - "6000:6005"
+
+  devnet:
+    build:
+      context: .
+      dockerfile: ./images/base.dockerfile
+    container_name: devnet
+    restart: unless-stopped
+    environment:
+      - NETWORK=DEVNET
+      - SIZE=FULL
+    labels:
+      - "com.docker.compose.project=simulate"
+      - "com.docker.compose.service=devnet"
+      - "description=Rippled Basic Image"
+    healthcheck:
+      test: [ "CMD", "rippled", "server_info" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    ports:
+      - "8001:51234"
+      - "6001:6005"
+
+  testnet:
+    build:
+      context: .
+      dockerfile: ./images/base.dockerfile
+    container_name: testnet
+    restart: unless-stopped
+    environment:
+      - NETWORK=TESTNET
+      - SIZE=FULL
+    labels:
+      - "com.docker.compose.project=simulate"
+      - "com.docker.compose.service=testnet"
+      - "description=Rippled Basic Image"
+    healthcheck:
+      test: [ "CMD", "rippled", "server_info" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    ports:
+      - "8002:51234"
+      - "6002:6005"
+
+  minimal:
+    build:
+      context: .
+      dockerfile: ./images/slim.dockerfile
+    container_name: minimal
+    restart: unless-stopped
+    labels:
+      - "com.docker.compose.project=simulate"
+      - "com.docker.compose.service=mainnet"
+      - "description=Rippled Minimal Image"
+    healthcheck:
+      test: [ "CMD", "rippled", "server_info" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    ports:
+      - "8003:51234"
+      - "6003:6005"

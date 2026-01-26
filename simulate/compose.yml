@@ -1,0 +1,44 @@
+# Root compose file for simulation/test environment
+# Includes all stack components for testing
+#
+# Usage (from simulate directory):
+#   ./up.sh up              # Start services (recommended - loads credentials automatically)
+#   ./up.sh down            # Stop services
+#   ./up.sh ps              # List services
+#
+# Database credentials are defined in ./credentials.env
+# - MySQL host points to local 'mysql' service (172.20.0.30)
+# - Redis host points to local 'redis' service
+# - All services in the simulate stack use the same credentials.env file
+
+name: simulation-stack
+
+include:
+  # Simulate Rippled application stack
+  - path: ../docker/rippled/compose.yml
+  # Simulate Clio application stack
+  - path: ../docker/clio/compose.yml
+  # Simulate IPFS service
+  - path: ../docker/ipfs/compose.yml
+  # Simulate Cassandra cluster
+  - path: ../docker/cassandra/compose.yml
+  # Simulate Scylla cluster
+  - path: ../docker/scylla/compose.yml
+
+# You can also define additional services, networks, or volumes here
+# that should be shared across all included files
+networks:
+  simulation-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+
+# Named volumes for data persistence (avoids permission issues with external volumes)
+volumes:
+  rippled-data:
+  clio-data:
+  ipfs-data:
+  cassandra-data:
+  scylla-data:

@@ -1,0 +1,7 @@
+#!/bin/bash
+# Default environment variable values for rippled
+
+export NETWORK_ID="${NETWORK_ID:-0}"
+
+export VALIDATOR_LIST_SITES="${VALIDATOR_LIST_SITES:-https://unl.xrplf.org}"
+export VALIDATOR_LIST_KEYS="${VALIDATOR_LIST_KEYS:-ED42AEC58B701EEBB77356FFFEC26F83C1F0407263530F068C7C73D392C7E06FD1}"

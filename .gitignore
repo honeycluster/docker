@@ -47,5 +47,6 @@ yarn-error.log*
 # Workspaces
 .turbo
 .nx/cache/**/*
+.history
 
 tmp

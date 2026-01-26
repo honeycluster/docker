@@ -1,0 +1,19 @@
+{
+  "extends": "@docs/configs/tsconfig/base.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "baseUrl": "..",
+    "outDir": "../dist",
+    "paths": {
+      "@/helpers/*": ["src/helpers/*"],
+      "@/lib/*": ["src/lib/*"],
+      "@/chains/*": ["src/lib/chains/*"],
+      "@/evm/*": ["src/lib/chains/evm/*"],
+      "@/xrpl/*": ["src/lib/chains/xrpl/*"],
+      "@/typings/*": ["src/typings/*"],
+      "@/modules/*": ["src/modules/*"],
+      "@/config/*": ["src/config/*"]
+    }
+  },
+  "include": ["../src", "../tests"]
+}
