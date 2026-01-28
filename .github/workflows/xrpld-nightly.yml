@@ -22,7 +22,9 @@ env:
 
 jobs:
   build-binary:
-    runs-on: group:Onprem
+    runs-on: 
+      - self-hosted
+      - group:Onprem
     permissions:
       contents: read
       packages: write
