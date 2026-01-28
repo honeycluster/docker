@@ -1,11 +1,11 @@
 #!/bin/bash
-# Startup for rippled (CONFIG_FILE from defaults.sh; use /etc/opt/ripple/rippled.cfg)
+# Startup for xrpld/rippled (CONFIG_FILE from defaults.sh; use /opt/xrpl/etc/xrpld.cfg)
 
-BIN="${RIPPLE_BIN:-/opt/xrpl/bin/rippled}"
+BIN="${RIPPLE_BIN:-/opt/xrpl/bin/xrpld}"
 
-# Function to start rippled
-# @param config_file string Path to rippled.cfg (optional, defaults to CONFIG_FILE from defaults.sh)
-# @param extra_args string Additional arguments to pass to rippled (optional)
+# Function to start xrpld/rippled
+# @param config_file string Path to xrpld.cfg (optional, defaults to CONFIG_FILE from defaults.sh)
+# @param extra_args string Additional arguments to pass to xrpld/rippled (optional)
 start() {
     local config_file="${1:-${CONFIG_FILE:-/opt/xrpl/etc/xrpld.cfg}}"
     local extra_args="${2:-}"
@@ -14,9 +14,9 @@ start() {
         log_error "Configuration file not found: $config_file"
         return 1
     fi
-    
+
     if ! command -v "$BIN" >/dev/null 2>&1 && [ ! -x "$BIN" ]; then
-        log_error "rippled binary not found or not executable: $BIN"
+        log_error "xrpld/rippled binary not found or not executable: $BIN"
         return 1
     fi
     

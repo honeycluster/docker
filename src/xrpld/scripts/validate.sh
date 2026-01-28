@@ -259,11 +259,11 @@ validate_network() {
     esac
 }
 
-validate_node_size() {
-    local v="${SIZE:-${NODE_SIZE}}"
+validate_size() {
+    local v="${SIZE}"
     [ -z "$v" ] && return 0
     case "$v" in
-        TINY|SMALL|MEDIUM|LARGE|HUGE|FULL) return 0 ;;
+        DEFAULT|SMALL|MEDIUM|LARGE|HUGE|FULL) return 0 ;;
         *)
             log_warn "SIZE='$v' is not one of TINY, SMALL, MEDIUM, LARGE, HUGE, FULL"
             return 0
@@ -279,7 +279,7 @@ validate_inputs() {
 
     # Required commands
     validate_command "envsubst" "envsubst (gettext-base)"
-    validate_command "rippled" "rippled"
+    # validate_command "rippled" "rippled"
 
     # Required: CONFIG_DIR (defaults in common.sh; used as CONFIG_DIR/etc and inject output)
     validate_required "CONFIG_DIR"
@@ -295,7 +295,7 @@ validate_inputs() {
 
     # Network and size (warn if unknown)
     validate_network
-    validate_node_size
+    validate_size
 
     # Booleans
     validate_boolean "SSL_GENERATE"

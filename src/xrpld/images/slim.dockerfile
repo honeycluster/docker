@@ -9,12 +9,12 @@ LABEL org.opencontainers.image.authors="honeycluster <r@honeycluster.io>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="honeycluster"
 LABEL org.opencontainers.image.url="https://github.com/honeycluster/docker"
-LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/main/docker/xrpld/images/slim.dockerfile"
-LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/main/docker/xrpld/docs/slim.md"
+LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/main/src/xrpld/images/slim.dockerfile"
+LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/main/src/xrpld/docs/slim.md"
 
-# Version of rippled to install
-# https://github.com/ripple/rippled/releases or apt-cache madison ripple
-ARG RIPPLED_VERSION=3.0.0-1
+# xrpld deb version to install (apt-cache madison rippled)
+# https://github.com/ripple/rippled/releases
+ARG VERSION=${VERSION:-3.0.0-1}
 
 RUN export LANGUAGE=C.UTF-8; export LANG=C.UTF-8; export LC_ALL=C.UTF-8; export DEBIAN_FRONTEND=noninteractive
 
@@ -40,23 +40,30 @@ RUN wget -qO- "https://repos.ripple.com/repos/api/gpg/key/public" | gpg --dearmo
 
 # Move /opt/ripple to /opt/xrpl (rippled deb installs to /opt/ripple)
 RUN cp -r /opt/ripple /opt/xrpl && \
+    mv /opt/xrpl/bin/rippled /opt/xrpl/bin/xrpld && \
     rm -rf /opt/ripple && \
     rm -rf /opt/xrpl/etc/* && \
     mkdir -p /opt/xrpl/etc
 
-# Set the path and create a symlink for the rippled binary
-RUN export PATH=$PATH:/opt/xrpl/bin/ && \
-    ln -s /opt/xrpl/bin/rippled /usr/bin/rippled
+# Set PATH to include /opt/xrpl/bin for runtime
+ENV PATH="/opt/xrpl/bin:${PATH}"
 
 # Set the working directory
 WORKDIR /opt/xrpl
 
 RUN mkdir -p db && \
-    mkdir -p log
+    mkdir -p log && \
+    mkdir -p /etc/opt/ripple
 
 # Copy the configuration files
 COPY etc/validators-exmple.txt ./etc/validators.txt
 COPY etc/xrpld-example.cfg ./etc/xrpld.cfg
+
+# Create symlinks for the rippled binary and config
+RUN ln -sf /opt/xrpl/bin/xrpld /opt/xrpl/bin/rippled && \
+    ln -sf /opt/xrpl/bin/xrpld /usr/bin/rippled && \
+    ln -sf /opt/xrpl/bin/xrpld /usr/local/bin/rippled && \
+    ln -sf /opt/xrpl/etc/xrpld.cfg /etc/opt/ripple/rippled.cfg
 
 # Copy all entrypoint/configure scripts and make executable
 COPY scripts ./scripts
