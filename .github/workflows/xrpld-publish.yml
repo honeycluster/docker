@@ -103,8 +103,6 @@ jobs:
       # --- Shared setup ---
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: release
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -143,8 +141,6 @@ jobs:
       # --- Shared setup ---
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: release
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -220,8 +216,6 @@ jobs:
       # --- Shared setup ---
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: release
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
