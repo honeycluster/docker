@@ -78,20 +78,38 @@ jobs:
 
           BASE_EXISTS=false
           BASE_URL="https://hub.docker.com/v2/repositories/${DOCKER_IMAGE_BASE}/tags/${BASE_TAG}/"
-          HTTP_CODE=$(curl -sSL -o /dev/null -w "%{http_code}" "$BASE_URL" || echo "000")
+          echo "  Checking: $BASE_URL"
+          RESPONSE=$(curl -sSL -w "\nHTTP_CODE:%{http_code}" "$BASE_URL" 2>&1)
+          HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2 || echo "000")
+          BODY=$(echo "$RESPONSE" | sed '/HTTP_CODE:/d')
           if [ "$HTTP_CODE" = "200" ]; then
-            BASE_EXISTS=true
-            echo "  ✅ Base image tag exists"
+            # Verify the response actually contains the tag name
+            if echo "$BODY" | grep -qE '"name"[[:space:]]*:[[:space:]]*"'"${BASE_TAG}"'"'; then
+              BASE_EXISTS=true
+              echo "  ✅ Base image tag exists"
+            else
+              echo "  ℹ️  Base image tag does not exist (HTTP 200 but tag not found in response)"
+              echo "  Response preview: $(echo "$BODY" | head -c 200)"
+            fi
           else
             echo "  ℹ️  Base image tag does not exist (HTTP $HTTP_CODE)"
           fi
 
           SLIM_EXISTS=false
           SLIM_URL="https://hub.docker.com/v2/repositories/${DOCKER_IMAGE_SLIM}/tags/${SLIM_TAG}/"
-          HTTP_CODE=$(curl -sSL -o /dev/null -w "%{http_code}" "$SLIM_URL" || echo "000")
+          echo "  Checking: $SLIM_URL"
+          RESPONSE=$(curl -sSL -w "\nHTTP_CODE:%{http_code}" "$SLIM_URL" 2>&1)
+          HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2 || echo "000")
+          BODY=$(echo "$RESPONSE" | sed '/HTTP_CODE:/d')
           if [ "$HTTP_CODE" = "200" ]; then
-            SLIM_EXISTS=true
-            echo "  ✅ Slim image tag exists"
+            # Verify the response actually contains the tag name
+            if echo "$BODY" | grep -qE '"name"[[:space:]]*:[[:space:]]*"'"${SLIM_TAG}"'"'; then
+              SLIM_EXISTS=true
+              echo "  ✅ Slim image tag exists"
+            else
+              echo "  ℹ️  Slim image tag does not exist (HTTP 200 but tag not found in response)"
+              echo "  Response preview: $(echo "$BODY" | head -c 200)"
+            fi
           else
             echo "  ℹ️  Slim image tag does not exist (HTTP $HTTP_CODE)"
           fi
