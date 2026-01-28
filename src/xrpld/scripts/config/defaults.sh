@@ -30,3 +30,18 @@ net_lower="$(echo "${NETWORK:-MAINNET}" | tr '[:upper:]' '[:lower:]')"
 if [ -f "${SCRIPTS_DIR}/defaults/${net_lower}.sh" ]; then
     source "${SCRIPTS_DIR}/defaults/${net_lower}.sh"
 fi
+
+# Rebuild IPS_SECTION and IPS_FIXED_SECTION 
+IPS_SECTION=""
+if [ -n "${IPS}" ]; then
+    IPS_SECTION="[ips]
+${IPS}"
+fi
+export IPS_SECTION
+
+IPS_FIXED_SECTION=""
+if [ -n "${IPS_FIXED}" ]; then
+    IPS_FIXED_SECTION="[ips_fixed]
+${IPS_FIXED}"
+fi
+export IPS_FIXED_SECTION

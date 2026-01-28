@@ -50,3 +50,5 @@ yarn-error.log*
 .history
 
 tmp
+
+src/xrpld/build-rc.sh

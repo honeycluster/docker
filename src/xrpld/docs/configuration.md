@@ -1,6 +1,6 @@
 # Configuration Options
 
-All options are **overridable via environment variables**. The **base** and **build** images apply them at startup via envsubst from `/opt/xrpl/templates` into `/opt/xrpl/etc`. The **min** image does not run injection; set options by editing your own `xrpld.cfg` / `validators.txt` or by using a custom entrypoint.
+All options are **overridable via environment variables**. The **base** and **build** images apply them at startup via envsubst from `/opt/xrpl/templates` into `/opt/xrpl/etc`. The **slim** image does not run injection; set options by editing your own `xrpld.cfg` / `validators.txt` or by using a custom entrypoint.
 
 ---
 
@@ -9,7 +9,7 @@ All options are **overridable via environment variables**. The **base** and **bu
 - **Override:** Set the corresponding **environment variable** when running the container (e.g. `-e NETWORK=DEVNET`, `-e SIZE=MEDIUM`). These take precedence over built‑in defaults.
 - **Config mount:** To supply your own **config files** (`xrpld.cfg`, `validators.txt`), mount them (or their parent directory) at **`/opt/xrpl/etc`**.
   - **Base / build:** The entrypoint runs template injection **into** `/opt/xrpl/etc` on each start. Files you place there will be **overwritten** unless you change or replace the entrypoint.
-  - **Min:** The min image does **not** run injection. Mounting `/opt/xrpl/etc` with your own files is supported; they will **not** be overwritten.
+  - **Slim:** The slim image does **not** run injection. Mounting `/opt/xrpl/etc` with your own files is supported; they will **not** be overwritten.
 
 ---
 
@@ -132,10 +132,10 @@ Set the variable to non‑empty to enable; leave unset to omit.
 
 ## Config mount: `/opt/xrpl/etc`
 
-- **Base / build:** The entrypoint writes `xrpld.cfg` and `validators.txt` into `/opt/xrpl/etc` from templates. Mounting `/opt/xrpl/etc` will persist those generated files; anything you put there will be **overwritten** on the next start unless you switch to a non‑injecting entrypoint (e.g. min‑style) or change the logic.
-- **Min:** No injection. Mount `/opt/xrpl/etc` with your own `xrpld.cfg` and `validators.txt`; they will **not** be overwritten.
+- **Base / build:** The entrypoint writes `xrpld.cfg` and `validators.txt` into `/opt/xrpl/etc` from templates. Mounting `/opt/xrpl/etc` will persist those generated files; anything you put there will be **overwritten** on the next start unless you switch to a non‑injecting entrypoint (e.g. slim‑style) or change the logic.
+- **Slim:** No injection. Mount `/opt/xrpl/etc` with your own `xrpld.cfg` and `validators.txt`; they will **not** be overwritten.
 
-Example (min; own configs):
+Example (slim; own configs):
 
 ```bash
 docker run -d \
@@ -143,5 +143,5 @@ docker run -d \
   -v /host/validators.txt:/opt/xrpl/etc/validators.txt \
   -v xrpld-db:/opt/xrpl/db \
   -p 51234:51234 -p 6005:6005 \
-  xrpld:min
+  xrpld:slim
 ```

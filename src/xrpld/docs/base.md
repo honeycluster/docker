@@ -27,7 +27,7 @@ docker build --build-arg PLATFORM=linux/arm64 -f images/base.dockerfile -t xrpld
 
 | Path | Purpose |
 |------|---------|
-| `/opt/xrpl/etc` | **Config directory.** Resolved configs are written here. Mount this to persist configs or to supply your own `xrpld.cfg` and `validators.txt`. *Note: the entrypoint runs template injection into `/opt/xrpl/etc` on each start; mounted files will be overwritten. To use static custom configs without injection, use the [min](min.md) image or a custom entrypoint.* |
+| `/opt/xrpl/etc` | **Config directory.** Resolved configs are written here. Mount this to persist configs or to supply your own `xrpld.cfg` and `validators.txt`. *Note: the entrypoint runs template injection into `/opt/xrpl/etc` on each start; mounted files will be overwritten. To use static custom configs without injection, use the [slim](slim.md) image or a custom entrypoint.* |
 | `/opt/xrpl/db` | Database (NuDB, etc.). Persist for ledger data. |
 | `/opt/xrpl/log` | Debug log. |
 
@@ -51,5 +51,5 @@ All options can be overridden via **environment variables**. The entrypoint inje
 ## See also
 
 - [Configuration options](configuration.md)
-- [Min image](min.md) — static config, no envsubst
+- [Slim image](slim.md) — static config, no envsubst
 - [Build image](build.md) — build xrpld from source
