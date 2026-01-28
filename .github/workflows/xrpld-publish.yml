@@ -3,12 +3,6 @@ description: Build and publish the XRPLD build Docker images (base and slim)
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Image tag: "latest" or a version (e.g. 1.0.0, v1.0.0)'
-        required: false
-        default: 'latest'
-        type: string
 
 env:
   DOCKER_REGISTRY: docker.io
@@ -83,13 +77,23 @@ jobs:
           echo "  - ${DOCKER_IMAGE_SLIM}:${SLIM_TAG}"
 
           BASE_EXISTS=false
-          if curl -fsSL "https://hub.docker.com/v2/repositories/${DOCKER_IMAGE_BASE}/tags/${BASE_TAG}/" >/dev/null; then
+          BASE_URL="https://hub.docker.com/v2/repositories/${DOCKER_IMAGE_BASE}/tags/${BASE_TAG}/"
+          HTTP_CODE=$(curl -sSL -o /dev/null -w "%{http_code}" "$BASE_URL" || echo "000")
+          if [ "$HTTP_CODE" = "200" ]; then
             BASE_EXISTS=true
+            echo "  ✅ Base image tag exists"
+          else
+            echo "  ℹ️  Base image tag does not exist (HTTP $HTTP_CODE)"
           fi
 
           SLIM_EXISTS=false
-          if curl -fsSL "https://hub.docker.com/v2/repositories/${DOCKER_IMAGE_SLIM}/tags/${SLIM_TAG}/" >/dev/null; then
+          SLIM_URL="https://hub.docker.com/v2/repositories/${DOCKER_IMAGE_SLIM}/tags/${SLIM_TAG}/"
+          HTTP_CODE=$(curl -sSL -o /dev/null -w "%{http_code}" "$SLIM_URL" || echo "000")
+          if [ "$HTTP_CODE" = "200" ]; then
             SLIM_EXISTS=true
+            echo "  ✅ Slim image tag exists"
+          else
+            echo "  ℹ️  Slim image tag does not exist (HTTP $HTTP_CODE)"
           fi
 
           if [ "$BASE_EXISTS" = true ] && [ "$SLIM_EXISTS" = true ]; then
