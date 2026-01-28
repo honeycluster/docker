@@ -22,14 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.rippled-tag.outputs.tag }}
-      skip: ${{ steps.rippled-tag.outputs.skip }}
       is_prerelease: ${{ steps.rippled-tag.outputs.is_prerelease }}
     steps:
       - name: Fetch latest rippled release tag (including pre-releases)
         id: rippled-tag
         run: |
-          # Fetch the latest release tag (including pre-releases) from XRPLF/rippled repository
-          # Get all releases (including pre-releases) and find the latest one
           set -euo pipefail
 
           LATEST_TAG=$(
@@ -39,7 +36,6 @@ jobs:
               | sed 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/'
           )
           
-          # If that fails, try getting the latest tag from the tags endpoint
           if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" = "null" ]; then
             echo "Failed to fetch from releases, trying tags endpoint..."
             LATEST_TAG=$(
@@ -55,63 +51,46 @@ jobs:
             exit 1
           fi
           
-          echo "Latest rippled tag (including pre-releases): $LATEST_TAG"
+          echo "Latest rippled tag: $LATEST_TAG"
           echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
 
-          # Check if this is a pre-release (contains -alpha, -beta, -rc, -pre, etc.)
           if echo "$LATEST_TAG" | grep -qE '-(alpha|beta|rc|pre|dev|snapshot)'; then
-            echo "⚠️  Detected pre-release tag: $LATEST_TAG"
+            echo "⚠️  Pre-release tag detected"
             echo "is_prerelease=true" >> $GITHUB_OUTPUT
           else
-            echo "✅ Stable release tag: $LATEST_TAG"
+            echo "✅ Stable release tag"
             echo "is_prerelease=false" >> $GITHUB_OUTPUT
           fi
 
-          # If images for this rippled tag already exist on Docker Hub, skip the rest.
-          # This avoids doing the expensive compile + publish twice for the same upstream tag.
-          BASE_TAG="${LATEST_TAG}"
-          SLIM_TAG="${LATEST_TAG}"
-
-          echo "Checking Docker Hub for existing tags:"
-          echo "  - ${DOCKER_IMAGE_BASE}:${BASE_TAG}"
-          echo "  - ${DOCKER_IMAGE_SLIM}:${SLIM_TAG}"
+  check-existing-tags:
+    runs-on: ubuntu-latest
+    needs: fetch-rippled-tag
+    outputs:
+      skip: ${{ steps.check-tags.outputs.skip }}
+    steps:
+      - name: Check if tags already exist on Docker Hub
+        id: check-tags
+        run: |
+          set -euo pipefail
+          
+          TAG="${{ needs.fetch-rippled-tag.outputs.tag }}"
+          BASE_URL="https://hub.docker.com/v2/repositories/${DOCKER_IMAGE_BASE}/tags/${TAG}/"
+          SLIM_URL="https://hub.docker.com/v2/repositories/${DOCKER_IMAGE_SLIM}/tags/${TAG}/"
 
           BASE_EXISTS=false
-          BASE_URL="https://hub.docker.com/v2/repositories/${DOCKER_IMAGE_BASE}/tags/${BASE_TAG}/"
-          echo "  Checking: $BASE_URL"
           RESPONSE=$(curl -sSL -w "\nHTTP_CODE:%{http_code}" "$BASE_URL" 2>&1)
           HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2 || echo "000")
           BODY=$(echo "$RESPONSE" | sed '/HTTP_CODE:/d')
-          if [ "$HTTP_CODE" = "200" ]; then
-            # Verify the response actually contains the tag name
-            if echo "$BODY" | grep -qE '"name"[[:space:]]*:[[:space:]]*"'"${BASE_TAG}"'"'; then
-              BASE_EXISTS=true
-              echo "  ✅ Base image tag exists"
-            else
-              echo "  ℹ️  Base image tag does not exist (HTTP 200 but tag not found in response)"
-              echo "  Response preview: $(echo "$BODY" | head -c 200)"
-            fi
-          else
-            echo "  ℹ️  Base image tag does not exist (HTTP $HTTP_CODE)"
+          if [ "$HTTP_CODE" = "200" ] && echo "$BODY" | grep -qE '"name"[[:space:]]*:[[:space:]]*"'"${TAG}"'"'; then
+            BASE_EXISTS=true
           fi
 
           SLIM_EXISTS=false
-          SLIM_URL="https://hub.docker.com/v2/repositories/${DOCKER_IMAGE_SLIM}/tags/${SLIM_TAG}/"
-          echo "  Checking: $SLIM_URL"
           RESPONSE=$(curl -sSL -w "\nHTTP_CODE:%{http_code}" "$SLIM_URL" 2>&1)
           HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2 || echo "000")
           BODY=$(echo "$RESPONSE" | sed '/HTTP_CODE:/d')
-          if [ "$HTTP_CODE" = "200" ]; then
-            # Verify the response actually contains the tag name
-            if echo "$BODY" | grep -qE '"name"[[:space:]]*:[[:space:]]*"'"${SLIM_TAG}"'"'; then
-              SLIM_EXISTS=true
-              echo "  ✅ Slim image tag exists"
-            else
-              echo "  ℹ️  Slim image tag does not exist (HTTP 200 but tag not found in response)"
-              echo "  Response preview: $(echo "$BODY" | head -c 200)"
-            fi
-          else
-            echo "  ℹ️  Slim image tag does not exist (HTTP $HTTP_CODE)"
+          if [ "$HTTP_CODE" = "200" ] && echo "$BODY" | grep -qE '"name"[[:space:]]*:[[:space:]]*"'"${TAG}"'"'; then
+            SLIM_EXISTS=true
           fi
 
           if [ "$BASE_EXISTS" = true ] && [ "$SLIM_EXISTS" = true ]; then
@@ -125,8 +104,8 @@ jobs:
   build-binary:
     runs-on:
       group: Onprem
-    needs: fetch-rippled-tag
-    if: needs.fetch-rippled-tag.outputs.skip != 'true'
+    needs: [fetch-rippled-tag, check-existing-tags]
+    if: needs.check-existing-tags.outputs.skip != 'true'
     permissions:
       contents: read
       packages: write
@@ -158,13 +137,15 @@ jobs:
           build-args: |
             VERSION=${{ needs.fetch-rippled-tag.outputs.tag }}
             BRANCH=${{ steps.branch.outputs.branch }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: |
+            type=gha,scope=build,key=xrpld-build-${{ needs.fetch-rippled-tag.outputs.tag }}
+          cache-to: |
+            type=gha,mode=max,scope=build,key=xrpld-build-${{ needs.fetch-rippled-tag.outputs.tag }}
 
   build-and-push-base:
     runs-on: ubuntu-latest
-    needs: [fetch-rippled-tag, build-binary]
-    if: needs.fetch-rippled-tag.outputs.skip != 'true'
+    needs: [fetch-rippled-tag, check-existing-tags, build-binary]
+    if: needs.check-existing-tags.outputs.skip != 'true'
     permissions:
       contents: read
       packages: write
@@ -240,13 +221,15 @@ jobs:
           build-args: |
             VERSION=${{ needs.fetch-rippled-tag.outputs.tag }}
             BRANCH=${{ steps.branch.outputs.branch }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: |
+            type=gha,scope=build,key=xrpld-build-${{ needs.fetch-rippled-tag.outputs.tag }}
+          cache-to: |
+            type=gha,mode=max,scope=build,key=xrpld-build-${{ needs.fetch-rippled-tag.outputs.tag }}
 
   build-and-push-slim:
     runs-on: ubuntu-latest
-    needs: [fetch-rippled-tag, build-binary]
-    if: needs.fetch-rippled-tag.outputs.skip != 'true'
+    needs: [fetch-rippled-tag, check-existing-tags, build-binary]
+    if: needs.check-existing-tags.outputs.skip != 'true'
     permissions:
       contents: read
       packages: write
@@ -321,8 +304,10 @@ jobs:
           build-args: |
             VERSION=${{ needs.fetch-rippled-tag.outputs.tag }}
             BRANCH=${{ steps.branch.outputs.branch }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: |
+            type=gha,scope=build,key=xrpld-build-${{ needs.fetch-rippled-tag.outputs.tag }}
+          cache-to: |
+            type=gha,mode=max,scope=build,key=xrpld-build-${{ needs.fetch-rippled-tag.outputs.tag }}
 
   summary:
     runs-on: ubuntu-latest
