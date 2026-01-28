@@ -91,9 +91,8 @@ jobs:
           fi
 
   build-binary:
-    runs-on: 
-      - self-hosted
-      - group:Onprem
+    runs-on:
+      group: Onprem
     needs: fetch-rippled-tag
     if: needs.fetch-rippled-tag.outputs.skip != 'true'
     permissions:
