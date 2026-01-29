@@ -17,7 +17,7 @@ env:
   GHCR_REGISTRY: ghcr.io
   DOCKER_ORG: ${{ secrets.DOCKER_ORG }}
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  
+
   # Base image (built from source with envsubst templates)
   DOCKER_IMAGE_BASE: ${{ secrets.DOCKER_ORG }}/xrpld
   GHCR_IMAGE_BASE: xrpld
@@ -72,13 +72,13 @@ jobs:
             fi
             echo "Latest rippled tag: $LATEST_TAG"
           fi
-          
+
           echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
 
           if [ -n "${INPUT_VERSION}" ]; then
             echo "⚠️ Provided version - preventing latest tag from being used"
             echo "is_prerelease=true" >> $GITHUB_OUTPUT
-          elif echo "$LATEST_TAG" | grep -qE '-(alpha|beta|rc|pre|dev|snapshot)'; then
+          elif echo "$LATEST_TAG" | grep -qE '^nightly|-(alpha|beta|rc|pre|dev|snapshot|nightly)'; then
             echo "⚠️  Pre-release tag detected"
             echo "is_prerelease=true" >> $GITHUB_OUTPUT
           else
@@ -187,7 +187,6 @@ jobs:
         with:
           images: ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_BASE }}
           tags: ${{ steps.tags-base.outputs.tags }}
-
 
       - name: Build and push base image
         id: build-base
@@ -373,7 +372,14 @@ jobs:
 
   summary:
     runs-on: ubuntu-latest
-    needs: [fetch-rippled-tag, build-binary, build-and-push-base, build-and-push-envt, build-and-push-slim]
+    needs:
+      [
+        fetch-rippled-tag,
+        build-binary,
+        build-and-push-base,
+        build-and-push-envt,
+        build-and-push-slim,
+      ]
     if: always()
 
     steps:

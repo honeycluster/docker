@@ -78,7 +78,7 @@ jobs:
           if [ -n "${INPUT_VERSION}" ]; then
             echo "⚠️ Provided version - preventing latest tag from being used"
             echo "is_prerelease=true" >> $GITHUB_OUTPUT
-          elif echo "$LATEST_TAG" | grep -qE '-(alpha|beta|rc|pre|dev|snapshot)'; then
+          elif echo "$LATEST_TAG" | grep -qE '^nightly|-(alpha|beta|rc|pre|dev|snapshot|nightly)'; then
             echo "⚠️  Pre-release tag detected"
             echo "is_prerelease=true" >> $GITHUB_OUTPUT
           else
