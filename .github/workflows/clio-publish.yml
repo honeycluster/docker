@@ -35,6 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.clio-tag.outputs.tag }}
+      tag_cache_key: ${{ steps.clio-tag.outputs.tag_cache_key }}
       is_prerelease: ${{ steps.clio-tag.outputs.is_prerelease }}
     env:
       INPUT_VERSION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || '' }}
@@ -72,8 +73,10 @@ jobs:
             fi
             echo "Latest Clio tag: $LATEST_TAG"
           fi
-          
+
           echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          TAG_CACHE_KEY=$(printf '%s' "$LATEST_TAG" | base64 -w0)
+          echo "tag_cache_key=$TAG_CACHE_KEY" >> $GITHUB_OUTPUT
 
           if [ -n "${INPUT_VERSION}" ]; then
             echo "⚠️ Provided version - preventing latest tag from being used"
@@ -122,9 +125,9 @@ jobs:
             VERSION=${{ needs.fetch-clio-tag.outputs.tag }}
             BRANCH=${{ steps.branch.outputs.branch }}
           cache-from: |
-            type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag }}
+            type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
           cache-to: |
-            type=gha,mode=max,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag }}
+            type=gha,mode=max,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
 
   build-and-push-base:
     runs-on: ubuntu-latest
@@ -205,9 +208,9 @@ jobs:
             VERSION=${{ needs.fetch-clio-tag.outputs.tag }}
             BRANCH=${{ steps.branch.outputs.branch }}
           cache-from: |
-            type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag }}
+            type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
           cache-to: |
-            type=gha,mode=max,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag }}
+            type=gha,mode=max,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
 
   build-and-push-envt:
     runs-on: ubuntu-latest
@@ -285,9 +288,9 @@ jobs:
             VERSION=${{ needs.fetch-clio-tag.outputs.tag }}
             BRANCH=${{ steps.branch.outputs.branch }}
           cache-from: |
-            type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag }}
+            type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
           cache-to: |
-            type=gha,mode=max,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag }}
+            type=gha,mode=max,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
 
   build-and-push-slim:
     runs-on: ubuntu-latest
@@ -367,9 +370,9 @@ jobs:
             VERSION=${{ needs.fetch-clio-tag.outputs.tag }}
             BRANCH=${{ steps.branch.outputs.branch }}
           cache-from: |
-            type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag }}
+            type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
           cache-to: |
-            type=gha,mode=max,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag }}
+            type=gha,mode=max,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
 
   summary:
     runs-on: ubuntu-latest
