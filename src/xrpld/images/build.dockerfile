@@ -110,9 +110,9 @@ LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/bl
 LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/src/xrpld/docs/envt.md"
 
 # Install necessary packages (gettext-base for envsubst, openssl for ssl.sh)
-RUN apt-get -y install --no-install-recommends \
-    gettext-base \
-    openssl
+RUN apt-get update \
+    && apt-get -y install --no-install-recommends gettext-base openssl \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/xrpl
 
