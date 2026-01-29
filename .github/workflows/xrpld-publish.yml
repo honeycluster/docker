@@ -1,20 +1,33 @@
 name: Build and Publish Docker Images for XRPLD
-description: Build and publish the XRPLD build Docker images (base and slim)
+description: Build and publish the XRPLD build Docker images (base, envt, and slim)
 
 on:
+  push:
+    branches:
+      - develop
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Optional rippled version/tag (e.g. 2.1.1). Leave empty to use latest from XRPLF/rippled.'
+        required: false
+        type: string
 
 env:
   DOCKER_REGISTRY: docker.io
   GHCR_REGISTRY: ghcr.io
   DOCKER_ORG: ${{ secrets.DOCKER_ORG }}
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  
   # Base image (built from source with envsubst templates)
   DOCKER_IMAGE_BASE: ${{ secrets.DOCKER_ORG }}/xrpld
   GHCR_IMAGE_BASE: xrpld
   # Slim image (built from source with static config)
   DOCKER_IMAGE_SLIM: ${{ secrets.DOCKER_ORG }}/xrpld-slim
   GHCR_IMAGE_SLIM: xrpld-slim
+  # Envt image (built from source with envsubst templates)
+  DOCKER_IMAGE_ENVT: ${{ secrets.DOCKER_ORG }}/xrpld-envt
+  GHCR_IMAGE_ENVT: xrpld-envt
+
   BUILD_CONTEXT: ./src/xrpld
 
 jobs:
@@ -23,38 +36,49 @@ jobs:
     outputs:
       tag: ${{ steps.rippled-tag.outputs.tag }}
       is_prerelease: ${{ steps.rippled-tag.outputs.is_prerelease }}
+    env:
+      INPUT_VERSION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || '' }}
     steps:
-      - name: Fetch latest rippled release tag (including pre-releases)
+      - name: Resolve rippled version/tag
         id: rippled-tag
         run: |
           set -euo pipefail
 
-          LATEST_TAG=$(
-            curl -s https://api.github.com/repos/XRPLF/rippled/releases \
-              | grep -o '"tag_name"[[:space:]]*:[[:space:]]*"[^"]*"' \
-              | head -1 \
-              | sed 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/'
-          )
-          
-          if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" = "null" ]; then
-            echo "Failed to fetch from releases, trying tags endpoint..."
+          if [ -n "${INPUT_VERSION}" ]; then
+            echo "Using provided version: ${INPUT_VERSION}"
+            LATEST_TAG="${INPUT_VERSION}"
+          else
+            echo "Fetching latest rippled release tag (including pre-releases)..."
             LATEST_TAG=$(
-              curl -s https://api.github.com/repos/XRPLF/rippled/tags \
-                | grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' \
+              curl -s https://api.github.com/repos/XRPLF/rippled/releases \
+                | grep -o '"tag_name"[[:space:]]*:[[:space:]]*"[^"]*"' \
                 | head -1 \
-                | sed 's/.*"name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/'
+                | sed 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/'
             )
+            
+            if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" = "null" ]; then
+              echo "Failed to fetch from releases, trying tags endpoint..."
+              LATEST_TAG=$(
+                curl -s https://api.github.com/repos/XRPLF/rippled/tags \
+                  | grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' \
+                  | head -1 \
+                  | sed 's/.*"name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/'
+              )
+            fi
+            
+            if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" = "null" ]; then
+              echo "❌ Failed to fetch rippled tag. Exiting."
+              exit 1
+            fi
+            echo "Latest rippled tag: $LATEST_TAG"
           fi
           
-          if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" = "null" ]; then
-            echo "❌ Failed to fetch rippled tag. Exiting."
-            exit 1
-          fi
-          
-          echo "Latest rippled tag: $LATEST_TAG"
           echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
 
-          if echo "$LATEST_TAG" | grep -qE '-(alpha|beta|rc|pre|dev|snapshot)'; then
+          if [ -n "${INPUT_VERSION}" ]; then
+            echo "⚠️ Provided version - preventing latest tag from being used"
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          elif echo "$LATEST_TAG" | grep -qE '-(alpha|beta|rc|pre|dev|snapshot)'; then
             echo "⚠️  Pre-release tag detected"
             echo "is_prerelease=true" >> $GITHUB_OUTPUT
           else
@@ -62,50 +86,10 @@ jobs:
             echo "is_prerelease=false" >> $GITHUB_OUTPUT
           fi
 
-  check-existing-tags:
-    runs-on: ubuntu-latest
-    needs: fetch-rippled-tag
-    outputs:
-      skip: ${{ steps.check-tags.outputs.skip }}
-    steps:
-      - name: Check if tags already exist on Docker Hub
-        id: check-tags
-        run: |
-          set -euo pipefail
-          
-          TAG="${{ needs.fetch-rippled-tag.outputs.tag }}"
-          BASE_URL="https://hub.docker.com/v2/repositories/${DOCKER_IMAGE_BASE}/tags/${TAG}/"
-          SLIM_URL="https://hub.docker.com/v2/repositories/${DOCKER_IMAGE_SLIM}/tags/${TAG}/"
-
-          BASE_EXISTS=false
-          RESPONSE=$(curl -sSL -w "\nHTTP_CODE:%{http_code}" "$BASE_URL" 2>&1)
-          HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2 || echo "000")
-          BODY=$(echo "$RESPONSE" | sed '/HTTP_CODE:/d')
-          if [ "$HTTP_CODE" = "200" ] && echo "$BODY" | grep -qE '"name"[[:space:]]*:[[:space:]]*"'"${TAG}"'"'; then
-            BASE_EXISTS=true
-          fi
-
-          SLIM_EXISTS=false
-          RESPONSE=$(curl -sSL -w "\nHTTP_CODE:%{http_code}" "$SLIM_URL" 2>&1)
-          HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2 || echo "000")
-          BODY=$(echo "$RESPONSE" | sed '/HTTP_CODE:/d')
-          if [ "$HTTP_CODE" = "200" ] && echo "$BODY" | grep -qE '"name"[[:space:]]*:[[:space:]]*"'"${TAG}"'"'; then
-            SLIM_EXISTS=true
-          fi
-
-          if [ "$BASE_EXISTS" = true ] && [ "$SLIM_EXISTS" = true ]; then
-            echo "✅ Both tags already exist on Docker Hub. Skipping build/publish."
-            echo "skip=true" >> $GITHUB_OUTPUT
-          else
-            echo "Will build/publish because at least one tag is missing. (base=${BASE_EXISTS}, slim=${SLIM_EXISTS})"
-            echo "skip=false" >> $GITHUB_OUTPUT
-          fi
-
   build-binary:
     runs-on:
       group: Onprem
-    needs: [fetch-rippled-tag, check-existing-tags]
-    if: needs.check-existing-tags.outputs.skip != 'true'
+    needs: [fetch-rippled-tag]
     permissions:
       contents: read
       packages: write
@@ -144,8 +128,7 @@ jobs:
 
   build-and-push-base:
     runs-on: ubuntu-latest
-    needs: [fetch-rippled-tag, check-existing-tags, build-binary]
-    if: needs.check-existing-tags.outputs.skip != 'true'
+    needs: [fetch-rippled-tag, build-binary]
     permissions:
       contents: read
       packages: write
@@ -226,10 +209,89 @@ jobs:
           cache-to: |
             type=gha,mode=max,scope=build,key=xrpld-build-${{ needs.fetch-rippled-tag.outputs.tag }}
 
+  build-and-push-envt:
+    runs-on: ubuntu-latest
+    needs: [fetch-rippled-tag, build-binary]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PAT }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.GHCR_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set branch and tag
+        id: branch
+        run: |
+          echo "branch=develop" >> $GITHUB_OUTPUT
+          echo "tag=nightly" >> $GITHUB_OUTPUT
+          echo "rippled_tag=${{ needs.fetch-rippled-tag.outputs.tag }}" >> $GITHUB_OUTPUT
+          echo "Building envt image from branch: release (rippled: ${{ needs.fetch-rippled-tag.outputs.tag }})"
+
+      - name: Prepare tags for envt
+        id: tags-envt
+        run: |
+          TAGS="type=raw,value=${{ needs.fetch-rippled-tag.outputs.tag }}"
+          if [ "${{ needs.fetch-rippled-tag.outputs.is_prerelease }}" != "true" ]; then
+            TAGS="$TAGS"$'\n'"type=raw,value=latest"
+          fi
+          echo "tags<<EOF" >> $GITHUB_OUTPUT
+          echo "$TAGS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Extract metadata for envt (Docker Hub)
+        id: meta-docker-envt
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_IMAGE_ENVT }}
+          tags: ${{ steps.tags-envt.outputs.tags }}
+
+      - name: Extract metadata for envt (GHCR)
+        id: meta-ghcr-envt
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_ENVT }}
+          tags: ${{ steps.tags-envt.outputs.tags }}
+
+      - name: Build and push envt image
+        id: build-envt
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.BUILD_CONTEXT }}
+          file: ${{ env.BUILD_CONTEXT }}/images/build.dockerfile
+          target: envt
+          push: true
+          tags: |
+            ${{ steps.meta-docker-envt.outputs.tags }}
+            ${{ steps.meta-ghcr-envt.outputs.tags }}
+          labels: ${{ steps.meta-docker-envt.outputs.labels }}
+          build-args: |
+            VERSION=${{ needs.fetch-rippled-tag.outputs.tag }}
+            BRANCH=${{ steps.branch.outputs.branch }}
+          cache-from: |
+            type=gha,scope=build,key=xrpld-build-${{ needs.fetch-rippled-tag.outputs.tag }}
+          cache-to: |
+            type=gha,mode=max,scope=build,key=xrpld-build-${{ needs.fetch-rippled-tag.outputs.tag }}
+
   build-and-push-slim:
     runs-on: ubuntu-latest
-    needs: [fetch-rippled-tag, check-existing-tags, build-binary]
-    if: needs.check-existing-tags.outputs.skip != 'true'
+    needs: [fetch-rippled-tag, build-binary]
     permissions:
       contents: read
       packages: write
@@ -311,9 +373,9 @@ jobs:
 
   summary:
     runs-on: ubuntu-latest
-    needs: [fetch-rippled-tag, build-binary, build-and-push-base, build-and-push-slim]
+    needs: [fetch-rippled-tag, build-binary, build-and-push-base, build-and-push-envt, build-and-push-slim]
     if: always()
-    
+
     steps:
       - name: Summary
         run: |
@@ -339,6 +401,21 @@ jobs:
           fi
           echo "| GHCR | \`${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_BASE }}:${{ needs.fetch-rippled-tag.outputs.tag }}\`$GHCR_LATEST_TAG |" >> $GITHUB_STEP_SUMMARY
           echo "**Status:** ${{ needs.build-and-push-base.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Envt (xrpld-envt)" >> $GITHUB_STEP_SUMMARY
+          echo "| Registry | Image |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          ENVT_LATEST_TAG=""
+          if [ "${{ needs.fetch-rippled-tag.outputs.is_prerelease }}" != "true" ]; then
+            ENVT_LATEST_TAG="<br>\`${{ env.DOCKER_IMAGE_ENVT }}:latest\`"
+          fi
+          echo "| Docker Hub | \`${{ env.DOCKER_IMAGE_ENVT }}:${{ needs.fetch-rippled-tag.outputs.tag }}\`$ENVT_LATEST_TAG |" >> $GITHUB_STEP_SUMMARY
+          ENVT_GHCR_LATEST_TAG=""
+          if [ "${{ needs.fetch-rippled-tag.outputs.is_prerelease }}" != "true" ]; then
+            ENVT_GHCR_LATEST_TAG="<br>\`${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_ENVT }}:latest\`"
+          fi
+          echo "| GHCR | \`${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_ENVT }}:${{ needs.fetch-rippled-tag.outputs.tag }}\`$ENVT_GHCR_LATEST_TAG |" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ needs.build-and-push-envt.result }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Slim (xrpld-slim)" >> $GITHUB_STEP_SUMMARY
           echo "| Registry | Image |" >> $GITHUB_STEP_SUMMARY

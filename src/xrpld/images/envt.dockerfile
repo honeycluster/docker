@@ -3,14 +3,14 @@ FROM --platform=$PLATFORM ubuntu:24.04
 
 # Image Labels
 LABEL maintainer="honeycluster <r@honeycluster.io>"
-LABEL org.opencontainers.image.title="xrpld"
-LABEL org.opencontainers.image.description="XRPL node (standard image from rippled deb)"
+LABEL org.opencontainers.image.title="xrpld-envt"
+LABEL org.opencontainers.image.description="XRPL node (envt image from rippled deb)"
 LABEL org.opencontainers.image.authors="honeycluster <r@honeycluster.io>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="honeycluster"
 LABEL org.opencontainers.image.url="https://github.com/honeycluster/docker"
-LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/src/xrpld/images/base.dockerfile"
-LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/src/xrpld/docs/base.md"
+LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/main/src/xrpld/images/envt.dockerfile"
+LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/src/xrpld/docs/envt.md"
 
 # xrpld deb version to install (apt-cache madison rippled)
 # https://github.com/ripple/rippled/releases
@@ -21,12 +21,14 @@ RUN export LANGUAGE=C.UTF-8; export LANG=C.UTF-8; export LC_ALL=C.UTF-8; export 
 # Update the package list and install the necessary packages
 RUN apt-get -y update
 
-# Install necessary packages
+# Install necessary packages (gettext-base for envsubst, openssl for ssl.sh)
 RUN apt-get -y install --no-install-recommends \
     apt-transport-https \
     ca-certificates \
     wget \
-    gnupg 
+    gnupg \
+    gettext-base \
+    openssl
 
 # Add the Ripple repository and install rippled
 RUN wget -qO- "https://repos.ripple.com/repos/api/gpg/key/public" | gpg --dearmor -o /usr/share/keyrings/ripple.gpg && \
@@ -56,9 +58,15 @@ RUN mkdir -p /etc/opt/ripple && \
 # Set the working directory
 WORKDIR /opt/xrpl
 
+# Create directory structure for template defaults
+RUN mkdir -p db log
+
+# Copy the configuration files
+COPY etc ./templates
+
 # Copy all entrypoint/configure scripts and make executable
 COPY scripts ./scripts
 RUN find /opt/xrpl/scripts -name '*.sh' -exec chmod +x {} \;
 
 # Set the entrypoint to the entrypoint.sh script
-ENTRYPOINT ["./scripts/entrypoint.sh"]
+ENTRYPOINT ["./scripts/entrypoint.sub.sh"]

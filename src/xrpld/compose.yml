@@ -2,7 +2,7 @@ services:
   mainnet:
     build:
       context: .
-      dockerfile: ./images/base.dockerfile
+      dockerfile: ./images/envt.dockerfile
     container_name: mainnet
     restart: unless-stopped
     labels:
@@ -22,7 +22,7 @@ services:
   devnet:
     build:
       context: .
-      dockerfile: ./images/base.dockerfile
+      dockerfile: ./images/envt.dockerfile
     container_name: devnet
     restart: unless-stopped
     environment:
@@ -45,7 +45,7 @@ services:
   testnet:
     build:
       context: .
-      dockerfile: ./images/base.dockerfile
+      dockerfile: ./images/envt.dockerfile
     container_name: testnet
     restart: unless-stopped
     environment:
@@ -65,16 +65,16 @@ services:
       - "8002:51234"
       - "6002:6005"
 
-  minimal:
+  base:
     build:
       context: .
-      dockerfile: ./images/slim.dockerfile
-    container_name: minimal
+      dockerfile: ./images/base.dockerfile
+    container_name: base
     restart: unless-stopped
     labels:
       - "com.docker.compose.project=simulate"
-      - "com.docker.compose.service=mainnet"
-      - "description=Rippled Minimal Image"
+      - "com.docker.compose.service=base"
+      - "description=Rippled Base Image"
     healthcheck:
       test: [ "CMD", "rippled", "server_info" ]
       interval: 30s
@@ -84,3 +84,23 @@ services:
     ports:
       - "8003:51234"
       - "6003:6005"
+
+  minimal:
+    build:
+      context: .
+      dockerfile: ./images/slim.dockerfile
+    container_name: minimal
+    restart: unless-stopped
+    labels:
+      - "com.docker.compose.project=simulate"
+      - "com.docker.compose.service=minimal"
+      - "description=Rippled Minimal Image"
+    healthcheck:
+      test: [ "CMD", "rippled", "server_info" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    ports:
+      - "8004:51234"
+      - "6004:6005"
