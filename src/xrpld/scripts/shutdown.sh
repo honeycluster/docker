@@ -1,12 +1,13 @@
 #!/bin/bash
-# Shutdown handling functions
+# Shutdown handling for xrpld/rippled
 
-# Function to handle graceful shutdown
 shutdown() {
-    log_info "Received shutdown signal, gracefully stopping nginx..."
-    /usr/local/openresty/nginx/sbin/nginx -s quit
+    log_info "Received shutdown signal, stopping xrpld/rippled..."
+    if [ -n "${RIPPLE_PID:-}" ]; then
+        kill -TERM "$RIPPLE_PID" 2>/dev/null || true
+        wait "$RIPPLE_PID" 2>/dev/null || true
+    fi
     exit 0
 }
 
-# Trap signals for graceful shutdown
 trap shutdown SIGTERM SIGINT

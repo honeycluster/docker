@@ -1,0 +1,57 @@
+# ScyllaDB configuration (sample / developer-mode single node)
+# Used by compose service: --developer-mode 1 --smp 1 --overprovisioned 1
+
+cluster_name: Test Cluster
+
+num_tokens: 256
+
+# Seeds for single-node (override via command line or env when needed)
+seed_provider:
+  - class_name: org.apache.cassandra.locator.SimpleSeedProvider
+    parameters:
+      - seeds: "127.0.0.1"
+
+# Listen and RPC: leave as localhost for single-node; set broadcast_* when using 0.0.0.0 (Docker)
+listen_address: localhost
+rpc_address: localhost
+broadcast_address: localhost
+broadcast_rpc_address: localhost
+
+# CQL native transport (matches compose port 9042)
+native_transport_port: 9042
+native_shard_aware_transport_port: 19042
+
+# Topology: SimpleSnitch for single-dc/single-node
+endpoint_snitch: SimpleSnitch
+
+# Commit log
+commitlog_sync: periodic
+commitlog_sync_period_in_ms: 10000
+commitlog_segment_size_in_mb: 32
+commitlog_total_space_in_mb: -1
+
+# Request timeouts
+read_request_timeout_in_ms: 5000
+write_request_timeout_in_ms: 2000
+cas_contention_timeout_in_ms: 1000
+
+# Batch thresholds
+batch_size_warn_threshold_in_kb: 128
+batch_size_fail_threshold_in_kb: 1024
+
+# Partitioner (do not change after data exists)
+partitioner: org.apache.cassandra.dht.Murmur3Partitioner
+murmur3_partitioner_ignore_msb_bits: 12
+
+# REST API (optional)
+api_port: 10000
+api_address: 127.0.0.1
+
+# Auth: no password option in scylla.yaml — enable PasswordAuthenticator and manage
+# users/passwords via CQL. Default superuser: cassandra / cassandra (change in production).
+authenticator: PasswordAuthenticator
+authorizer: CassandraAuthorizer
+
+# Snapshots
+# auto_snapshot: true
+# incremental_backups: false

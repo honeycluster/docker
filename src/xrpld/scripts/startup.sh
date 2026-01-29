@@ -31,7 +31,7 @@ start() {
     exec "$BIN" "${cmd_args[@]}"
 }
 
-# Function to check if nginx is running
+# Function to check if xrpld/rippled is running
 # @return 0 if running, 1 if not running
 is_running() {
     if pgrep -f "$BIN" > /dev/null 2>&1; then
@@ -41,32 +41,12 @@ is_running() {
     fi
 }
 
-# Function to reload nginx configuration
-# Sends HUP signal to nginx master process
+# Function to reload xrpld/rippled configuration
 reload() {
-    if ! is_nginx_running; then
-        log_error "Rippled is not running, cannot reload"
+    if ! is_running; then
+        log_error "xrpld/rippled is not running, cannot reload"
         return 1
     fi
-    
-    log_info "Reloading Rippled configuration"
-    
-    # Find nginx master process
-    local master_pid=$(pgrep -f "$BIN.*master" | head -1)
-    
-    if [ -z "$master_pid" ]; then
-        log_error "Could not find Rippled master process"
-        return 1
-    fi
-    
-    # Send HUP signal to reload configuration
-    kill -HUP "$master_pid"
-    
-    if [ $? -eq 0 ]; then
-        log_info "Rippled configuration reloaded successfully"
-        return 0
-    else
-        log_error "Failed to reload Rippled configuration"
-        return 1
-    fi
+    log_error "xrpld/rippled does not support config reload; restart the container to apply config changes"
+    return 1
 }

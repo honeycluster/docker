@@ -7,3 +7,5 @@ coverage
 
 # Apple drive tools
 ._*
+
+src/clio/etc/config.json
