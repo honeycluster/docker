@@ -1,4 +1,5 @@
-![Honeycluster logo](https://raw.githubusercontent.com/honeycluster/docker/develop/graphics/hc-logo.png)
+<img src="https://i.imgur.com/Dej2mWa.png" alt="Honeycluster logo" width="100" />
+
 
 # Clio: Build Image (Ubuntu 24.04)
 
@@ -111,5 +112,5 @@ These are provided for reference but are not used for the images published on Do
 - [Base image](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/base.md) — runtime usage, static config
 - [Slim image](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/slim.md) — Debian slim, minimal footprint
 - [Envt image](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/envt.md) — template injection, env-based config
-- [Configuration](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/CONFIGURATION.md) — all configuration options
+- [Configuration](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/configuration.md) — all configuration options
 - [BUILD.md](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/BUILD.md) — upstream Clio build (CMake/Conan) for building Clio outside Docker

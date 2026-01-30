@@ -1,10 +1,15 @@
-![Honeycluster logo](https://raw.githubusercontent.com/honeycluster/docker/develop/graphics/hc-logo.png)
+###
+
+<img src="https://i.imgur.com/kmtfYnM.png" alt="XRP logo" width="100" />
+
+###
 
 # XRP Ledger: Node Container Image (Slim)
 
 Slim XRPL node image **built from source** on **Debian slim** (bookworm-slim) with **static** `xrpld.cfg` and `validators.txt`. No envsubst or template injection — configs are used as-is from example files or your mounts. Smallest runtime footprint.
 
 **Image tags:** `honeycluster/xrpld-slim:${version | nightly | latest}`
+
 - `latest` — Latest stable release
 - `nightly` — Nightly build from develop branch
 - `${version}` — Specific version tag (e.g., `3.1.0`)
@@ -21,11 +26,11 @@ Slim XRPL node image **built from source** on **Debian slim** (bookworm-slim) wi
 
 ### Mounts
 
-| Path | Purpose |
-|------|---------|
+| Path                | Purpose                                                                                                                                                                                                                                                          |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **`/opt/xrpl/etc`** | **Config directory.** Mount your own `xrpld.cfg` and `validators.txt` here to override defaults. The slim image does **not** run template injection, so mounted files are **not** overwritten at startup. If not mounted, defaults to example configs (mainnet). |
-| `/opt/xrpl/db` | Database. Persist for ledger data. |
-| `/opt/xrpl/log` | Debug log. |
+| `/opt/xrpl/db`      | Database. Persist for ledger data.                                                                                                                                                                                                                               |
+| `/opt/xrpl/log`     | Debug log.                                                                                                                                                                                                                                                       |
 
 ### Example: docker run with custom config
 
@@ -47,15 +52,15 @@ services:
     container_name: xrpld-slim
     restart: unless-stopped
     ports:
-      - "51234:51234"
-      - "6005:6005"
+      - '51234:51234'
+      - '6005:6005'
     volumes:
       - ./config/xrpld.cfg:/opt/xrpl/etc/xrpld.cfg:ro
       - ./config/validators.txt:/opt/xrpl/etc/validators.txt:ro
       - xrpld-data:/opt/xrpl/db
       - xrpld-logs:/opt/xrpl/log
     healthcheck:
-      test: ["CMD", "rippled", "server_info"]
+      test: ['CMD', 'rippled', 'server_info']
       interval: 30s
       timeout: 10s
       retries: 3

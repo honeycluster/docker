@@ -1,12 +1,17 @@
-![Honeycluster logo](https://raw.githubusercontent.com/honeycluster/docker/develop/graphics/hc-logo.png)
+###
+
+<img src="https://i.imgur.com/kmtfYnM.png" alt="XRP logo" width="100" />
+
+###
 
 # Clio: Node Container Image (Base)
 
 Clio image **built from source** with **static** `config.json`. No envsubst or template injection — config is used as-is from the package default, example file, or your mount.
 
-**Image tags:** `honeycluster/clio:${version | latest}`
+**Image tags:** `honeycluster/clio:${version | nightly | latest}`
 
 - `latest` — Latest stable release
+- `nightly` — Nightly build from develop branch
 - `${version}` — Specific version tag (e.g., `2.7.0`)
 
 > **Note:** The base image on Docker Hub is built from source using `build.dockerfile` with the `base` target. For build instructions, see [Build image](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/build.md).
@@ -62,6 +67,6 @@ services:
 ## See also
 
 - [Build image](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/build.md) — build instructions for base image
-- [Configuration options](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/CONFIGURATION.md) (for reference; base does not use envsubst)
+- [Configuration options](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/configuration.md) (for reference; base does not use envsubst)
 - [Envt image](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/envt.md) — template injection and env-based config
 - [Slim image](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/slim.md) — Debian slim, minimal footprint

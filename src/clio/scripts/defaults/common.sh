@@ -1,7 +1,7 @@
 #!/bin/bash
 # Default environment variable values for Clio server.
 # Override via environment variables. All are exported for envsubst and child processes.
-# See docs/CONFIGURATION.md for full config reference.
+# See docs/configuration.md for full config reference.
 
 # ---------------------------------------------------------------------------
 # Paths: CONFIG_DIR (config root), CONFIG_FILE
@@ -33,7 +33,7 @@ build_ssl_derived() {
 }
 
 # ---------------------------------------------------------------------------
-# database.type, database.cassandra.* (CONFIGURATION.md)
+# database.type, database.cassandra.* (configuration.md)
 # ---------------------------------------------------------------------------
 export DATABASE_TYPE="${DATABASE_TYPE:-cassandra}"
 export CASSANDRA_CONTACT_POINTS="${CASSANDRA_CONTACT_POINTS:-127.0.0.1}"
@@ -51,14 +51,14 @@ export CASSANDRA_USERNAME="${CASSANDRA_USERNAME:-}"
 export CASSANDRA_PASSWORD="${CASSANDRA_PASSWORD:-}"
 
 # ---------------------------------------------------------------------------
-# etl_sources.[]: ETL source (rippled) IP and ports (CONFIGURATION.md)
+# etl_sources.[]: ETL source (rippled) IP and ports (configuration.md)
 # ---------------------------------------------------------------------------
 export ETL_SOURCE_IP="${ETL_SOURCE_IP:-127.0.0.1}"
 export ETL_SOURCE_WS_PORT="${ETL_SOURCE_WS_PORT:-6006}"
 export ETL_SOURCE_GRPC_PORT="${ETL_SOURCE_GRPC_PORT:-50051}"
 
 # ---------------------------------------------------------------------------
-# server.* (CONFIGURATION.md)
+# server.* (configuration.md)
 # ---------------------------------------------------------------------------
 export SERVER_IP="${SERVER_IP:-0.0.0.0}"
 export SERVER_PORT="${SERVER_PORT:-51233}"
@@ -84,7 +84,7 @@ export WORKERS="${WORKERS:-8}"
 export GRACEFUL_PERIOD="${GRACEFUL_PERIOD:-10.0}"
 
 # ---------------------------------------------------------------------------
-# log.* (CONFIGURATION.md)
+# log.* (configuration.md)
 # ---------------------------------------------------------------------------
 export LOG_LEVEL="${LOG_LEVEL:-info}"
 export LOG_ENABLE_CONSOLE="${LOG_ENABLE_CONSOLE:-true}"
@@ -94,7 +94,7 @@ export LOG_DIRECTORY_MAX_FILES="${LOG_DIRECTORY_MAX_FILES:-25}"
 export LOG_TAG_STYLE="${LOG_TAG_STYLE:-uint}"
 
 # ---------------------------------------------------------------------------
-# cache.* (CONFIGURATION.md)
+# cache.* (configuration.md)
 # ---------------------------------------------------------------------------
 export CACHE_NUM_DIFFS="${CACHE_NUM_DIFFS:-32}"
 export CACHE_NUM_MARKERS="${CACHE_NUM_MARKERS:-48}"

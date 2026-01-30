@@ -1,4 +1,8 @@
-![Honeycluster logo](https://raw.githubusercontent.com/honeycluster/docker/develop/graphics/hc-logo.png)
+###
+
+<img src="https://i.imgur.com/kmtfYnM.png" alt="XRP logo" width="100" />
+
+###
 
 # XRP Ledger: Node Container Image (Envt)
 
@@ -15,6 +19,7 @@ XRPL node image **built from source** with template injection, SSL generation, a
 ---
 
 **Image tags:** `honeycluster/xrpld-envt:${version | nightly | latest}`
+
 - `latest` — Latest stable release
 - `nightly` — Nightly build from develop branch
 - `${version}` — Specific version tag (e.g., `3.1.0`)
@@ -33,21 +38,21 @@ XRPL node image **built from source** with template injection, SSL generation, a
 
 The envt image supports environment variables for network and size configuration:
 
-| Variable | Default | Allowable Values | Description |
-|----------|---------|-----------------|-------------|
-| `NETWORK` | `MAINNET` | `MAINNET`, `TESTNET`, `DEVNET` | Selects network-specific defaults. Sets `NETWORK_ID`, `VALIDATOR_LIST_SITES`, `VALIDATOR_LIST_KEYS`, and `IPS` (for testnet/devnet). |
-| `SIZE` | `DEFAULT` | `DEFAULT`, `SMALL`, `MEDIUM`, `LARGE`, `HUGE`, `FULL` | Determines ledger retention and node size configuration. `FULL` disables `online_delete`/`advisory_delete` and sets `[fetch_depth]`/`[ledger_history]` to `full`. |
+| Variable  | Default   | Allowable Values                                      | Description                                                                                                                                                       |
+| --------- | --------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NETWORK` | `MAINNET` | `MAINNET`, `TESTNET`, `DEVNET`                        | Selects network-specific defaults. Sets `NETWORK_ID`, `VALIDATOR_LIST_SITES`, `VALIDATOR_LIST_KEYS`, and `IPS` (for testnet/devnet).                              |
+| `SIZE`    | `DEFAULT` | `DEFAULT`, `SMALL`, `MEDIUM`, `LARGE`, `HUGE`, `FULL` | Determines ledger retention and node size configuration. `FULL` disables `online_delete`/`advisory_delete` and sets `[fetch_depth]`/`[ledger_history]` to `full`. |
 
 **Size to Ledger Retention mapping:**
 
-| SIZE | LEDGER_RETENTION (default) |
-|------|----------------------------|
-| `DEFAULT` | `512` |
-| `SMALL` | `512` |
-| `MEDIUM` | `1024` |
-| `LARGE` | `2048` |
-| `HUGE` | `4096` |
-| `FULL` | `full` |
+| SIZE      | LEDGER_RETENTION (default) |
+| --------- | -------------------------- |
+| `DEFAULT` | `512`                      |
+| `SMALL`   | `512`                      |
+| `MEDIUM`  | `1024`                     |
+| `LARGE`   | `2048`                     |
+| `HUGE`    | `4096`                     |
+| `FULL`    | `full`                     |
 
 For a complete list of all configuration options, see [Configuration](https://github.com/honeycluster/docker/blob/develop/src/xrpld/docs/configuration.md).
 
@@ -130,11 +135,11 @@ services:
       - PEER_PRIVATE=0
       - RPC_STARTUP_CMDS={"command":"log_level","severity":"info"}
     ports:
-      - "51234:51234"
-      - "6005:6005"
-      - "50051:50051"
+      - '51234:51234'
+      - '6005:6005'
+      - '50051:50051'
     healthcheck:
-      test: ["CMD", "rippled", "server_info"]
+      test: ['CMD', 'rippled', 'server_info']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -153,11 +158,11 @@ services:
     restart: unless-stopped
     env_file: .env # Optional
     ports:
-      - "51234:51234"
-      - "6005:6005"
-      - "50051:50051"
+      - '51234:51234'
+      - '6005:6005'
+      - '50051:50051'
     healthcheck:
-      test: ["CMD", "rippled", "server_info"]
+      test: ['CMD', 'rippled', 'server_info']
       interval: 30s
       timeout: 10s
       retries: 3

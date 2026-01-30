@@ -2,9 +2,9 @@ name: Build and Publish Docker Images for XRPLD
 description: Build and publish the XRPLD build Docker images (base, envt, and slim)
 
 on:
-  push:
-    branches:
-      - develop
+  schedule:
+    # Run every night at 02:00 UTC
+    - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
       version:
@@ -89,10 +89,73 @@ jobs:
             echo "is_prerelease=false" >> $GITHUB_OUTPUT
           fi
 
+  determine-skip:
+    runs-on: ubuntu-latest
+    needs: [fetch-rippled-tag]
+    outputs:
+      tag: ${{ needs.fetch-rippled-tag.outputs.tag }}
+      skip_base: ${{ steps.check.outputs.skip_base }}
+      skip_slim: ${{ steps.check.outputs.skip_slim }}
+      skip_envt: ${{ steps.check.outputs.skip_envt }}
+      is_prerelease: ${{ needs.fetch-rippled-tag.outputs.is_prerelease }}
+    env:
+      FORCE_BUILD: ${{ github.event_name == 'workflow_dispatch' }}
+    steps:
+      - name: Check if each image tag already exists on Docker Hub
+        id: check
+        run: |
+          set -euo pipefail
+
+          LATEST_TAG="${{ needs.fetch-rippled-tag.outputs.tag }}"
+
+          # When triggered manually (workflow_dispatch), never skip any image.
+          if [ "${{ env.FORCE_BUILD }}" = "true" ]; then
+            echo "🔄 Manual dispatch: skip_base=false, skip_slim=false, skip_envt=false (force build/publish)"
+            echo "skip_base=false" >> $GITHUB_OUTPUT
+            echo "skip_slim=false" >> $GITHUB_OUTPUT
+            echo "skip_envt=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Check each image tag on Docker Hub. skip_* = true means tag exists, skip that image.
+          check_tag() {
+            local name=$1
+            local image=$2
+            local url="https://hub.docker.com/v2/repositories/${image}/tags/${LATEST_TAG}/"
+            echo "  Checking ${name}: $url"
+            local response
+            response=$(curl -sSL -w "\nHTTP_CODE:%{http_code}" "$url" 2>&1)
+            local code
+            code=$(echo "$response" | grep "HTTP_CODE:" | cut -d: -f2 || echo "000")
+            local body
+            body=$(echo "$response" | sed '/HTTP_CODE:/d')
+            if [ "$code" = "200" ] && echo "$body" | grep -qE '"name"[[:space:]]*:[[:space:]]*"'"${LATEST_TAG}"'"'; then
+              echo "  ✅ ${name} tag exists (skip)"
+              return 0
+            else
+              echo "  ℹ️  ${name} tag does not exist (HTTP ${code}) - will build/publish"
+              return 1
+            fi
+          }
+
+          echo "Checking Docker Hub for existing tags (version: ${LATEST_TAG}):"
+          SKIP_BASE=false
+          SKIP_SLIM=false
+          SKIP_ENVT=false
+          check_tag "base" "${DOCKER_IMAGE_BASE}" && SKIP_BASE=true
+          check_tag "slim" "${DOCKER_IMAGE_SLIM}" && SKIP_SLIM=true
+          check_tag "envt" "${DOCKER_IMAGE_ENVT}" && SKIP_ENVT=true
+
+          echo "skip_base=${SKIP_BASE}" >> $GITHUB_OUTPUT
+          echo "skip_slim=${SKIP_SLIM}" >> $GITHUB_OUTPUT
+          echo "skip_envt=${SKIP_ENVT}" >> $GITHUB_OUTPUT
+          echo "Result: base=${SKIP_BASE}, slim=${SKIP_SLIM}, envt=${SKIP_ENVT}"
+
   build-binary:
     runs-on:
       group: Onprem
-    needs: [fetch-rippled-tag]
+    needs: [fetch-rippled-tag, determine-skip]
+    if: needs.determine-skip.outputs.skip_base != 'true' || needs.determine-skip.outputs.skip_slim != 'true' || needs.determine-skip.outputs.skip_envt != 'true'
     permissions:
       contents: read
       packages: write
@@ -131,7 +194,8 @@ jobs:
 
   build-and-push-base:
     runs-on: ubuntu-latest
-    needs: [fetch-rippled-tag, build-binary]
+    needs: [fetch-rippled-tag, determine-skip, build-binary]
+    if: needs.determine-skip.outputs.skip_base != 'true'
     permissions:
       contents: read
       packages: write
@@ -213,7 +277,8 @@ jobs:
 
   build-and-push-envt:
     runs-on: ubuntu-latest
-    needs: [fetch-rippled-tag, build-binary]
+    needs: [fetch-rippled-tag, determine-skip, build-binary]
+    if: needs.determine-skip.outputs.skip_envt != 'true'
     permissions:
       contents: read
       packages: write
@@ -293,7 +358,8 @@ jobs:
 
   build-and-push-slim:
     runs-on: ubuntu-latest
-    needs: [fetch-rippled-tag, build-binary]
+    needs: [fetch-rippled-tag, determine-skip, build-binary]
+    if: needs.determine-skip.outputs.skip_slim != 'true'
     permissions:
       contents: read
       packages: write
@@ -378,6 +444,7 @@ jobs:
     needs:
       [
         fetch-rippled-tag,
+        determine-skip,
         build-binary,
         build-and-push-base,
         build-and-push-envt,
@@ -390,6 +457,10 @@ jobs:
         run: |
           echo "## 🐳 Docker Images Published" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.determine-skip.outputs.skip_base }}" = "true" ] && [ "${{ needs.determine-skip.outputs.skip_slim }}" = "true" ] && [ "${{ needs.determine-skip.outputs.skip_envt }}" = "true" ]; then
+            echo "⏭️ **Skipped:** All image tags for this version already exist on Docker Hub. No build/publish was performed." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
           PRERELEASE_INFO=""
           if [ "${{ needs.fetch-rippled-tag.outputs.is_prerelease }}" = "true" ]; then
             PRERELEASE_INFO=" (Pre-release)"

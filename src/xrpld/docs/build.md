@@ -1,4 +1,8 @@
-![Honeycluster logo](https://raw.githubusercontent.com/honeycluster/docker/develop/graphics/hc-logo.png)
+###
+
+<img src="https://i.imgur.com/kmtfYnM.png" alt="XRP logo" width="100" />
+
+###
 
 # XRP Ledger: Build Image (Ubuntu 24.04)
 
@@ -43,14 +47,14 @@ docker build -f images/build.dockerfile --target envt \
 
 **Build args**
 
-| Arg | Default | Description |
-|-----|---------|-------------|
-| `VERSION` | `3.0.0` | xrpld version/tag to build from source |
-| `BRANCH` | `develop` | Git branch to build from |
-| `GCC_RELEASE` | `14` | GCC version for build |
-| `CONAN_VERSION` | `2.24` | Conan version for build |
-| `CMAKE_VERSION` | — | CMake version (optional) |
-| `PYTHON_VERSION` | — | Python version (optional) |
+| Arg              | Default   | Description                            |
+| ---------------- | --------- | -------------------------------------- |
+| `VERSION`        | `3.0.0`   | xrpld version/tag to build from source |
+| `BRANCH`         | `develop` | Git branch to build from               |
+| `GCC_RELEASE`    | `14`      | GCC version for build                  |
+| `CONAN_VERSION`  | `2.24`    | Conan version for build                |
+| `CMAKE_VERSION`  | —         | CMake version (optional)               |
+| `PYTHON_VERSION` | —         | Python version (optional)              |
 
 ## Stages
 
@@ -85,11 +89,11 @@ docker build -f images/build.dockerfile --target envt \
 
 ### Mounts
 
-| Path | Purpose |
-|------|---------|
+| Path            | Purpose                                                                                                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/opt/xrpl/etc` | Config directory. For **base** and **slim**: mount your own configs; they are not overwritten. For **envt**: resolved configs written here; template injection runs on startup. |
-| `/opt/xrpl/db` | Database (NuDB, etc.). Persist for ledger data. |
-| `/opt/xrpl/log` | Debug log. |
+| `/opt/xrpl/db`  | Database (NuDB, etc.). Persist for ledger data.                                                                                                                                 |
+| `/opt/xrpl/log` | Debug log.                                                                                                                                                                      |
 
 ## When to use
 

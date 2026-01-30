@@ -3,8 +3,8 @@ description: Build and publish the XRPLD build Docker images (base, envt, and sl
 
 on:
   schedule:
-    # Run every night at midnight UTC
-    - cron: '0 0 * * *'
+    # Run every night at 01:00 UTC
+    - cron: '0 1 * * *'
   workflow_dispatch:
 
 env:
@@ -43,12 +43,12 @@ jobs:
               | head -1 \
               | sed 's/.*"sha"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/'
           )
-          
+
           if [ -z "$COMMIT_SHA" ] || [ "$COMMIT_SHA" = "null" ]; then
             echo "❌ Failed to fetch rippled develop commit SHA. Exiting."
             exit 1
           fi
-          
+
           echo "Latest rippled develop commit: $COMMIT_SHA"
           echo "commit=$COMMIT_SHA" >> $GITHUB_OUTPUT
 
@@ -309,12 +309,16 @@ jobs:
           cache-to: |
             type=gha,mode=max,scope=build,key=xrpld-build-${{ needs.fetch-rippled-develop.outputs.develop_commit }}
 
-
-
-
   summary:
     runs-on: ubuntu-latest
-    needs: [fetch-rippled-develop, build-binary, build-and-push-base, build-and-push-envt, build-and-push-slim]
+    needs:
+      [
+        fetch-rippled-develop,
+        build-binary,
+        build-and-push-base,
+        build-and-push-envt,
+        build-and-push-slim,
+      ]
     if: always()
 
     steps:

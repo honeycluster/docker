@@ -1,4 +1,8 @@
-![Honeycluster logo](https://raw.githubusercontent.com/honeycluster/docker/develop/graphics/hc-logo.png)
+###
+
+<img src="https://i.imgur.com/kmtfYnM.png" alt="XRP logo" width="100" />
+
+###
 
 # How to build Clio
 
@@ -170,7 +174,7 @@ To generate the API docs, please use CMake option `-Ddocs=ON` as described above
 To view the generated files, go to `build/docs/html`.
 Open the `index.html` file in your browser to see the documentation pages.
 
-![API index page](./img/doxygen-docs-output.png "API index page")
+![API index page](./img/doxygen-docs-output.png 'API index page')
 
 ## Building Clio with Docker
 
