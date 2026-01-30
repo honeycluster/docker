@@ -1,3 +1,5 @@
+![Honeycluster logo](https://raw.githubusercontent.com/honeycluster/docker/develop/graphics/hc-logo.png)
+
 # XRP Ledger: Node Container Image (Base)
 
 XRPL node image **built from source** with **static** `xrpld.cfg` and `validators.txt`. No envsubst or template injection — configs are used as-is from example files or your mounts.

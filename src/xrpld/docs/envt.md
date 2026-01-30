@@ -1,3 +1,5 @@
+![Honeycluster logo](https://raw.githubusercontent.com/honeycluster/docker/develop/graphics/hc-logo.png)
+
 # XRP Ledger: Node Container Image (Envt)
 
 XRPL node image **built from source** with template injection, SSL generation, and network/size-aware defaults. The **envt** image uses envsubst to generate config from templates at startup.

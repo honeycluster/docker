@@ -1,3 +1,5 @@
+![Honeycluster logo](https://raw.githubusercontent.com/honeycluster/docker/develop/graphics/hc-logo.png)
+
 # XRP Ledger: Build Image (Ubuntu 24.04)
 
 Multi-stage image that **builds xrpld from source** (Conan) and produces runtime images with the built binary. The `build.dockerfile` supports multiple targets: `build`, `common`, `base`, `slim`, and `envt`.

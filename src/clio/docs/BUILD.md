@@ -1,3 +1,5 @@
+![Honeycluster logo](https://raw.githubusercontent.com/honeycluster/docker/develop/graphics/hc-logo.png)
+
 # How to build Clio
 
 `Clio` is built with [CMake](https://cmake.org/) and uses [Conan](https://conan.io/) for managing dependencies.

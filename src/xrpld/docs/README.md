@@ -1,3 +1,5 @@
+![Honeycluster logo](https://raw.githubusercontent.com/honeycluster/docker/develop/graphics/hc-logo.png)
+
 # xrpld Docker images
 
 | Doc | Image | Description |
