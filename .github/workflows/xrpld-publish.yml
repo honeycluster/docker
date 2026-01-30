@@ -3,8 +3,7 @@ description: Build and publish the XRPLD build Docker images (base, envt, and sl
 
 on:
   schedule:
-    # Run every night at 02:00 UTC
-    - cron: '0 2 * * *'
+    - cron: '0 9 * * *'
   workflow_dispatch:
     inputs:
       version:
