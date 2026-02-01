@@ -38,7 +38,7 @@ env:
   GHCR_IMAGE_ENVT: xrpld-envt
 
   BUILD_CONTEXT: ./src/xrpld
-  # Bump to invalidate GHA cache (e.g. after Dockerfile path or runner changes)
+
   CACHE_KEY_VERSION: v2
 
 jobs:
@@ -279,7 +279,6 @@ jobs:
           file: ${{ env.BUILD_CONTEXT }}/images/build.dockerfile
           target: base
           push: true
-          no-cache: ${{ github.event.inputs.no_cache == 'true' }}
           tags: |
             ${{ steps.meta-docker-base.outputs.tags }}
             ${{ steps.meta-ghcr-base.outputs.tags }}
@@ -359,7 +358,6 @@ jobs:
           file: ${{ env.BUILD_CONTEXT }}/images/build.dockerfile
           target: envt
           push: true
-          no-cache: ${{ github.event.inputs.no_cache == 'true' }}
           tags: |
             ${{ steps.meta-docker-envt.outputs.tags }}
             ${{ steps.meta-ghcr-envt.outputs.tags }}
@@ -441,7 +439,6 @@ jobs:
           file: ${{ env.BUILD_CONTEXT }}/images/build.dockerfile
           target: slim
           push: true
-          no-cache: ${{ github.event.inputs.no_cache == 'true' }}
           tags: |
             ${{ steps.meta-docker-slim.outputs.tags }}
             ${{ steps.meta-ghcr-slim.outputs.tags }}

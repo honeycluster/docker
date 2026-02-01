@@ -39,6 +39,8 @@ env:
 
   BUILD_CONTEXT: ./src/clio
 
+  CACHE_KEY_VERSION: v2
+
 jobs:
   fetch-clio-tag:
     runs-on: ubuntu-latest
@@ -200,9 +202,9 @@ jobs:
             VERSION=${{ needs.fetch-clio-tag.outputs.tag }}
             BRANCH=${{ steps.branch.outputs.branch }}
           cache-from: |
-            type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
+            type=gha,scope=build,key=clio-build-${{ env.CACHE_KEY_VERSION }}-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
           cache-to: |
-            type=gha,mode=max,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
+            type=gha,mode=max,scope=build,key=clio-build-${{ env.CACHE_KEY_VERSION }}-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
 
   build-and-push-base:
     runs-on: ubuntu-latest
@@ -275,7 +277,6 @@ jobs:
           file: ${{ env.BUILD_CONTEXT }}/images/build.dockerfile
           target: base
           push: true
-          no-cache: ${{ github.event.inputs.no_cache == 'true' }}
           tags: |
             ${{ steps.meta-docker-base.outputs.tags }}
             ${{ steps.meta-ghcr-base.outputs.tags }}
@@ -284,7 +285,7 @@ jobs:
             VERSION=${{ needs.fetch-clio-tag.outputs.tag }}
             BRANCH=${{ steps.branch.outputs.branch }}
           cache-from: |
-            type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
+            type=gha,scope=build,key=clio-build-${{ env.CACHE_KEY_VERSION }}-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
 
   build-and-push-envt:
     runs-on: ubuntu-latest
@@ -355,7 +356,6 @@ jobs:
           file: ${{ env.BUILD_CONTEXT }}/images/build.dockerfile
           target: envt
           push: true
-          no-cache: ${{ github.event.inputs.no_cache == 'true' }}
           tags: |
             ${{ steps.meta-docker-envt.outputs.tags }}
             ${{ steps.meta-ghcr-envt.outputs.tags }}
@@ -364,7 +364,7 @@ jobs:
             VERSION=${{ needs.fetch-clio-tag.outputs.tag }}
             BRANCH=${{ steps.branch.outputs.branch }}
           cache-from: |
-            type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
+            type=gha,scope=build,key=clio-build-${{ env.CACHE_KEY_VERSION }}-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
 
   build-and-push-slim:
     runs-on: ubuntu-latest
@@ -437,7 +437,6 @@ jobs:
           file: ${{ env.BUILD_CONTEXT }}/images/build.dockerfile
           target: slim
           push: true
-          no-cache: ${{ github.event.inputs.no_cache == 'true' }}
           tags: |
             ${{ steps.meta-docker-slim.outputs.tags }}
             ${{ steps.meta-ghcr-slim.outputs.tags }}
@@ -446,7 +445,7 @@ jobs:
             VERSION=${{ needs.fetch-clio-tag.outputs.tag }}
             BRANCH=${{ steps.branch.outputs.branch }}
           cache-from: |
-            type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
+            type=gha,scope=build,key=clio-build-${{ env.CACHE_KEY_VERSION }}-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
 
   summary:
     runs-on: ubuntu-latest
