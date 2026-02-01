@@ -15,6 +15,11 @@ on:
         required: false
         type: boolean
         default: false
+      no_cache:
+        description: 'Do not use cache for build'
+        required: false
+        type: boolean
+        default: false
 
 env:
   DOCKER_REGISTRY: docker.io
@@ -190,6 +195,7 @@ jobs:
           file: ${{ env.BUILD_CONTEXT }}/images/build.dockerfile
           target: build
           push: false
+          no-cache: ${{ github.event.inputs.no_cache == 'true' }}
           build-args: |
             VERSION=${{ needs.fetch-clio-tag.outputs.tag }}
             BRANCH=${{ steps.branch.outputs.branch }}
@@ -269,6 +275,7 @@ jobs:
           file: ${{ env.BUILD_CONTEXT }}/images/build.dockerfile
           target: base
           push: true
+          no-cache: ${{ github.event.inputs.no_cache == 'true' }}
           tags: |
             ${{ steps.meta-docker-base.outputs.tags }}
             ${{ steps.meta-ghcr-base.outputs.tags }}
@@ -350,6 +357,7 @@ jobs:
           file: ${{ env.BUILD_CONTEXT }}/images/build.dockerfile
           target: envt
           push: true
+          no-cache: ${{ github.event.inputs.no_cache == 'true' }}
           tags: |
             ${{ steps.meta-docker-envt.outputs.tags }}
             ${{ steps.meta-ghcr-envt.outputs.tags }}
@@ -433,6 +441,7 @@ jobs:
           file: ${{ env.BUILD_CONTEXT }}/images/build.dockerfile
           target: slim
           push: true
+          no-cache: ${{ github.event.inputs.no_cache == 'true' }}
           tags: |
             ${{ steps.meta-docker-slim.outputs.tags }}
             ${{ steps.meta-ghcr-slim.outputs.tags }}
