@@ -92,6 +92,28 @@ LABEL org.opencontainers.image.url="https://github.com/honeycluster/docker"
 LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/src/clio/images/build.dockerfile"
 LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/src/clio/docs/slim.md"
 
+# Copy the clio_server binary from build stage
+COPY --from=build /opt/clio/build/clio_server /opt/clio/bin/clio_server
+
+ENV PATH="/opt/clio/bin:${PATH}"
+
+# Create symlinks for clio_server
+RUN mkdir -p /etc/opt/clio && \
+    ln -sf /opt/clio/bin/clio_server /usr/bin/clio_server && \
+    ln -sf /opt/clio/bin/clio_server /usr/local/bin/clio_server
+
+WORKDIR /opt/clio
+
+# Create directory structure
+RUN mkdir -p db log etc
+
+# Copy static configuration files
+COPY etc/example-config.json ./etc/config.json
+
+# Copy and prepare scripts
+COPY scripts ./scripts
+RUN find /opt/clio/scripts -name '*.sh' -exec chmod +x {} \;
+
 ENTRYPOINT ["./scripts/entrypoint.sh"]
 
 
