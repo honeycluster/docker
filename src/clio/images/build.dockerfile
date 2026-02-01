@@ -64,7 +64,7 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="honeycluster"
 LABEL org.opencontainers.image.url="https://github.com/honeycluster/docker"
 LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/src/clio/images/build.dockerfile"
-LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/src/clio/docs/BUILD.md"
+LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/src/clio/docs/base.md"
 
 ENTRYPOINT ["./scripts/entrypoint.sh"]
 
@@ -85,7 +85,7 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="honeycluster"
 LABEL org.opencontainers.image.url="https://github.com/honeycluster/docker"
 LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/src/clio/images/build.dockerfile"
-LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/src/clio/docs/BUILD.md"
+LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/src/clio/docs/slim.md"
 
 ENTRYPOINT ["./scripts/entrypoint.sh"]
 
@@ -105,7 +105,7 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="honeycluster"
 LABEL org.opencontainers.image.url="https://github.com/honeycluster/docker"
 LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/src/clio/images/build.dockerfile"
-LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/src/clio/docs/BUILD.md"
+LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/src/clio/docs/envt.md"
 
 # Install necessary packages (gettext-base for envsubst, openssl for ssl.sh)
 RUN apt-get update && \
