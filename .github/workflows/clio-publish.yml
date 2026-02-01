@@ -16,7 +16,7 @@ on:
         type: boolean
         default: false
       no_cache:
-        description: 'Do not use cache for build'
+        description: 'Do not use cache'
         required: false
         type: boolean
         default: false
@@ -285,8 +285,6 @@ jobs:
             BRANCH=${{ steps.branch.outputs.branch }}
           cache-from: |
             type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
-          cache-to: |
-            type=gha,mode=max,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
 
   build-and-push-envt:
     runs-on: ubuntu-latest
@@ -367,8 +365,6 @@ jobs:
             BRANCH=${{ steps.branch.outputs.branch }}
           cache-from: |
             type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
-          cache-to: |
-            type=gha,mode=max,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
 
   build-and-push-slim:
     runs-on: ubuntu-latest
@@ -451,8 +447,6 @@ jobs:
             BRANCH=${{ steps.branch.outputs.branch }}
           cache-from: |
             type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
-          cache-to: |
-            type=gha,mode=max,scope=build,key=clio-build-${{ needs.fetch-clio-tag.outputs.tag_cache_key }}
 
   summary:
     runs-on: ubuntu-latest
