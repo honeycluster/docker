@@ -43,6 +43,7 @@ jobs:
       is_prerelease: ${{ steps.clio-tag.outputs.is_prerelease }}
     env:
       INPUT_VERSION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || '' }}
+      INPUT_TAG_AS_LATEST: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_as_latest || false }}
     steps:
       - name: Resolve Clio version/tag
         id: clio-tag
