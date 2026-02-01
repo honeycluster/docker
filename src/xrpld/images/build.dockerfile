@@ -94,6 +94,31 @@ LABEL org.opencontainers.image.url="https://github.com/honeycluster/docker"
 LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/src/xrpld/images/build.dockerfile"
 LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/src/xrpld/docs/slim.md"
 
+# Copy the xrpld binary from build stage
+COPY --from=build /opt/xrpl/.build/xrpld /opt/xrpl/bin/xrpld
+
+ENV PATH="/opt/xrpl/bin:${PATH}"
+
+# Create symlinks for backward compatibility (rippled -> xrpld)
+RUN mkdir -p /etc/opt/ripple && \
+    ln -sf /opt/xrpl/bin/xrpld /usr/bin/rippled && \
+    ln -sf /opt/xrpl/bin/xrpld /usr/local/bin/rippled && \
+    ln -sf /opt/xrpl/etc/xrpld.cfg /etc/opt/ripple/rippled.cfg && \
+    ln -sf /opt/xrpl/etc/validators.txt /etc/opt/ripple/validators.txt
+
+WORKDIR /opt/xrpl
+
+# Create directory structure
+RUN mkdir -p db log etc
+
+# Copy static configuration files
+COPY etc/validators-exmple.txt ./etc/validators.txt
+COPY etc/xrpld-example.cfg ./etc/xrpld.cfg
+
+# Copy and prepare scripts
+COPY scripts ./scripts
+RUN find /opt/xrpl/scripts -name '*.sh' -exec chmod +x {} \;
+
 ENTRYPOINT ["./scripts/entrypoint.sh"]
 
 
