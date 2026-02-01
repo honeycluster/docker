@@ -38,6 +38,8 @@ env:
   GHCR_IMAGE_ENVT: xrpld-envt
 
   BUILD_CONTEXT: ./src/xrpld
+  # Bump to invalidate GHA cache (e.g. after Dockerfile path or runner changes)
+  CACHE_KEY_VERSION: v2
 
 jobs:
   fetch-rippled-tag:
@@ -202,9 +204,9 @@ jobs:
             VERSION=${{ needs.fetch-rippled-tag.outputs.tag }}
             BRANCH=${{ steps.branch.outputs.branch }}
           cache-from: |
-            type=gha,scope=build,key=xrpld-build-${{ needs.fetch-rippled-tag.outputs.tag_cache_key }}
+            type=gha,scope=build,key=xrpld-build-${{ env.CACHE_KEY_VERSION }}-${{ needs.fetch-rippled-tag.outputs.tag_cache_key }}
           cache-to: |
-            type=gha,mode=max,scope=build,key=xrpld-build-${{ needs.fetch-rippled-tag.outputs.tag_cache_key }}
+            type=gha,mode=max,scope=build,key=xrpld-build-${{ env.CACHE_KEY_VERSION }}-${{ needs.fetch-rippled-tag.outputs.tag_cache_key }}
 
   build-and-push-base:
     runs-on: ubuntu-latest
@@ -286,7 +288,7 @@ jobs:
             VERSION=${{ needs.fetch-rippled-tag.outputs.tag }}
             BRANCH=${{ steps.branch.outputs.branch }}
           cache-from: |
-            type=gha,scope=build,key=xrpld-build-${{ needs.fetch-rippled-tag.outputs.tag_cache_key }}
+            type=gha,scope=build,key=xrpld-build-${{ env.CACHE_KEY_VERSION }}-${{ needs.fetch-rippled-tag.outputs.tag_cache_key }}
 
   build-and-push-envt:
     runs-on: ubuntu-latest
@@ -366,7 +368,7 @@ jobs:
             VERSION=${{ needs.fetch-rippled-tag.outputs.tag }}
             BRANCH=${{ steps.branch.outputs.branch }}
           cache-from: |
-            type=gha,scope=build,key=xrpld-build-${{ needs.fetch-rippled-tag.outputs.tag_cache_key }}
+            type=gha,scope=build,key=xrpld-build-${{ env.CACHE_KEY_VERSION }}-${{ needs.fetch-rippled-tag.outputs.tag_cache_key }}
 
   build-and-push-slim:
     runs-on: ubuntu-latest
@@ -448,7 +450,7 @@ jobs:
             VERSION=${{ needs.fetch-rippled-tag.outputs.tag }}
             BRANCH=${{ steps.branch.outputs.branch }}
           cache-from: |
-            type=gha,scope=build,key=xrpld-build-${{ needs.fetch-rippled-tag.outputs.tag_cache_key }}
+            type=gha,scope=build,key=xrpld-build-${{ env.CACHE_KEY_VERSION }}-${{ needs.fetch-rippled-tag.outputs.tag_cache_key }}
 
   summary:
     runs-on: ubuntu-latest
