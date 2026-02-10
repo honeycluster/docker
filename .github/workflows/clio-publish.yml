@@ -108,9 +108,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: [fetch-clio-tag]
     outputs:
+      tag: ${{ needs.fetch-clio-tag.outputs.tag }}
       skip_base: ${{ steps.check.outputs.skip_base }}
       skip_slim: ${{ steps.check.outputs.skip_slim }}
       skip_envt: ${{ steps.check.outputs.skip_envt }}
+      is_prerelease: ${{ needs.fetch-clio-tag.outputs.is_prerelease }}
     env:
       FORCE_BUILD: ${{ github.event_name == 'workflow_dispatch' }}
     steps:
