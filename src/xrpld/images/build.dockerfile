@@ -32,7 +32,7 @@ FROM ubuntu:24.04 AS common
 RUN export LANGUAGE=C.UTF-8; export LANG=C.UTF-8; export LC_ALL=C.UTF-8; export DEBIAN_FRONTEND=noninteractive
 
 # Copy the xrpld binary from build stage
-COPY --from=build /opt/xrpl/.build/xrpld /opt/xrpl/bin/xrpld
+COPY --from=build /opt/xrpl/bin/xrpld /opt/xrpl/bin/xrpld
 
 ENV PATH="/opt/xrpl/bin:${PATH}"
 
@@ -94,8 +94,8 @@ LABEL org.opencontainers.image.url="https://github.com/honeycluster/docker"
 LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/src/xrpld/images/build.dockerfile"
 LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/src/xrpld/docs/slim.md"
 
-# Copy the xrpld binary from build stage
-COPY --from=build /opt/xrpl/.build/xrpld /opt/xrpl/bin/xrpld
+# Copy the xrpld binary from build stage (canonical path from install step)
+COPY --from=build /opt/xrpl/bin/xrpld /opt/xrpl/bin/xrpld
 
 ENV PATH="/opt/xrpl/bin:${PATH}"
 

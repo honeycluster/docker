@@ -74,4 +74,15 @@ cmake \
   ..
 
 # Build rippled
-cmake --build .
+cmake --build . -j$(nproc)
+
+# Install binary to canonical path (for Docker COPY; supports tags that output 'rippled')
+mkdir -p "${xrpld_src}/bin"
+if [ -f xrpld ]; then
+  cp xrpld "${xrpld_src}/bin/xrpld"
+elif [ -f rippled ]; then
+  cp rippled "${xrpld_src}/bin/xrpld"
+else
+  echo "Binary not found. .build contents:" && ls -la . && exit 1
+fi
+chmod +x "${xrpld_src}/bin/xrpld"
