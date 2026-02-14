@@ -31,6 +31,12 @@ FROM ubuntu:24.04 AS common
 
 RUN export LANGUAGE=C.UTF-8; export LANG=C.UTF-8; export LC_ALL=C.UTF-8; export DEBIAN_FRONTEND=noninteractive
 
+# Install dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    cron \
+    logrotate 
+
 # Copy the xrpld binary from build stage
 COPY --from=build /opt/xrpl/bin/xrpld /opt/xrpl/bin/xrpld
 
@@ -51,6 +57,9 @@ RUN mkdir -p db log etc
 # Copy static configuration files
 COPY etc/validators-exmple.txt ./etc/validators.txt
 COPY etc/xrpld-example.cfg ./etc/xrpld.cfg
+
+# Logrotate for xrpld logs (default LOGS_DIR)
+COPY logrotate/xrpld /etc/logrotate.d/xrpld
 
 # Copy and prepare scripts
 COPY scripts ./scripts
@@ -94,6 +103,14 @@ LABEL org.opencontainers.image.url="https://github.com/honeycluster/docker"
 LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/src/xrpld/images/build.dockerfile"
 LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/src/xrpld/docs/slim.md"
 
+RUN export LANGUAGE=C.UTF-8; export LANG=C.UTF-8; export LC_ALL=C.UTF-8; export DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    cron \
+    logrotate 
+
 # Copy the xrpld binary from build stage (canonical path from install step)
 COPY --from=build /opt/xrpl/bin/xrpld /opt/xrpl/bin/xrpld
 
@@ -114,6 +131,9 @@ RUN mkdir -p db log etc
 # Copy static configuration files
 COPY etc/validators-exmple.txt ./etc/validators.txt
 COPY etc/xrpld-example.cfg ./etc/xrpld.cfg
+
+# Logrotate for xrpld logs (default LOGS_DIR)
+COPY logrotate/xrpld /etc/logrotate.d/xrpld
 
 # Copy and prepare scripts
 COPY scripts ./scripts
@@ -151,5 +171,6 @@ WORKDIR /opt/xrpl
 
 # Copy configuration templates for envsubst processing
 COPY etc ./templates
+COPY logrotate/xrpld.template ./templates/logrotate/xrpld.template
 
 ENTRYPOINT ["./scripts/entrypoint.sub.sh"]

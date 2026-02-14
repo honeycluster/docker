@@ -1,0 +1,40 @@
+{
+  "Lua.diagnostics.globals": [
+    "ngx"
+  ],
+  "keyboard.dispatch": "keyCode",
+  "keyboard.touchbar.enabled": false,
+  "editor.formatOnSave": true,
+  "editor.trimAutoWhitespace": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.rulers": [
+    80,
+    120
+  ],
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": false,
+  "editor.renderWhitespace": "selection",
+  "editor.minimap.enabled": true,
+  "editor.lineNumbers": "on",
+  "editor.cursorBlinking": "smooth",
+  "editor.suggestSelection": "first",
+  "editor.wordWrap": "off",
+  "files.autoSave": "off",
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/vendor": true,
+    "**/.git": true
+  },
+  "explorer.confirmDelete": true,
+  "explorer.confirmDragAndDrop": false,
+  "breadcrumbs.enabled": true,
+  "workbench.editor.enablePreview": false,
+  "workbench.list.openMode": "singleClick"
+}
