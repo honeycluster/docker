@@ -69,6 +69,28 @@ After quality checks pass, invoke the **code-reviewer** agent to review your cha
 5. **Handle HIGH issues**: If the code-reviewer reports any HIGH severity issues, attempt to fix them (1 fix attempt). Re-run quality checks after fixing. If the fix attempt fails or introduces new issues, proceed to commit anyway — the code review is **advisory only** and does not block the commit.
 6. **Advisory only**: The code-reviewer verdict does NOT block the commit. Even a BLOCK verdict is logged but does not prevent committing.
 
+### 4b. Security Review (Post-Code Review)
+
+After the code review (step 4a), invoke the **security-reviewer** agent to check for security vulnerabilities:
+
+1. **Invoke the security-reviewer agent** via the Agent tool with `subagent_type: "security-reviewer"`.
+2. **Provide context**: Pass the git diff of uncommitted changes (`git diff` output) in the prompt so the security-reviewer can analyze the changes.
+3. **Capture the output**: The security-reviewer will return findings with severity levels (CRITICAL, HIGH, MEDIUM, LOW) and a verdict.
+4. **Log findings**: Record the security-reviewer output in `progress.txt` under the current story's entry in a **Security Review:** section, including the verdict and issue counts by severity.
+5. **Handle CRITICAL issues**: If the security-reviewer reports any CRITICAL severity issues, you **MUST** fix them before committing:
+   - **Attempt 1**: Fix the CRITICAL issue(s) and re-run quality checks + security review.
+   - **Attempt 2**: If the first fix fails or introduces new CRITICAL issues, try an alternative fix and re-run.
+   - **If both attempts fail**: Mark the story as blocked in the PRD with `blockReason` that includes the security finding details:
+     ```json
+     {
+       "id": "US-XXX",
+       "blocked": true,
+       "blockReason": "CRITICAL security issue: [description of the finding]"
+     }
+     ```
+     Do not commit. Move on to the next eligible story.
+6. **Non-CRITICAL findings**: HIGH, MEDIUM, and LOW findings are logged to progress.txt but do **not** block the commit.
+
 ### 5. Error Recovery
 
 If a quality check fails:

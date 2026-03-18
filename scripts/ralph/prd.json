@@ -35,8 +35,10 @@
         "Typecheck passes"
       ],
       "priority": 2,
-      "passes": false,
-      "dependsOn": ["US-001"]
+      "passes": true,
+      "dependsOn": [
+        "US-001"
+      ]
     },
     {
       "id": "US-003",
@@ -83,7 +85,10 @@
       ],
       "priority": 5,
       "passes": false,
-      "dependsOn": ["US-001", "US-002"]
+      "dependsOn": [
+        "US-001",
+        "US-002"
+      ]
     },
     {
       "id": "US-006",
@@ -101,7 +106,13 @@
       ],
       "priority": 6,
       "passes": false,
-      "dependsOn": ["US-001", "US-002", "US-003", "US-004", "US-005"]
+      "dependsOn": [
+        "US-001",
+        "US-002",
+        "US-003",
+        "US-004",
+        "US-005"
+      ]
     },
     {
       "id": "US-007",
@@ -117,7 +128,9 @@
       ],
       "priority": 7,
       "passes": false,
-      "dependsOn": ["US-006"]
+      "dependsOn": [
+        "US-006"
+      ]
     }
   ]
 }
