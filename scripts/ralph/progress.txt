@@ -22,6 +22,7 @@
 - `normalizeAmount()` converts XRP drops to decimal value AND adds `isNative: true` — tests must expect normalized values, not raw drops
 - `.claude/agents/` directory is not tracked in git by default — must be explicitly added when working in worktrees
 - Agent definitions are markdown files with YAML frontmatter; changes are documentation-only and don't require typecheck
+- Clio uses `false`/`true` strings for booleans; xrpld uses `0`/`1` — validation must handle both conventions
 - This worktree root is `/workspace/.worktrees/config-generator/`, NOT `/workspace/` — all file writes must use worktree paths
 - The worktree tsconfig extends `@docs/configs/tsconfig/base.json` which isn't resolvable — use standalone `npx tsc --noEmit --strict --target ESNext --module ESNext --moduleResolution bundler` for typechecking
 - Bash source scripts are at `src/xrpld/scripts/defaults/` and `src/clio/scripts/defaults/` within the worktree
@@ -42,4 +43,17 @@ Started: Wed Mar 18 08:27:16 PM UTC 2026
   - Worktree root is `/workspace/.worktrees/config-generator/`, not `/workspace/` — git only tracks files under worktree root
   - The tsconfig in `config/tsconfig.build.json` extends `@docs/configs` which isn't resolvable in worktree — use standalone tsc for typecheck
   - Bash scripts live at `src/xrpld/scripts/defaults/` in worktree, not `packages/docker/xrpld/scripts/defaults/`
+---
+
+## 2026-03-18 - US-002
+- Implemented Clio defaults schema in TypeScript at `src/config-gen/defaults/clio.ts`
+- Exports: `ClioConfig` interface, `ClioSslDerived` interface, `buildClioSslDerived()`, `getClioDefaults()`
+- Faithfully ports all logic from `src/clio/scripts/defaults/common.sh`
+- Includes all database (Cassandra), ETL, server, logging, cache, prometheus, and API version defaults
+- SSL-derived computation: `SSL_CERT_FILE` and `SSL_KEY_FILE` from `SSL_CERT_PATH`
+- Files changed: `src/config-gen/defaults/clio.ts` (new)
+- **Learnings for future iterations:**
+  - Clio SSL is simpler than xrpld — just cert/key file paths, no protocol or verify logic
+  - Clio has no network-specific overrides (unlike xrpld which has MAINNET/TESTNET/DEVNET)
+  - Clio defaults use `false`/`true` strings for booleans (not `0`/`1` like xrpld)
 ---
