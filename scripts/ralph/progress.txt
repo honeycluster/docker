@@ -86,3 +86,18 @@ Started: Wed Mar 18 08:27:16 PM UTC 2026
   - Boolean validation accepts true/false/on/off/1/0/yes/no — both Clio-style (true/false) and xrpld-style (0/1) work
   - Empty/undefined fields skip validation (treated as optional) — required field checking is separate via `validateRequired()`
 ---
+
+## 2026-03-18 - US-005
+- Implemented template substitution engine at `src/config-gen/template.ts`
+- `substitute(template, vars)` replaces `${VAR}` placeholders with values from vars record
+- Only matches uppercase variable names matching `^[A-Z][A-Z0-9_]*$` (same as envsubst.sh)
+- Unresolved variables replaced with empty string (envsubst behavior)
+- Handles multi-line section variables (NODE_SIZE_SECTION, SSL_LINES, etc.)
+- Cleans up 3+ consecutive blank lines to 2 (from empty optional sections)
+- 20 unit tests covering all acceptance criteria
+- Files changed: `src/config-gen/template.ts` (new), `src/config-gen/__tests__/template.test.ts` (new)
+- **Learnings for future iterations:**
+  - Template engine is intentionally simple — no escaping, no conditionals, just ${VAR} replacement
+  - The blank line cleanup (3+ → 2) ensures empty optional sections don't leave gaps in generated configs
+  - `$VAR` without braces is NOT replaced — only `${VAR}` syntax works
+---
