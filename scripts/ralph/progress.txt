@@ -71,3 +71,18 @@ Started: Wed Mar 18 08:27:16 PM UTC 2026
   - Tests can be run with `npx vitest run <path>` for specific test directories
   - JSON parser uses `toScreamingSnake()` to convert camelCase keys — downstream stories should match this convention when accepting JSON input
 ---
+
+## 2026-03-18 - US-004
+- Implemented input validation at `src/config-gen/validation.ts`
+- Exports: `ValidationError`, `ValidationResult` interfaces, `validatePort()`, `validateBoolean()`, `validateUrl()`, `validateRequired()`, `validateXrpldInputs()`, `validateClioInputs()`
+- xrpld validates 6 ports, NETWORK enum, SIZE enum, 5 boolean fields, optional URL for VALIDATOR_LIST_SITES
+- Clio validates 4 ports, 5 boolean fields
+- Returns structured `{ errors, warnings }` with field/value/message per error
+- Warns on case-mismatched network/size values (e.g., "mainnet" instead of "MAINNET")
+- 33 unit tests covering valid inputs, invalid ports, invalid booleans, missing fields, network/size warnings, structured error format
+- Files changed: `src/config-gen/validation.ts` (new), `src/config-gen/__tests__/validation.test.ts` (new)
+- **Learnings for future iterations:**
+  - Validation tests live at `src/config-gen/__tests__/` (sibling to parsers tests at `src/config-gen/parsers/__tests__/`)
+  - Boolean validation accepts true/false/on/off/1/0/yes/no — both Clio-style (true/false) and xrpld-style (0/1) work
+  - Empty/undefined fields skip validation (treated as optional) — required field checking is separate via `validateRequired()`
+---
