@@ -146,3 +146,16 @@ Started: Wed Mar 18 08:27:16 PM UTC 2026
   - CLI `run()` returns `{ exitCode, stdout, stderr[] }` making it easy to test without mocking process.exit/console
   - The `isDirectExecution` guard prevents `main()` from running when the module is imported for testing
 ---
+
+## 2026-03-18 - US-009
+- Created `src/config-gen/index.ts` with programmatic API: `generateXrpldConfigFromInput()`, `generateClioConfigFromInput()` wrapper functions accepting `{ env?, json?, overrides? }` input
+- Re-exports all public functions: `generateXrpldConfig`, `generateClioConfig`, `parseEnvFile`, `parseJsonFile`, `validateXrpldInputs`, `validateClioInputs`
+- Added `exports` map to `package.json` with `"."` and `"./config-gen"` sub-exports
+- Created `src/index.ts` re-exporting everything from config-gen
+- 27 unit tests covering: all exports exist, xrpld/clio generation from env/json/overrides, priority ordering (overrides > json > env), validation errors, edge cases
+- Files changed: `src/config-gen/index.ts` (new), `src/index.ts` (new), `src/config-gen/__tests__/index.test.ts` (new), `package.json` (modified)
+- **Learnings for future iterations:**
+  - The wrapper functions (`generateXrpldConfigFromInput`/`generateClioConfigFromInput`) handle input merging; the low-level `generateXrpldConfig`/`generateClioConfig` accept pre-merged `Record<string, string>`
+  - Input priority: overrides > json > env (same as CLI but without process.env fallback)
+  - Both low-level and high-level generator functions are exported for flexibility
+---
