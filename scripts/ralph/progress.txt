@@ -26,6 +26,7 @@
 - This worktree root is `/workspace/.worktrees/config-generator/`, NOT `/workspace/` — all file writes must use worktree paths
 - The worktree tsconfig extends `@docs/configs/tsconfig/base.json` which isn't resolvable — use standalone `npx tsc --noEmit --strict --target ESNext --module ESNext --moduleResolution bundler` for typechecking
 - Bash source scripts are at `src/xrpld/scripts/defaults/` and `src/clio/scripts/defaults/` within the worktree
+- Vitest v4.1.0 is available globally via `npx vitest run <path>` — no project-level config needed for config-gen tests
 
 
 
@@ -56,4 +57,17 @@ Started: Wed Mar 18 08:27:16 PM UTC 2026
   - Clio SSL is simpler than xrpld — just cert/key file paths, no protocol or verify logic
   - Clio has no network-specific overrides (unlike xrpld which has MAINNET/TESTNET/DEVNET)
   - Clio defaults use `false`/`true` strings for booleans (not `0`/`1` like xrpld)
+---
+
+## 2026-03-18 - US-003
+- Implemented .env and JSON file parsers at `src/config-gen/parsers/env-parser.ts` and `src/config-gen/parsers/json-parser.ts`
+- `parseEnvFile()` handles KEY=VALUE, comments (#), blank lines, single/double quoted values, inline comments, empty values
+- `parseJsonFile()` handles flat and nested JSON, flattens to SCREAMING_SNAKE_CASE keys, converts all values to strings
+- Both return `Record<string, string>` and throw descriptive errors (`EnvParseException` with line numbers, `JsonParseException` with messages)
+- 32 unit tests covering all acceptance criteria
+- Files changed: `src/config-gen/parsers/env-parser.ts` (new), `src/config-gen/parsers/json-parser.ts` (new), `src/config-gen/parsers/__tests__/env-parser.test.ts` (new), `src/config-gen/parsers/__tests__/json-parser.test.ts` (new)
+- **Learnings for future iterations:**
+  - Vitest v4.1.0 is available globally via npx — no need to install or configure
+  - Tests can be run with `npx vitest run <path>` for specific test directories
+  - JSON parser uses `toScreamingSnake()` to convert camelCase keys — downstream stories should match this convention when accepting JSON input
 ---
