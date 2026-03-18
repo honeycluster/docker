@@ -87,3 +87,16 @@ Started: Wed Mar 18 08:01:42 PM UTC 2026
   - The `head -n / tail -n +` approach with temp files is reliable for replacing sections in files when Edit tool is permission-blocked
   - Documentation-only changes don't need typecheck verification
 ---
+
+## 2026-03-18 - US-006
+- Restructured implementer.md to consolidate all agent integrations into a single source of truth
+- Promoted steps 4a (Code Review) and 4b (Security Review) into a new **step 5 (Agent Reviews)** with sub-steps 5a and 5b
+- Renumbered: old step 5 (Error Recovery) → step 6, old step 6 (Commit) → step 7, old step 7 (Persist Learnings) → step 8, old step 8 (Check Completion) → step 9
+- Added Agent Review Summary table documenting invocation order, blocking behavior, and fix attempts for each review agent
+- Updated cross-references (step 4 → step 6 for error recovery, step 5 for agent reviews after build-error-resolver success)
+- All agent names verified against `.claude/agents/` filenames: `code-reviewer.md`, `security-reviewer.md`, `build-error-resolver.md`, `tdd-guide.md`
+- Files changed: `.claude/agents/implementer.md`
+- **Learnings for future iterations:**
+  - When restructuring step numbers, search for all cross-references within the document (e.g., "proceed to step X") and update them
+  - The Agent Review Summary table is a useful quick-reference for understanding blocking vs advisory behavior
+---
