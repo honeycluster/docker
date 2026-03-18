@@ -1,19 +1,19 @@
 {
   "project": "Honeycluster Docker",
-  "branchName": "ralph/agent-integration",
-  "description": "Integrate quality-focused agents (tdd-guide, code-reviewer, security-reviewer, build-error-resolver) into Ralph's implementer iteration loop with post-implementation review gates",
+  "branchName": "ralph/config-generator",
+  "description": "TypeScript utility to replace bash envsubst/injection pipeline for generating xrpld and clio configuration files from .env or JSON input",
   "userStories": [
     {
       "id": "US-001",
-      "title": "Add post-implementation code-reviewer invocation",
-      "description": "As the implementer agent, I want to invoke the code-reviewer agent after implementing a story so that code quality issues are caught before committing.",
+      "title": "Define xrpld defaults schema in TypeScript",
+      "description": "As a developer, I need all xrpld default environment variables defined in TypeScript so that config generation uses the same defaults as the bash scripts.",
       "acceptanceCriteria": [
-        "After implementation and quality checks pass (step 4), implementer invokes the code-reviewer agent via the Agent tool",
-        "Code-reviewer receives the git diff of uncommitted changes as context",
-        "Code-reviewer output (findings and verdict) is captured by the implementer",
-        "Findings are logged to progress.txt under the story's entry with a **Code Review:** section",
-        "Code-reviewer verdict does NOT block the commit (advisory only)",
-        "If the code-reviewer reports HIGH issues, implementer attempts to fix them (1 attempt) before committing",
+        "Create src/config-gen/defaults/xrpld.ts with all variables from packages/docker/xrpld/scripts/defaults/common.sh and config/defaults.sh",
+        "Include network-specific overrides for MAINNET, TESTNET, DEVNET (from defaults/mainnet.sh, testnet.sh, devnet.sh)",
+        "Include size-based LEDGER_RETENTION mapping (DEFAULT=512, SMALL=512, MEDIUM=1024, LARGE=2048, HUGE=4096, FULL=full)",
+        "Include computed/conditional sections: NODE_SIZE_SECTION, VALIDATION_QUORUM_SECTION, PEERS_MAX_SECTION, VALIDATION_SEED_SECTION, VALIDATORS_SITE_SECTION, IPS_SECTION, IPS_FIXED_SECTION, REPORTING_SECTION, LEDGER_TX_TABLES_SECTION, NODE_DB_OPTIONS",
+        "Include SSL-derived variable computation (build_ssl_derived logic): PORT_RPC_PROTOCOL, PORT_WSS_PROTOCOL, SSL_VERIFY, SSL_LINES",
+        "Export typed interface XrpldConfig with all variable names and their types",
         "Typecheck passes"
       ],
       "priority": 1,
@@ -22,115 +22,153 @@
     },
     {
       "id": "US-002",
-      "title": "Add post-implementation security-reviewer invocation",
-      "description": "As the implementer agent, I want to invoke the security-reviewer agent after implementing a story so that security vulnerabilities are caught before committing.",
+      "title": "Define Clio defaults schema in TypeScript",
+      "description": "As a developer, I need all Clio default environment variables defined in TypeScript so that config generation uses the same defaults as the bash scripts.",
       "acceptanceCriteria": [
-        "After code-reviewer runs (US-001), implementer invokes the security-reviewer agent via the Agent tool",
-        "Security-reviewer receives the git diff of uncommitted changes as context",
-        "Security-reviewer output is captured by the implementer",
-        "Findings are logged to progress.txt under the story's entry with a **Security Review:** section",
-        "If security-reviewer finds CRITICAL issues: implementer MUST fix them before committing (up to 2 attempts)",
-        "If CRITICAL fixes fail after 2 attempts: story is marked blocked with blockReason including the security finding",
-        "Non-CRITICAL security findings are logged but do not block",
+        "Create src/config-gen/defaults/clio.ts with all variables from packages/docker/clio/scripts/defaults/common.sh",
+        "Include SSL-derived variable computation (build_ssl_derived logic): SSL_CERT_FILE, SSL_KEY_FILE",
+        "Include all database, ETL, server, logging, cache, prometheus, and API version defaults",
+        "Export typed interface ClioConfig with all variable names and their types",
         "Typecheck passes"
       ],
       "priority": 2,
-      "passes": true,
-      "dependsOn": [
-        "US-001"
-      ]
+      "passes": false,
+      "dependsOn": []
     },
     {
       "id": "US-003",
-      "title": "Auto-invoke build-error-resolver on quality check failures",
-      "description": "As the implementer agent, I want to automatically delegate to build-error-resolver when build or type checks fail so that build errors are resolved more effectively.",
+      "title": "Implement input parsing for .env and JSON files",
+      "description": "As a user, I want to provide configuration via .env files or JSON files so that I can use whichever format is convenient.",
       "acceptanceCriteria": [
-        "When a quality check fails in step 4, the implementer invokes build-error-resolver via the Agent tool BEFORE attempting manual fixes",
-        "Build-error-resolver receives the error output and the list of changed files as context",
-        "Build-error-resolver attempts minimal fixes and re-runs the failing check",
-        "If build-error-resolver succeeds: implementer continues to step 5 (commit)",
-        "If build-error-resolver fails: implementer falls back to existing error recovery (1 remaining manual attempt)",
-        "The build-error-resolver invocation counts as one of the 2 allowed fix attempts",
+        "Create src/config-gen/parsers/env-parser.ts that reads .env files (KEY=VALUE, supports comments with #, blank lines, quoted values)",
+        "Create src/config-gen/parsers/json-parser.ts that reads flat or nested JSON and flattens to key-value pairs matching the expected variable names",
+        "Both parsers return a Record<string, string> of variable overrides",
+        "Parsing errors throw descriptive error messages with line numbers (for .env) or JSON path (for JSON)",
+        "Unit tests cover: basic parsing, comments, quoted values, empty values, malformed input",
         "Typecheck passes"
       ],
       "priority": 3,
-      "passes": true,
+      "passes": false,
       "dependsOn": []
     },
     {
       "id": "US-004",
-      "title": "Invoke tdd-guide for test-first enforcement",
-      "description": "As the implementer agent, I want to consult the tdd-guide agent's methodology during implementation so that tests are written before production code.",
+      "title": "Implement input validation",
+      "description": "As a developer, I need input validation that catches configuration errors before generating output, matching the behavior of the existing bash validate.sh scripts.",
       "acceptanceCriteria": [
-        "The implementer agent instructions reference the tdd-guide workflow (RED-GREEN-REFACTOR) in the implementation step (step 3)",
-        "When implementing a story that involves new functions or modules, the implementer writes tests first following tdd-guide patterns",
-        "The tdd-guide is NOT invoked as a separate agent call -- its methodology is embedded as instructions in the implementer's step 3",
-        "The implementer's step 3 instructions explicitly state: Write failing tests first, then implement minimal code to pass, then refactor",
+        "Create src/config-gen/validation.ts with validators: validatePort, validateBoolean, validateUrl, validateRequired",
+        "Implement validateXrpldInputs() that validates all xrpld-specific fields (6 ports, network enum, size enum, booleans: SSL_GENERATE, SSL_GENERATE_OVERWRITE, SSL_CHAIN_ENABLED, PEER_PRIVATE, NODE_DB_ADVISORY_DELETE)",
+        "Implement validateClioInputs() that validates all Clio-specific fields (4 ports, booleans: SSL_GENERATE, ALLOW_NO_ETL, SERVER_LOCAL_ADMIN, READ_ONLY, PROMETHEUS_ENABLED)",
+        "Validation returns structured errors (field name, value, message) not just strings",
+        "Unit tests cover: valid inputs, invalid ports, invalid booleans, missing required fields, unknown network/size warnings",
         "Typecheck passes"
       ],
       "priority": 4,
-      "passes": true,
-      "dependsOn": []
+      "passes": false,
+      "dependsOn": ["US-001", "US-002"]
     },
     {
       "id": "US-005",
-      "title": "Update progress.txt format for agent review sections",
-      "description": "As a developer reviewing Ralph's output, I want progress.txt entries to include agent review findings so I can see what was caught and fixed.",
+      "title": "Implement template substitution engine",
+      "description": "As a developer, I need a template engine that replaces ${VAR} placeholders in template strings with resolved values, matching the behavior of bash envsubst.",
       "acceptanceCriteria": [
-        "Progress report format in implementer.md is updated to include optional **Code Review:** and **Security Review:** sections",
-        "Each section includes: verdict (APPROVE/WARNING/BLOCK), issue count by severity, and any issues that were auto-fixed",
-        "When no issues are found, the section shows APPROVE - No issues found",
-        "The format is documented in the Progress Report Format section of implementer.md",
+        "Create src/config-gen/template.ts with a substitute(template: string, vars: Record<string, string>): string function",
+        "Handles ${VAR} syntax (matches the regex ^[A-Z][A-Z0-9_]*$ for valid variable names, same as generate_var_list in envsubst.sh)",
+        "Unresolved variables are replaced with empty string (matching envsubst behavior)",
+        "Handles multi-line section variables (e.g., NODE_SIZE_SECTION, SSL_LINES that contain newlines)",
+        "Cleans up excessive blank lines from empty optional sections (collapses 3+ consecutive blank lines to 2)",
+        "Unit tests cover: simple substitution, missing variables, multi-line sections, empty sections cleanup",
         "Typecheck passes"
       ],
       "priority": 5,
-      "passes": true,
-      "dependsOn": [
-        "US-001",
-        "US-002"
-      ]
+      "passes": false,
+      "dependsOn": []
     },
     {
       "id": "US-006",
-      "title": "Update implementer.md with full agent integration",
-      "description": "As a developer maintaining Ralph, I want the implementer agent definition to be a single source of truth for the full iteration loop including all agent invocations.",
+      "title": "Implement xrpld config generator",
+      "description": "As a user, I want to generate a valid xrpld.cfg file from my input variables so I can configure a rippled node.",
       "acceptanceCriteria": [
-        "implementer.md step 3 (Implement) includes TDD methodology from tdd-guide (write tests first, RED-GREEN-REFACTOR)",
-        "implementer.md step 4 (Quality Checks) documents build-error-resolver auto-invocation on failures",
-        "A new step 5 (Agent Reviews) is added between current steps 4 and 5, documenting code-reviewer and security-reviewer invocations",
-        "The step numbering is updated (old step 5 Error Recovery becomes step 6, etc.)",
-        "The Agent Reviews step clearly documents: invocation order, what context each receives, how findings affect the commit, and the security-reviewer gating behavior",
-        "All agent names referenced match the actual filenames in .claude/agents/",
-        "The updated implementer.md is self-contained",
+        "Create src/config-gen/generators/xrpld.ts that orchestrates: load defaults -> merge overrides -> compute derived vars -> validate -> substitute template -> output",
+        "Uses the xrpld.cfg template from packages/docker/xrpld/etc/xrpld.cfg (bundled as a string constant)",
+        "Correctly computes all conditional sections (NODE_SIZE_SECTION, NODE_DB_OPTIONS, REPORTING_SECTION, etc.) based on input variables",
+        "Correctly resolves network-specific defaults based on NETWORK variable",
+        "Correctly resolves size-specific LEDGER_RETENTION based on SIZE variable",
+        "Output matches the format produced by the existing bash pipeline for the same inputs",
+        "Unit tests cover: default config generation, each network preset, each size preset, SSL enabled/disabled, reporting mode, custom overrides",
         "Typecheck passes"
       ],
       "priority": 6,
-      "passes": true,
-      "dependsOn": [
-        "US-001",
-        "US-002",
-        "US-003",
-        "US-004",
-        "US-005"
-      ]
+      "passes": false,
+      "dependsOn": ["US-001", "US-004", "US-005"]
     },
     {
       "id": "US-007",
-      "title": "Update docs/agents-and-skills.md",
-      "description": "As a developer, I want the documentation to reflect the updated implementer workflow with agent integration.",
+      "title": "Implement Clio config generator",
+      "description": "As a user, I want to generate a valid config.json file from my input variables so I can configure a Clio server.",
       "acceptanceCriteria": [
-        "The implementer section in docs/agents-and-skills.md is updated to describe the new iteration loop with agent invocations",
-        "The protocol list includes the new Agent Reviews step",
-        "The document explains which agents block vs advise",
-        "The document explains the build-error-resolver auto-invocation behavior",
-        "The TDD methodology integration is mentioned",
+        "Create src/config-gen/generators/clio.ts that orchestrates: load defaults -> merge overrides -> compute derived vars -> validate -> substitute template -> output",
+        "Uses the config.json template from packages/docker/clio/etc/config.json (bundled as a string constant)",
+        "Correctly computes SSL-derived variables (SSL_CERT_FILE, SSL_KEY_FILE)",
+        "Output is valid JSON when all variables are resolved",
+        "Unit tests cover: default config generation, SSL enabled/disabled, custom database settings, custom ETL source",
         "Typecheck passes"
       ],
       "priority": 7,
-      "passes": true,
-      "dependsOn": [
-        "US-006"
-      ]
+      "passes": false,
+      "dependsOn": ["US-002", "US-004", "US-005"]
+    },
+    {
+      "id": "US-008",
+      "title": "Implement CLI interface",
+      "description": "As a user, I want a CLI command to generate config files from the terminal.",
+      "acceptanceCriteria": [
+        "Create src/config-gen/cli.ts as the CLI entry point",
+        "Command: config-gen <target> where target is xrpld or clio",
+        "Flag --env <path> to read from a .env file",
+        "Flag --json <path> to read from a JSON file",
+        "Flag --output <path> to write output to a file (defaults to stdout)",
+        "Flag --validate-only to run validation without generating output",
+        "When both --env and --json are provided, JSON values override .env values",
+        "Also reads from process.env as lowest-priority fallback",
+        "Exits with code 1 on validation errors, printing errors to stderr",
+        "Add bin field to packages/utils/package.json pointing to the CLI",
+        "Typecheck passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "dependsOn": ["US-006", "US-007", "US-003"]
+    },
+    {
+      "id": "US-009",
+      "title": "Export programmatic API from packages/utils",
+      "description": "As a developer using the utils package, I want to import config generation functions directly.",
+      "acceptanceCriteria": [
+        "Create src/config-gen/index.ts that exports: generateXrpldConfig, generateClioConfig, parseEnvFile, parseJsonFile, validateXrpldInputs, validateClioInputs",
+        "Add config-gen sub-export to packages/utils/package.json exports map (matching the existing crypto sub-export pattern)",
+        "Update src/index.ts to also re-export from config-gen",
+        "Each generator function accepts { env?: string, json?: string, overrides?: Record<string, string> } and returns { config: string, warnings: string[] }",
+        "Typecheck passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "dependsOn": ["US-006", "US-007", "US-008"]
+    },
+    {
+      "id": "US-010",
+      "title": "Integration tests with real templates",
+      "description": "As a developer, I need integration tests that verify the generated configs match the output of the bash scripts for known inputs.",
+      "acceptanceCriteria": [
+        "Create test fixtures: a set of .env files and JSON files with known inputs for both xrpld and clio",
+        "Create expected output files (generated by running the bash scripts with those inputs)",
+        "Integration tests compare TypeScript output against expected output",
+        "Tests cover: default (no overrides), MAINNET/TESTNET/DEVNET, SIZE=SMALL/FULL, SSL enabled, custom ports",
+        "All tests pass via pnpm test",
+        "Typecheck passes"
+      ],
+      "priority": 10,
+      "passes": false,
+      "dependsOn": ["US-006", "US-007"]
     }
   ]
 }
