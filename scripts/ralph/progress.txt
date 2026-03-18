@@ -1,0 +1,43 @@
+## Codebase Patterns
+- `@xrpl-indexer/utils` must be built (`pnpm run build`) before packages that depend on it can run tests, since exports point to `dist/`
+- FetchUtil in `packages/utils/src/xrpl/fetch.ts` supports rate limiting via `rateLimit: { requestsPerMinute }` option and content-type based response parsing via `fetch()` and `getResponse()` methods
+- FetchResponse<T> type provides `{ status, headers, data }` for full response access
+- Pre-existing typecheck errors exist in services/db (Prisma generated), services/trpc (path aliases), and vitest configs (declaration files) — these are not regressions
+- Tests use `vi.stubGlobal('fetch', mockFetch)` pattern for mocking fetch in Vitest
+- xrpl.js exports `LedgerEntry` as a namespace — use `LedgerEntry.AccountRoot` etc. for ledger entry parser generics, `BaseLedgerEntry` from `'xrpl/dist/npm/models/ledger/BaseLedgerEntry.js'` for constraints
+- xrpl.js `BaseTransaction extends Record<string, unknown>` — `this.tx.AnyField` compiles; ledger types do NOT, use `this.raw` for fields missing from xrpl types
+- xrpl.js type definitions may differ from protocol (e.g., Delegate uses `Authorize` vs `Delegate`, Permission uses `PermissionValue` vs `PermissionType`) — handle both
+- In worktree environments, workspace packages may not resolve — use self-contained configs or symlinks
+- Use xrpl.js utility functions instead of custom implementations: `dropsToXrp()`, `rippleTimeToUnixTime()`, `convertHexToString()`, `getNFTokenID()`, `parseNFTokenID()`, `getBalanceChanges()`, `getXChainClaimID()`, `qualityToDecimal()`, `transferRateToDecimal()`, `decodeMPTokenMetadata()`
+- Use xrpl.js flag constants (`NFTokenMintFlags`, `TrustSetFlags`, `AccountSetAsfFlags`, `MPTokenIssuanceCreateFlags`, etc.) instead of hardcoded magic numbers
+- `rippleTimeToUnixTime()` returns MILLISECONDS — divide by 1000 for Unix seconds
+- `dropsToXrp()` returns a number (not string) — use `String(dropsToXrp(x))` when ICurrencyAmount.value expects string
+- xrpl.js `getBalanceChanges()` returns `{ account, balances: [{ currency, value, issuer? }] }[]` — layer custom classification (fee/exchange/payment_source/etc.) on top
+- Some XRPL responses provide `date` as Unix timestamp (>946684800), not Ripple epoch — check before calling `rippleTimeToUnixTime()`
+- `parseTransactionFlags()` and `parseAccountRootFlags()` only return truthy flags — absent keys mean false
+- `AccountRootFlagsInterface` must be imported from `'xrpl/dist/npm/models/ledger/AccountRoot.js'`, not main 'xrpl'
+- Use `decodeHexField()` from `utils/enrichment.ts` for hex-to-string decoding (same printability check as MemosParser)
+- Use `toDualTimestamp()` from `utils/enrichment.ts` for converting Ripple epoch to `{ unix, iso }` format
+- When adding `isNative` to ICurrencyAmount, update ALL manual constructions of ICurrencyAmount objects (exchanges.ts, RippleStateParser, OfferCreateParser)
+- `normalizeAmount()` converts XRP drops to decimal value AND adds `isNative: true` — tests must expect normalized values, not raw drops
+- `.claude/agents/` directory is not tracked in git by default — must be explicitly added when working in worktrees
+- Agent definitions are markdown files with YAML frontmatter; changes are documentation-only and don't require typecheck
+
+
+
+# Ralph Progress Log
+Started: Wed Mar 18 08:01:42 PM UTC 2026
+---
+
+## 2026-03-18 - US-001
+- Added step 4a "Code Review (Post-Quality Checks)" to implementer.md
+- After quality checks pass, implementer invokes code-reviewer agent via Agent tool with subagent_type: "code-reviewer"
+- Code-reviewer receives git diff of uncommitted changes as context
+- Findings logged to progress.txt under **Code Review:** section with verdict and severity counts
+- HIGH issues trigger 1 fix attempt; verdict is advisory only and never blocks commit
+- Files changed: `.claude/agents/implementer.md`
+- **Learnings for future iterations:**
+  - `.claude/agents/` directory is not tracked in git by default — must be explicitly added in worktrees
+  - The `.claude/` directory lives at the repo root (`/workspace/.claude/`) and is shared across worktrees; worktree copies need to be created explicitly
+  - Agent definitions are markdown files with YAML frontmatter — changes are documentation-only and don't require typecheck
+---

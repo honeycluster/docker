@@ -1,0 +1,123 @@
+{
+  "project": "Honeycluster Docker",
+  "branchName": "ralph/agent-integration",
+  "description": "Integrate quality-focused agents (tdd-guide, code-reviewer, security-reviewer, build-error-resolver) into Ralph's implementer iteration loop with post-implementation review gates",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Add post-implementation code-reviewer invocation",
+      "description": "As the implementer agent, I want to invoke the code-reviewer agent after implementing a story so that code quality issues are caught before committing.",
+      "acceptanceCriteria": [
+        "After implementation and quality checks pass (step 4), implementer invokes the code-reviewer agent via the Agent tool",
+        "Code-reviewer receives the git diff of uncommitted changes as context",
+        "Code-reviewer output (findings and verdict) is captured by the implementer",
+        "Findings are logged to progress.txt under the story's entry with a **Code Review:** section",
+        "Code-reviewer verdict does NOT block the commit (advisory only)",
+        "If the code-reviewer reports HIGH issues, implementer attempts to fix them (1 attempt) before committing",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": true,
+      "dependsOn": []
+    },
+    {
+      "id": "US-002",
+      "title": "Add post-implementation security-reviewer invocation",
+      "description": "As the implementer agent, I want to invoke the security-reviewer agent after implementing a story so that security vulnerabilities are caught before committing.",
+      "acceptanceCriteria": [
+        "After code-reviewer runs (US-001), implementer invokes the security-reviewer agent via the Agent tool",
+        "Security-reviewer receives the git diff of uncommitted changes as context",
+        "Security-reviewer output is captured by the implementer",
+        "Findings are logged to progress.txt under the story's entry with a **Security Review:** section",
+        "If security-reviewer finds CRITICAL issues: implementer MUST fix them before committing (up to 2 attempts)",
+        "If CRITICAL fixes fail after 2 attempts: story is marked blocked with blockReason including the security finding",
+        "Non-CRITICAL security findings are logged but do not block",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "dependsOn": ["US-001"]
+    },
+    {
+      "id": "US-003",
+      "title": "Auto-invoke build-error-resolver on quality check failures",
+      "description": "As the implementer agent, I want to automatically delegate to build-error-resolver when build or type checks fail so that build errors are resolved more effectively.",
+      "acceptanceCriteria": [
+        "When a quality check fails in step 4, the implementer invokes build-error-resolver via the Agent tool BEFORE attempting manual fixes",
+        "Build-error-resolver receives the error output and the list of changed files as context",
+        "Build-error-resolver attempts minimal fixes and re-runs the failing check",
+        "If build-error-resolver succeeds: implementer continues to step 5 (commit)",
+        "If build-error-resolver fails: implementer falls back to existing error recovery (1 remaining manual attempt)",
+        "The build-error-resolver invocation counts as one of the 2 allowed fix attempts",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "dependsOn": []
+    },
+    {
+      "id": "US-004",
+      "title": "Invoke tdd-guide for test-first enforcement",
+      "description": "As the implementer agent, I want to consult the tdd-guide agent's methodology during implementation so that tests are written before production code.",
+      "acceptanceCriteria": [
+        "The implementer agent instructions reference the tdd-guide workflow (RED-GREEN-REFACTOR) in the implementation step (step 3)",
+        "When implementing a story that involves new functions or modules, the implementer writes tests first following tdd-guide patterns",
+        "The tdd-guide is NOT invoked as a separate agent call -- its methodology is embedded as instructions in the implementer's step 3",
+        "The implementer's step 3 instructions explicitly state: Write failing tests first, then implement minimal code to pass, then refactor",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "dependsOn": []
+    },
+    {
+      "id": "US-005",
+      "title": "Update progress.txt format for agent review sections",
+      "description": "As a developer reviewing Ralph's output, I want progress.txt entries to include agent review findings so I can see what was caught and fixed.",
+      "acceptanceCriteria": [
+        "Progress report format in implementer.md is updated to include optional **Code Review:** and **Security Review:** sections",
+        "Each section includes: verdict (APPROVE/WARNING/BLOCK), issue count by severity, and any issues that were auto-fixed",
+        "When no issues are found, the section shows APPROVE - No issues found",
+        "The format is documented in the Progress Report Format section of implementer.md",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "dependsOn": ["US-001", "US-002"]
+    },
+    {
+      "id": "US-006",
+      "title": "Update implementer.md with full agent integration",
+      "description": "As a developer maintaining Ralph, I want the implementer agent definition to be a single source of truth for the full iteration loop including all agent invocations.",
+      "acceptanceCriteria": [
+        "implementer.md step 3 (Implement) includes TDD methodology from tdd-guide (write tests first, RED-GREEN-REFACTOR)",
+        "implementer.md step 4 (Quality Checks) documents build-error-resolver auto-invocation on failures",
+        "A new step 5 (Agent Reviews) is added between current steps 4 and 5, documenting code-reviewer and security-reviewer invocations",
+        "The step numbering is updated (old step 5 Error Recovery becomes step 6, etc.)",
+        "The Agent Reviews step clearly documents: invocation order, what context each receives, how findings affect the commit, and the security-reviewer gating behavior",
+        "All agent names referenced match the actual filenames in .claude/agents/",
+        "The updated implementer.md is self-contained",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "dependsOn": ["US-001", "US-002", "US-003", "US-004", "US-005"]
+    },
+    {
+      "id": "US-007",
+      "title": "Update docs/agents-and-skills.md",
+      "description": "As a developer, I want the documentation to reflect the updated implementer workflow with agent integration.",
+      "acceptanceCriteria": [
+        "The implementer section in docs/agents-and-skills.md is updated to describe the new iteration loop with agent invocations",
+        "The protocol list includes the new Agent Reviews step",
+        "The document explains which agents block vs advise",
+        "The document explains the build-error-resolver auto-invocation behavior",
+        "The TDD methodology integration is mentioned",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "dependsOn": ["US-006"]
+    }
+  ]
+}
