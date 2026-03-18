@@ -66,27 +66,31 @@ Run the quality checks appropriate for your changes. Discover the right commands
 
 If no specific quality check is documented, at minimum ensure the code parses without syntax errors.
 
-If any quality check fails, proceed to step 5 (Error Recovery) which will automatically invoke the **build-error-resolver** agent before attempting manual fixes.
+If any quality check fails, proceed to step 6 (Error Recovery) which will automatically invoke the **build-error-resolver** agent before attempting manual fixes.
 
-### 4a. Code Review (Post-Quality Checks)
+### 5. Agent Reviews
 
-After quality checks pass, invoke the **code-reviewer** agent to review your changes before committing:
+After quality checks pass, invoke review agents **in order** before committing. This step ensures code quality and security issues are caught early.
 
-1. **Invoke the code-reviewer agent** via the Agent tool with `subagent_type: "code-reviewer"`.
-2. **Provide context**: Pass the git diff of uncommitted changes (`git diff` output) in the prompt so the code-reviewer can analyze the changes.
-3. **Capture the output**: The code-reviewer will return findings with severity levels (CRITICAL, HIGH, MEDIUM, LOW) and a verdict (APPROVE, WARNING, or BLOCK).
-4. **Log findings**: Record the code-reviewer output in `progress.txt` under the current story's entry in a **Code Review:** section, including the verdict and issue counts by severity.
+#### 5a. Code Review
+
+Invoke the **code-reviewer** agent (`code-reviewer.md`) to review your changes:
+
+1. **Invoke** via the Agent tool with `subagent_type: "code-reviewer"`.
+2. **Context**: Pass the git diff of uncommitted changes (`git diff` output) in the prompt so the code-reviewer can analyze the changes.
+3. **Output**: The code-reviewer returns findings with severity levels (CRITICAL, HIGH, MEDIUM, LOW) and a verdict (APPROVE, WARNING, or BLOCK).
+4. **Log findings**: Record the output in `progress.txt` under the current story's entry in a **Code Review:** section, including the verdict and issue counts by severity.
 5. **Handle HIGH issues**: If the code-reviewer reports any HIGH severity issues, attempt to fix them (1 fix attempt). Re-run quality checks after fixing. If the fix attempt fails or introduces new issues, proceed to commit anyway — the code review is **advisory only** and does not block the commit.
 6. **Advisory only**: The code-reviewer verdict does NOT block the commit. Even a BLOCK verdict is logged but does not prevent committing.
 
-### 4b. Security Review (Post-Code Review)
+#### 5b. Security Review
 
-After the code review (step 4a), invoke the **security-reviewer** agent to check for security vulnerabilities:
+After the code review (step 5a), invoke the **security-reviewer** agent (`security-reviewer.md`) to check for security vulnerabilities:
 
-1. **Invoke the security-reviewer agent** via the Agent tool with `subagent_type: "security-reviewer"`.
-2. **Provide context**: Pass the git diff of uncommitted changes (`git diff` output) in the prompt so the security-reviewer can analyze the changes.
-3. **Capture the output**: The security-reviewer will return findings with severity levels (CRITICAL, HIGH, MEDIUM, LOW) and a verdict.
-4. **Log findings**: Record the security-reviewer output in `progress.txt` under the current story's entry in a **Security Review:** section, including the verdict and issue counts by severity.
+1. **Invoke** via the Agent tool with `subagent_type: "security-reviewer"`.
+2. **Context**: Pass the git diff of uncommitted changes (`git diff` output) in the prompt so the security-reviewer can analyze the changes.
+3. **Output**: The security-reviewer returns findings with severity levels (CRITICAL, HIGH, MEDIUM, LOW) and a verdict.
+4. **Log findings**: Record the output in `progress.txt` under the current story's entry in a **Security Review:** section, including the verdict and issue counts by severity.
 5. **Handle CRITICAL issues**: If the security-reviewer reports any CRITICAL severity issues, you **MUST** fix them before committing:
    - **Attempt 1**: Fix the CRITICAL issue(s) and re-run quality checks + security review.
    - **Attempt 2**: If the first fix fails or introduces new CRITICAL issues, try an alternative fix and re-run.
@@ -101,14 +105,21 @@ After the code review (step 4a), invoke the **security-reviewer** agent to check
      Do not commit. Move on to the next eligible story.
 6. **Non-CRITICAL findings**: HIGH, MEDIUM, and LOW findings are logged to progress.txt but do **not** block the commit.
 
-### 5. Error Recovery
+#### Agent Review Summary
+
+| Agent | File | Invocation Order | Blocking? | Fix Attempts |
+|-------|------|-----------------|-----------|-------------|
+| code-reviewer | `code-reviewer.md` | 1st (step 5a) | No (advisory only) | 1 attempt for HIGH issues |
+| security-reviewer | `security-reviewer.md` | 2nd (step 5b) | CRITICAL issues only | 2 attempts; blocks story if unfixed |
+
+### 6. Error Recovery
 
 If a quality check fails:
 
-1. **Attempt 1 — build-error-resolver**: Invoke the **build-error-resolver** agent via the Agent tool with `subagent_type: "build-error-resolver"`.
+1. **Attempt 1 — build-error-resolver**: Invoke the **build-error-resolver** agent (`build-error-resolver.md`) via the Agent tool with `subagent_type: "build-error-resolver"`.
    - **Provide context**: Pass the full error output and the list of files you changed in the prompt.
    - The build-error-resolver will attempt minimal fixes (type annotations, null checks, import fixes) and re-run the failing check.
-   - If build-error-resolver succeeds (check exits with code 0): continue to step 4a (Code Review).
+   - If build-error-resolver succeeds (check exits with code 0): continue to step 5 (Agent Reviews).
    - If build-error-resolver fails: proceed to Attempt 2.
 2. **Attempt 2 — manual fix**: Analyze the remaining error(s) yourself, fix the issue, and re-run the check.
 3. **If both attempts fail**: Revert your commit (`git reset HEAD~1`), mark the story as blocked in the PRD:
@@ -121,16 +132,16 @@ If a quality check fails:
    ```
 4. Move on to the next eligible story.
 
-### 6. Commit
+### 7. Commit
 
-If quality checks pass:
+If quality checks and agent reviews pass:
 
 1. Stage all relevant changes.
 2. Commit with the message format: `feat: [Story ID] - [Story Title]`
 3. Update the PRD to set `passes: true` for the completed story.
 4. Append your progress to `progress.txt` (see format below).
 
-### 7. Persist Learnings
+### 8. Persist Learnings
 
 After completing a story, update the persistent memory files in `.claude/memory/shared/`:
 
@@ -157,7 +168,7 @@ After completing a story, update the persistent memory files in `.claude/memory/
 - Keep each memory file under 200 lines
 - Prefer updating existing entries over adding new ones
 
-### 8. Check Completion
+### 9. Check Completion
 
 After completing a story, check if **all** stories in the PRD have `passes: true`.
 
@@ -204,7 +215,7 @@ APPEND to `progress.txt` (never replace existing content, always append):
 
 ### Code Review and Security Review Sections
 
-The **Code Review:** and **Security Review:** sections are optional — include them only when the corresponding agent was invoked during the iteration (steps 4a and 4b).
+The **Code Review:** and **Security Review:** sections are optional — include them only when the corresponding agent was invoked during the iteration (steps 5a and 5b).
 
 - **Verdict**: One of `APPROVE`, `WARNING`, or `BLOCK`.
   - `APPROVE` — No issues found or all issues are LOW severity.
