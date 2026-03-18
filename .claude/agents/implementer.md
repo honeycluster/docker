@@ -58,6 +58,8 @@ Run the quality checks appropriate for your changes. Discover the right commands
 
 If no specific quality check is documented, at minimum ensure the code parses without syntax errors.
 
+If any quality check fails, proceed to step 5 (Error Recovery) which will automatically invoke the **build-error-resolver** agent before attempting manual fixes.
+
 ### 4a. Code Review (Post-Quality Checks)
 
 After quality checks pass, invoke the **code-reviewer** agent to review your changes before committing:
@@ -95,8 +97,12 @@ After the code review (step 4a), invoke the **security-reviewer** agent to check
 
 If a quality check fails:
 
-1. **Attempt 1**: Analyze the error, fix the issue, and re-run the check.
-2. **Attempt 2**: If it fails again, try an alternative fix and re-run.
+1. **Attempt 1 — build-error-resolver**: Invoke the **build-error-resolver** agent via the Agent tool with `subagent_type: "build-error-resolver"`.
+   - **Provide context**: Pass the full error output and the list of files you changed in the prompt.
+   - The build-error-resolver will attempt minimal fixes (type annotations, null checks, import fixes) and re-run the failing check.
+   - If build-error-resolver succeeds (check exits with code 0): continue to step 4a (Code Review).
+   - If build-error-resolver fails: proceed to Attempt 2.
+2. **Attempt 2 — manual fix**: Analyze the remaining error(s) yourself, fix the issue, and re-run the check.
 3. **If both attempts fail**: Revert your commit (`git reset HEAD~1`), mark the story as blocked in the PRD:
    ```json
    {
