@@ -100,3 +100,17 @@ Started: Wed Mar 18 08:01:42 PM UTC 2026
   - When restructuring step numbers, search for all cross-references within the document (e.g., "proceed to step X") and update them
   - The Agent Review Summary table is a useful quick-reference for understanding blocking vs advisory behavior
 ---
+
+## 2026-03-18 - US-007
+- Updated `docs/agents-and-skills.md` implementer section with the full agent integration workflow
+- Protocol list now includes 9 named steps: Orient, Pick Story, Implement (TDD), Quality Checks, Agent Reviews (5a/5b), Error Recovery, Commit, Persist Learnings, Check Completion
+- Added Agent Review Summary table showing code-reviewer (advisory) vs security-reviewer (CRITICAL blocks)
+- Documented build-error-resolver auto-invocation on quality check failures
+- Documented TDD methodology integration (embedded from tdd-guide, not a separate agent call)
+- Updated Single-Feature Execution section to mention agent reviews in the iteration loop
+- Updated Escalation section to mention build-error-resolver as the first fix attempt
+- Files changed: `docs/agents-and-skills.md`
+- **Learnings for future iterations:**
+  - The docs file lives at `/workspace/docs/agents-and-skills.md` in the main repo — must be copied to the worktree since it's not automatically present
+  - Documentation-only stories don't require typecheck verification (confirmed pattern from US-005)
+---
