@@ -136,7 +136,7 @@
         "Typecheck passes"
       ],
       "priority": 8,
-      "passes": false,
+      "passes": true,
       "dependsOn": ["US-006", "US-007", "US-003"]
     },
     {

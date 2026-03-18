@@ -22,6 +22,8 @@
 - `normalizeAmount()` converts XRP drops to decimal value AND adds `isNative: true` — tests must expect normalized values, not raw drops
 - `.claude/agents/` directory is not tracked in git by default — must be explicitly added when working in worktrees
 - Agent definitions are markdown files with YAML frontmatter; changes are documentation-only and don't require typecheck
+- Test CLI logic by exporting testable functions (`run()`, `parseArgs()`) — do NOT spawn child processes with `npx tsx` (too slow)
+- Use `node-types.d.ts` for Node.js type declarations since `@types/node` is not available in worktree
 - Clio uses `false`/`true` strings for booleans; xrpld uses `0`/`1` — validation must handle both conventions
 - This worktree root is `/workspace/.worktrees/config-generator/`, NOT `/workspace/` — all file writes must use worktree paths
 - The worktree tsconfig extends `@docs/configs/tsconfig/base.json` which isn't resolvable — use standalone `npx tsc --noEmit --strict --target ESNext --module ESNext --moduleResolution bundler` for typechecking
@@ -127,4 +129,20 @@ Started: Wed Mar 18 08:27:16 PM UTC 2026
   - Clio generator follows identical pattern to xrpld: defaults → validate → substitute → return
   - Clio config is JSON, so tests can parse output with `JSON.parse()` and assert on typed values — much easier to test than xrpld's INI-style format
   - Clio booleans (`true`/`false`) and numbers are unquoted in the JSON template, so they become native JSON types after substitution
+---
+
+## 2026-03-18 - US-008
+- Implemented CLI interface at `src/config-gen/cli.ts`
+- Exports: `parseArgs()`, `resolveOverrides()`, `run()` as testable functions, plus `CliArgs` and `CliResult` types
+- CLI supports `config-gen <xrpld|clio>` with `--env`, `--json`, `--output`, `--validate-only` flags
+- Override priority: process.env (lowest) < .env file < JSON file (highest)
+- Added `node-types.d.ts` for minimal Node.js type declarations (no @types/node in worktree)
+- Added `bin` field to root `package.json`
+- 30 unit tests covering: arg parsing, override resolution, xrpld/clio generation, validate-only mode, error handling
+- Files changed: `src/config-gen/cli.ts` (new), `src/config-gen/node-types.d.ts` (new), `src/config-gen/__tests__/cli.test.ts` (new), `package.json` (modified)
+- **Learnings for future iterations:**
+  - `npx tsx` is very slow in tests (~10s per spawn) — test CLI logic by exporting functions and testing directly, not via child process
+  - `@types/node` is not installed in the worktree — use a minimal `node-types.d.ts` for CLI-specific Node APIs
+  - CLI `run()` returns `{ exitCode, stdout, stderr[] }` making it easy to test without mocking process.exit/console
+  - The `isDirectExecution` guard prevents `main()` from running when the module is imported for testing
 ---
