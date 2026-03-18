@@ -101,3 +101,16 @@ Started: Wed Mar 18 08:27:16 PM UTC 2026
   - The blank line cleanup (3+ → 2) ensures empty optional sections don't leave gaps in generated configs
   - `$VAR` without braces is NOT replaced — only `${VAR}` syntax works
 ---
+
+## 2026-03-18 - US-006
+- Implemented xrpld config generator at `src/config-gen/generators/xrpld.ts`
+- `generateXrpldConfig(overrides)` orchestrates: load defaults → merge overrides → compute derived → validate → substitute template → output
+- Bundles the xrpld.cfg template as a string constant (from `src/xrpld/etc/xrpld.cfg`)
+- Returns `{ config, warnings }` — throws on validation errors with structured messages
+- 26 unit tests covering: default config, MAINNET/TESTNET/DEVNET, all SIZE presets, SSL enabled/disabled/chain, reporting mode, custom overrides, Postgres ledger_tx_tables, validation errors, output format
+- Files changed: `src/config-gen/generators/xrpld.ts` (new), `src/config-gen/generators/__tests__/xrpld.test.ts` (new)
+- **Learnings for future iterations:**
+  - `XrpldConfig` interface is not index-compatible with `Record<string, string | undefined>` — use `as unknown as Record<...>` cast when passing to `validateXrpldInputs()`
+  - The generator pattern is simple: defaults → validate → substitute → return. Same pattern should work for Clio (US-007)
+  - Template is embedded as a template literal with escaped `\${VAR}` — backtick strings need `\$` to avoid JS interpolation
+---
