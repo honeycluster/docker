@@ -189,11 +189,43 @@ APPEND to `progress.txt` (never replace existing content, always append):
 ## [Date/Time] - [Story ID]
 - What was implemented
 - Files changed
+- **Code Review:** [verdict] - [summary]
+  - Issues: [CRITICAL: n, HIGH: n, MEDIUM: n, LOW: n]
+  - Auto-fixed: [list of issues that were auto-fixed, or "None"]
+- **Security Review:** [verdict] - [summary]
+  - Issues: [CRITICAL: n, HIGH: n, MEDIUM: n, LOW: n]
+  - Auto-fixed: [list of issues that were auto-fixed, or "None"]
 - **Learnings for future iterations:**
   - Patterns discovered
   - Gotchas encountered
   - Useful context
 ---
+```
+
+### Code Review and Security Review Sections
+
+The **Code Review:** and **Security Review:** sections are optional — include them only when the corresponding agent was invoked during the iteration (steps 4a and 4b).
+
+- **Verdict**: One of `APPROVE`, `WARNING`, or `BLOCK`.
+  - `APPROVE` — No issues found or all issues are LOW severity.
+  - `WARNING` — Non-blocking issues found (MEDIUM or HIGH severity).
+  - `BLOCK` — Critical issues found that required fixing.
+- **Issues**: Count of findings by severity level. Use `0` for severities with no findings.
+- **Auto-fixed**: List any issues the implementer fixed before committing. Use `"None"` if no issues were auto-fixed.
+- **When no issues are found**: Use `APPROVE - No issues found` as the verdict line, with all issue counts at 0.
+
+Example with no issues:
+```
+- **Code Review:** APPROVE - No issues found
+  - Issues: CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0
+  - Auto-fixed: None
+```
+
+Example with issues found and fixed:
+```
+- **Security Review:** WARNING - 1 HIGH issue found and fixed
+  - Issues: CRITICAL: 0, HIGH: 1, MEDIUM: 0, LOW: 0
+  - Auto-fixed: HIGH - SQL query used string interpolation instead of parameterized query
 ```
 
 If you discover a reusable pattern that future iterations should know, also add it to the `## Codebase Patterns` section at the TOP of `progress.txt` (create it if it does not exist).
