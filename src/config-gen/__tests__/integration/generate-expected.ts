@@ -1,35 +1,19 @@
-import { readFileSync, writeFileSync } from 'fs';
-import { generateXrpldConfig } from '../../generators/xrpld.js';
-import { parseEnvFile } from '../../parsers/env-parser.js';
-import { parseJsonFile } from '../../parsers/json-parser.js';
+import { writeFileSync } from 'fs';
+import { resolveXrpldConfig } from '../../defaults/xrpld.js';
+import { renderXrpldCfg } from '../../renderers/cfg-renderer.js';
 
-const FIXTURES = new URL('./fixtures/', import.meta.url).pathname;
 const EXPECTED = new URL('./expected/', import.meta.url).pathname;
 
-function loadEnv(name: string): Record<string, string> {
-  const content = readFileSync(`${FIXTURES}${name}`, 'utf-8');
-  return parseEnvFile(content);
-}
-
-function loadJson(name: string): Record<string, string> {
-  const content = readFileSync(`${FIXTURES}${name}`, 'utf-8');
-  return parseJsonFile(content);
-}
-
-// xrpld scenarios
-const xrpldScenarios: [string, Record<string, string>][] = [
+const scenarios: [string, Parameters<typeof resolveXrpldConfig>[0]][] = [
   ['xrpld-default.cfg', {}],
-  ['xrpld-mainnet.cfg', loadEnv('xrpld-mainnet.env')],
-  ['xrpld-testnet.cfg', loadEnv('xrpld-testnet.env')],
-  ['xrpld-devnet.cfg', loadEnv('xrpld-devnet.env')],
-  ['xrpld-small.cfg', loadEnv('xrpld-small.env')],
-  ['xrpld-full.cfg', loadEnv('xrpld-full.env')],
-  ['xrpld-ssl.cfg', loadEnv('xrpld-ssl.env')],
-  ['xrpld-custom-ports.cfg', loadJson('xrpld-custom-ports.json')],
+  ['xrpld-mainnet.cfg', { network: 'mainnet' }],
+  ['xrpld-testnet.cfg', { network: 'testnet' }],
+  ['xrpld-devnet.cfg', { network: 'devnet' }],
 ];
 
-for (const [filename, overrides] of xrpldScenarios) {
-  const { config } = generateXrpldConfig(overrides);
-  writeFileSync(`${EXPECTED}${filename}`, config);
+for (const [filename, input] of scenarios) {
+  const config = resolveXrpldConfig(input);
+  const cfg = renderXrpldCfg(config);
+  writeFileSync(`${EXPECTED}${filename}`, cfg);
   console.log(`Generated ${filename}`);
 }

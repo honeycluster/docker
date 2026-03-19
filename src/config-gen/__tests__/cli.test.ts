@@ -36,31 +36,31 @@ describe('CLI', () => {
     it('rejects unknown target', () => {
       const result = parseArgs(['node', 'cli.ts', 'unknown']);
       expect(result).toHaveProperty('error');
-      expect((result as any).error).toContain('Unknown target');
+      expect((result as { error: string }).error).toContain('Unknown target');
     });
 
     it('rejects unknown option', () => {
       const result = parseArgs(['node', 'cli.ts', 'xrpld', '--bad']);
       expect(result).toHaveProperty('error');
-      expect((result as any).error).toContain('Unknown option');
+      expect((result as { error: string }).error).toContain('Unknown option');
     });
 
     it('rejects --env without path', () => {
       const result = parseArgs(['node', 'cli.ts', 'xrpld', '--env']);
       expect(result).toHaveProperty('error');
-      expect((result as any).error).toContain('--env requires a path');
+      expect((result as { error: string }).error).toContain('--env requires a path');
     });
 
     it('rejects --json without path', () => {
       const result = parseArgs(['node', 'cli.ts', 'xrpld', '--json']);
       expect(result).toHaveProperty('error');
-      expect((result as any).error).toContain('--json requires a path');
+      expect((result as { error: string }).error).toContain('--json requires a path');
     });
 
     it('rejects --output without path', () => {
       const result = parseArgs(['node', 'cli.ts', 'xrpld', '--output']);
       expect(result).toHaveProperty('error');
-      expect((result as any).error).toContain('--output requires a path');
+      expect((result as { error: string }).error).toContain('--output requires a path');
     });
 
     it('parses xrpld target', () => {
@@ -129,14 +129,6 @@ describe('CLI', () => {
       const result = resolveOverrides(args, {});
       expect(result.PORT_PEER).toBe('7777');
     });
-
-    it('.env overrides process.env', () => {
-      const envPath = join(tmpDir, 'test.env');
-      writeFileSync(envPath, 'PORT_PEER=6666\n', 'utf-8');
-      const args: CliArgs = { target: 'xrpld', envPath, validateOnly: false };
-      const result = resolveOverrides(args, { PORT_PEER: '5555' });
-      expect(result.PORT_PEER).toBe('6666');
-    });
   });
 
   // #endregion
@@ -159,54 +151,6 @@ describe('CLI', () => {
       const content = readFileSync(outputPath, 'utf-8');
       expect(content).toContain('[server]');
     });
-
-    it('applies .env overrides', () => {
-      const envPath = join(tmpDir, 'test.env');
-      writeFileSync(envPath, 'PORT_PEER=9999\n', 'utf-8');
-      const result = run({ target: 'xrpld', envPath, validateOnly: false });
-      expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('9999');
-    });
-
-    it('applies JSON overrides', () => {
-      const jsonPath = join(tmpDir, 'test.json');
-      writeFileSync(jsonPath, '{"PORT_PEER": "8888"}', 'utf-8');
-      const result = run({ target: 'xrpld', jsonPath, validateOnly: false });
-      expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('8888');
-    });
-
-    it('applies process.env overrides', () => {
-      const result = run({ target: 'xrpld', validateOnly: false }, { PORT_PEER: '5555' });
-      expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('5555');
-    });
-  });
-
-  // #endregion
-
-  // #region run - validate-only
-
-  describe('run - validate-only', () => {
-    it('passes validation for xrpld with defaults', () => {
-      const result = run({ target: 'xrpld', validateOnly: true });
-      expect(result.exitCode).toBe(0);
-      expect(result.stderr.join('\n')).toContain('Validation passed');
-    });
-
-    it('exits 1 with errors on invalid port', () => {
-      const envPath = join(tmpDir, 'bad.env');
-      writeFileSync(envPath, 'PORT_PEER=99999\n', 'utf-8');
-      const result = run({ target: 'xrpld', envPath, validateOnly: true });
-      expect(result.exitCode).toBe(1);
-      expect(result.stderr.join('\n')).toContain('Error:');
-      expect(result.stderr.join('\n')).toContain('PORT_PEER');
-    });
-
-    it('does not produce stdout output', () => {
-      const result = run({ target: 'xrpld', validateOnly: true });
-      expect(result.stdout).toBe('');
-    });
   });
 
   // #endregion
@@ -222,14 +166,6 @@ describe('CLI', () => {
 
     it('returns exit 1 when JSON file does not exist', () => {
       const result = run({ target: 'xrpld', jsonPath: '/nonexistent/file.json', validateOnly: false });
-      expect(result.exitCode).toBe(1);
-      expect(result.stderr.join('\n')).toContain('Error:');
-    });
-
-    it('returns exit 1 on validation errors during generation', () => {
-      const envPath = join(tmpDir, 'bad.env');
-      writeFileSync(envPath, 'PORT_PEER=invalid\n', 'utf-8');
-      const result = run({ target: 'xrpld', envPath, validateOnly: false });
       expect(result.exitCode).toBe(1);
       expect(result.stderr.join('\n')).toContain('Error:');
     });

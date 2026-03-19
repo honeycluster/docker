@@ -1,42 +1,8 @@
-// #region Types
-
-export interface ConfigGenInput {
-  env?: string;
-  json?: string;
-  overrides?: Record<string, string>;
-}
-
-export interface ConfigGenResult {
-  config: string;
-  warnings: string[];
-}
-
-// #endregion
-
 // #region Imports
 
 import { parseEnvFile } from './parsers/env-parser.js';
 import { parseJsonFile } from './parsers/json-parser.js';
-import { generateXrpldConfig } from './generators/xrpld.js';
 import { validateXrpldInputs } from './validation.js';
-
-// #endregion
-
-// #region Helpers
-
-function mergeInputs(input: ConfigGenInput): Record<string, string> {
-  let envVars: Record<string, string> = {};
-  if (input.env) {
-    envVars = parseEnvFile(input.env);
-  }
-
-  let jsonVars: Record<string, string> = {};
-  if (input.json) {
-    jsonVars = parseJsonFile(input.json);
-  }
-
-  return { ...envVars, ...jsonVars, ...(input.overrides ?? {}) };
-}
 
 // #endregion
 
@@ -46,8 +12,15 @@ export { parseEnvFile } from './parsers/env-parser.js';
 export { parseJsonFile } from './parsers/json-parser.js';
 export { validateXrpldInputs } from './validation.js';
 export type { ValidationError, ValidationResult } from './validation.js';
-export type { XrpldGeneratorResult } from './generators/xrpld.js';
 export { getNetworkDefaults, resolveXrpldConfig } from './defaults/xrpld.js';
+export {
+  renderSingleValueSection,
+  renderKeyValueSection,
+  renderListSection,
+  renderPortSection,
+  renderServerSection,
+  renderXrpldCfg,
+} from './renderers/cfg-renderer.js';
 
 // Re-export types
 export type {
@@ -64,21 +37,9 @@ export type {
   XrpldSqliteConfig,
   XrpldVlConfig,
   XrpldImportDbConfig,
-  XrpldGeneratorResult as XrpldGeneratorResultType,
+  XrpldGeneratorResult,
   ValidationEntry,
   ValidationResult as ValidationResultType,
 } from './types/xrpld-input.js';
-
-/**
- * Generate an xrpld.cfg configuration from .env content, JSON content, or direct overrides.
- * Priority: overrides > json > env (highest to lowest).
- */
-export function generateXrpldConfigFromInput(input: ConfigGenInput = {}): ConfigGenResult {
-  const merged = mergeInputs(input);
-  return generateXrpldConfig(merged);
-}
-
-// Re-export the low-level generator for direct use
-export { generateXrpldConfig } from './generators/xrpld.js';
 
 // #endregion

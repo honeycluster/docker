@@ -14,6 +14,11 @@ Started: Thu Mar 19 09:46:01 PM UTC 2026
 - The tsconfig extends `@docs/configs/tsconfig/base.json` which doesn't exist in this repo — use explicit tsc flags instead
 - CLI is at `src/config-gen/cli.ts`
 - `@types/node` needed for Node.js type definitions (was added as devDep)
+- New renderer is in `src/config-gen/renderers/cfg-renderer.ts` — use `renderXrpldCfg(config)` to render XrpldInput to cfg string
+- Old template-based generator (generators/xrpld.ts, template.ts) and legacy `getXrpldDefaults()` have been deleted
+- To generate a config: `resolveXrpldConfig(input)` → `renderXrpldCfg(resolved)` pipeline
+- `XrpldPortConfig.protocol` is required — always include when defining ports
+- VL config is nested under `vl` property in XrpldInput (validator_list_sites, validator_list_keys), not top-level
 
 ---
 
@@ -40,4 +45,43 @@ Started: Thu Mar 19 09:46:01 PM UTC 2026
   - Integration test .env fixtures (xrpld-mainnet.env, etc.) were never committed — tests were updated to work without them
   - `@types/node` was not installed — needed for Node.js types
   - vitest was not installed — added as devDependency
+---
+
+## 2026-03-19 - US-002
+- Replaced `src/config-gen/defaults/xrpld.ts` with new implementation using XrpldInput types
+- Created `getNetworkDefaults(network)` returning `Partial<XrpldInput>` for mainnet/testnet/devnet
+- Created `resolveXrpldConfig(input)` that deep-merges common < network < user overrides
+- Common defaults include: node_db (NuDB), database_path, debug_logfile, ssl_verify, sntp_servers, ports (peer, rpc_admin_local, ws_admin_local, grpc), rpc_startup
+- Preserved legacy `getXrpldDefaults()` function for backward compatibility with old template-based generator (generators/xrpld.ts) until US-003 replaces it
+- Exported new functions from index.ts
+- Created `src/config-gen/__tests__/defaults.test.ts` with 15 tests covering all network presets and override merging
+- Files changed: `src/config-gen/defaults/xrpld.ts`, `src/config-gen/index.ts`, `src/config-gen/__tests__/defaults.test.ts`
+- **Learnings for future iterations:**
+  - The old generator (generators/xrpld.ts) imports `getXrpldDefaults` from defaults — must keep legacy API until US-003 replaces the generator
+  - `XrpldPortConfig.protocol` is required, don't forget it when defining default ports
+  - Deep merge handles nested objects (node_db, vl) but arrays are replaced wholesale (not merged), which is the desired behavior for ports and ips
+  - VL config (validator_list_sites, validator_list_keys) is nested under `vl` property in XrpldInput, not top-level
+---
+
+## 2026-03-19 - US-003
+- Created `src/config-gen/renderers/cfg-renderer.ts` with section-based renderer:
+  - `renderSingleValueSection()` — renders `[name]\nvalue` for string/number, empty for undefined
+  - `renderKeyValueSection()` — renders `[name]\nkey=value` lines, omits undefined keys
+  - `renderListSection()` — renders `[name]\nitem` per line, handles objects as JSON
+  - `renderPortSection()` — renders `[port_name]` with all fields as `key = value`, excludes `name`
+  - `renderServerSection()` — renders `[server]` listing port names
+  - `renderXrpldCfg()` — full cfg assembly: header, server+ports, node_db, single-value, list, key-value sections
+- Deleted old template-based code: `generators/xrpld.ts`, `template.ts`, `__tests__/template.test.ts`, `generators/__tests__/xrpld.test.ts`
+- Removed legacy API (`getXrpldDefaults`) from `defaults/xrpld.ts`
+- Updated `index.ts` and `src/index.ts` to export new renderer functions
+- Updated CLI (`cli.ts`) to use `resolveXrpldConfig` + `renderXrpldCfg` instead of old template generator
+- Updated integration tests to use new renderer API
+- Updated `index.test.ts` and `cli.test.ts` to match new exports/behavior
+- Created `__tests__/cfg-renderer.test.ts` with 28 tests covering all renderer functions
+- Files changed: 1 created, 9 modified, 4 deleted
+- **Learnings for future iterations:**
+  - Object property iteration order in JS follows insertion order — don't assert exact key order in port sections
+  - The `generators/` directory is now empty and will be recreated by US-004 with new implementation
+  - CLI currently uses minimal renderer integration (network only) — US-008 will fully rewrite it
+  - Integration test expected output files from old template generator are now stale — US-010 will regenerate them
 ---

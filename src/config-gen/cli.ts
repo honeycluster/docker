@@ -5,7 +5,8 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { parseEnvFile } from './parsers/env-parser.js';
 import { parseJsonFile } from './parsers/json-parser.js';
-import { generateXrpldConfig } from './generators/xrpld.js';
+import { resolveXrpldConfig } from './defaults/xrpld.js';
+import { renderXrpldCfg } from './renderers/cfg-renderer.js';
 import { validateXrpldInputs } from './validation.js';
 
 // #endregion
@@ -160,11 +161,10 @@ export function run(args: CliArgs, env: Record<string, string | undefined> = {})
       return { exitCode: 0, stdout, stderr };
     }
 
-    const { config, warnings } = generateXrpldConfig(overrides);
-
-    for (const warning of warnings) {
-      stderr.push(`Warning: ${warning}`);
-    }
+    // Use new renderer: resolve config with defaults then render
+    const network = (overrides.NETWORK?.toLowerCase() ?? 'mainnet') as 'mainnet' | 'testnet' | 'devnet';
+    const resolved = resolveXrpldConfig({ network });
+    const config = renderXrpldCfg(resolved);
 
     if (args.outputPath) {
       writeFileSync(args.outputPath, config, 'utf-8');

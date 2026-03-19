@@ -1,17 +1,15 @@
 export {
-  generateXrpldConfigFromInput,
-  generateXrpldConfig,
   parseEnvFile,
   parseJsonFile,
   validateXrpldInputs,
+  getNetworkDefaults,
+  resolveXrpldConfig,
+  renderXrpldCfg,
 } from './config-gen/index.js';
 
 export type {
-  ConfigGenInput,
-  ConfigGenResult,
   ValidationError,
   ValidationResult,
-  XrpldGeneratorResult,
 } from './config-gen/index.js';
 
 export type {
@@ -28,7 +26,7 @@ export type {
   XrpldSqliteConfig,
   XrpldVlConfig,
   XrpldImportDbConfig,
-  XrpldGeneratorResult as XrpldGeneratorResultNew,
+  XrpldGeneratorResult,
   ValidationEntry,
-  ValidationResult as ValidationResultNew,
+  ValidationResult as ValidationResultType,
 } from './config-gen/types/xrpld-input.js';

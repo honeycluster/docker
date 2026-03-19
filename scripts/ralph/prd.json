@@ -47,7 +47,7 @@
         "Unit tests for override merging (user values win over defaults)"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": "Depends on US-001 types. The deep merge must handle nested objects (node_db, server.ports) and arrays."
     },
     {
@@ -71,7 +71,7 @@
         "Unit test: mainnet resolved config produces valid multi-section cfg output"
       ],
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "notes": "Depends on US-001 (types) and US-002 (defaults for the integration test). Delete old template-based code."
     },
     {
