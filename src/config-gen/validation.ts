@@ -391,6 +391,12 @@ function validatePeers(config: XrpldInput, warnings: ValidationEntry[]): void {
 
 // #region Main Export
 
+/**
+ * Validate a resolved xrpld configuration against all rules.
+ * Checks ports, network, database, protocol, overlay, reduce_relay, voting, crawl, and peer settings.
+ * @param config - Fully resolved XrpldInput to validate
+ * @returns ValidationResult with arrays of errors and warnings
+ */
 export function validateXrpldConfig(config: XrpldInput): ValidationResult {
   const errors: ValidationEntry[] = [];
   const warnings: ValidationEntry[] = [];

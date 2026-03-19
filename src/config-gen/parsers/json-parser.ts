@@ -3,8 +3,11 @@ import type { XrpldInput } from '../types/xrpld-input.js';
 // #region Parser
 
 /**
- * Parse a JSON file string into a Partial<XrpldInput>.
+ * Parse a JSON string into a Partial<XrpldInput>.
  * Accepts nested structure directly — no flattening.
+ * @param content - Raw JSON string representing xrpld configuration
+ * @returns Parsed configuration as Partial<XrpldInput>
+ * @throws JsonParseException if JSON is invalid or not an object
  */
 export function parseJsonFile(content: string): Partial<XrpldInput> {
   let parsed: unknown;

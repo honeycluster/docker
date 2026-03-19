@@ -2,6 +2,12 @@ import type { XrpldInput } from '../types/xrpld-input.js';
 
 // #region Validators.txt Generator
 
+/**
+ * Generate validators.txt content from a resolved xrpld configuration.
+ * Includes [validator_list_sites], [validator_list_keys], and [validators] sections.
+ * @param config - Resolved xrpld configuration
+ * @returns validators.txt file content as a string
+ */
 export function generateValidatorsTxt(config: XrpldInput): string {
   const sections: string[] = [];
 

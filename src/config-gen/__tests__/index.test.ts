@@ -1,21 +1,23 @@
 import { describe, it, expect } from 'vitest';
 import {
-  parseEnvFile,
+  generateXrpldConfig,
+  parseCfgFile,
   parseTextFile,
   parseJsonFile,
   validateXrpldConfig,
   getNetworkDefaults,
   resolveXrpldConfig,
-  renderXrpldCfg,
-  generateXrpldConfig,
-  generateValidatorsTxt,
 } from '../index.js';
 
 // #region Export verification
 
 describe('config-gen index exports', () => {
-  it('exports parseEnvFile', () => {
-    expect(typeof parseEnvFile).toBe('function');
+  it('exports generateXrpldConfig', () => {
+    expect(typeof generateXrpldConfig).toBe('function');
+  });
+
+  it('exports parseCfgFile', () => {
+    expect(typeof parseCfgFile).toBe('function');
   });
 
   it('exports parseTextFile', () => {
@@ -37,38 +39,26 @@ describe('config-gen index exports', () => {
   it('exports resolveXrpldConfig', () => {
     expect(typeof resolveXrpldConfig).toBe('function');
   });
-
-  it('exports renderXrpldCfg', () => {
-    expect(typeof renderXrpldCfg).toBe('function');
-  });
-
-  it('exports generateXrpldConfig', () => {
-    expect(typeof generateXrpldConfig).toBe('function');
-  });
-
-  it('exports generateValidatorsTxt', () => {
-    expect(typeof generateValidatorsTxt).toBe('function');
-  });
 });
 
 // #endregion
 
-// #region renderXrpldCfg via resolveXrpldConfig
+// #region generateXrpldConfig smoke test
 
-describe('renderXrpldCfg via resolveXrpldConfig', () => {
+describe('generateXrpldConfig smoke test', () => {
   it('generates default config', () => {
-    const config = resolveXrpldConfig({});
-    const cfg = renderXrpldCfg(config);
-    expect(typeof cfg).toBe('string');
-    expect(cfg.length).toBeGreaterThan(0);
-    expect(cfg).toContain('[server]');
+    const result = generateXrpldConfig({});
+    expect(typeof result.config).toBe('string');
+    expect(result.config.length).toBeGreaterThan(0);
+    expect(result.config).toContain('[server]');
+    expect(typeof result.validatorsTxt).toBe('string');
+    expect(Array.isArray(result.warnings)).toBe(true);
   });
 
   it('generates config for each network', () => {
     for (const network of ['mainnet', 'testnet', 'devnet'] as const) {
-      const config = resolveXrpldConfig({ network });
-      const cfg = renderXrpldCfg(config);
-      expect(cfg).toContain('[network_id]');
+      const result = generateXrpldConfig({ network });
+      expect(result.config).toContain('[network_id]');
     }
   });
 });

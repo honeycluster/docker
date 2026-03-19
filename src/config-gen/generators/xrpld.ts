@@ -7,6 +7,13 @@ import { renderXrpldCfg } from '../renderers/cfg-renderer.js';
 import { generateValidatorsTxt } from './validators-txt.js';
 import { validateXrpldConfig } from '../validation.js';
 
+/**
+ * Generate xrpld.cfg and validators.txt from partial input.
+ * Resolves defaults, validates, renders cfg, and generates validators.txt.
+ * @param input - Partial xrpld configuration (merged with network defaults)
+ * @returns Generated config string, validators.txt string, and any warnings
+ * @throws Error if validation fails with error-severity issues
+ */
 export function generateXrpldConfig(
   input: Partial<XrpldInput> = {},
 ): XrpldGeneratorResult {

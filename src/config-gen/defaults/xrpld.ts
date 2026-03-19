@@ -42,6 +42,11 @@ const NETWORK_MAP: Record<NetworkName, Partial<XrpldInput>> = {
   devnet: DEVNET_DEFAULTS,
 };
 
+/**
+ * Get network-specific default configuration values.
+ * @param network - Target network: 'mainnet', 'testnet', or 'devnet'
+ * @returns Partial XrpldInput with network-specific defaults (network_id, VL sites/keys, IPs)
+ */
 export function getNetworkDefaults(
   network: NetworkName,
 ): Partial<XrpldInput> {
@@ -128,6 +133,12 @@ function deepMerge<T extends Record<string, unknown>>(
 
 // #region Resolve Config
 
+/**
+ * Resolve a partial xrpld configuration by deep-merging common defaults, network defaults, and user overrides.
+ * Merge priority: common < network < user input.
+ * @param input - Partial user configuration (user overrides always win)
+ * @returns Fully resolved XrpldInput with all defaults applied
+ */
 export function resolveXrpldConfig(
   input: Partial<XrpldInput> = {},
 ): XrpldInput {

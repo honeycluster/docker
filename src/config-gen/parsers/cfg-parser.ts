@@ -176,6 +176,12 @@ function parsePortSection(name: string, lines: ReadonlyArray<string>): XrpldPort
 
 // #region Main Parser
 
+/**
+ * Parse an xrpld.cfg file string into an XrpldInput object.
+ * Handles section headers, key=value pairs, single-value sections, lists, and port definitions.
+ * @param content - Raw xrpld.cfg file content
+ * @returns Parsed configuration as XrpldInput
+ */
 export function parseCfgFile(content: string): XrpldInput {
   const rawSections = collectSections(content);
 

@@ -284,7 +284,10 @@ function setNestedValue(obj: Record<string, unknown>, path: string, value: unkno
 /**
  * Parse a text file with SCREAMING_SNAKE_CASE keys into a Partial<XrpldInput>.
  * Supports: KEY=VALUE, comments (#), blank lines, single/double quoted values.
- * Lists use comma separation. Ports use indexed PREFIX: PORT_0_NAME=peer, PORT_0_PORT=51235.
+ * Lists use comma separation. Ports use indexed prefix: PORT_0_NAME=peer, PORT_0_PORT=51235.
+ * @param content - Raw text file content with SCREAMING_SNAKE_CASE key=value lines
+ * @returns Parsed configuration as Partial<XrpldInput>
+ * @throws TextParseException on invalid keys, missing '=', or unknown variable names
  */
 export function parseTextFile(content: string): Partial<XrpldInput> {
   const result: Record<string, unknown> = {};
@@ -377,71 +380,6 @@ export function parseTextFile(content: string): Partial<XrpldInput> {
 
 // #endregion
 
-// #region Legacy Compat
-
-export interface EnvParseError {
-  line: number;
-  message: string;
-}
-
-/**
- * Parse a .env file string into key-value pairs.
- * @deprecated Use parseTextFile instead for typed XrpldInput output.
- */
-export function parseEnvFile(content: string): Record<string, string> {
-  const result: Record<string, string> = {};
-  const lines = content.split('\n');
-
-  for (let i = 0; i < lines.length; i++) {
-    const lineNum = i + 1;
-    const raw = lines[i];
-    const trimmed = raw.trim();
-
-    if (trimmed === '' || trimmed.startsWith('#')) {
-      continue;
-    }
-
-    const eqIndex = trimmed.indexOf('=');
-    if (eqIndex === -1) {
-      throw new EnvParseException(`Missing '=' in assignment`, lineNum);
-    }
-
-    const key = trimmed.slice(0, eqIndex).trim();
-    if (key === '') {
-      throw new EnvParseException(`Empty variable name`, lineNum);
-    }
-
-    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) {
-      throw new EnvParseException(
-        `Invalid variable name '${key}': must contain only letters, digits, and underscores`,
-        lineNum,
-      );
-    }
-
-    let value = trimmed.slice(eqIndex + 1);
-
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-
-    if (!trimmed.slice(eqIndex + 1).startsWith('"') && !trimmed.slice(eqIndex + 1).startsWith("'")) {
-      const commentIndex = value.indexOf(' #');
-      if (commentIndex !== -1) {
-        value = value.slice(0, commentIndex).trimEnd();
-      }
-    }
-
-    result[key] = value;
-  }
-
-  return result;
-}
-
-// #endregion
-
 // #region Errors
 
 export class TextParseException extends Error {
@@ -450,16 +388,6 @@ export class TextParseException extends Error {
   constructor(message: string, line: number) {
     super(`Line ${line}: ${message}`);
     this.name = 'TextParseException';
-    this.line = line;
-  }
-}
-
-export class EnvParseException extends Error {
-  public readonly line: number;
-
-  constructor(message: string, line: number) {
-    super(`Line ${line}: ${message}`);
-    this.name = 'EnvParseException';
     this.line = line;
   }
 }
