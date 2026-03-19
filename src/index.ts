@@ -5,6 +5,9 @@ export {
   getNetworkDefaults,
   resolveXrpldConfig,
   renderXrpldCfg,
+  generateXrpldConfig,
+  validateXrpldConfig,
+  generateValidatorsTxt,
 } from './config-gen/index.js';
 
 export type {

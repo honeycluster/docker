@@ -6,6 +6,9 @@ import {
   getNetworkDefaults,
   resolveXrpldConfig,
   renderXrpldCfg,
+  generateXrpldConfig,
+  validateXrpldConfig,
+  generateValidatorsTxt,
 } from '../index.js';
 
 // #region Export verification
@@ -33,6 +36,18 @@ describe('config-gen index exports', () => {
 
   it('exports renderXrpldCfg', () => {
     expect(typeof renderXrpldCfg).toBe('function');
+  });
+
+  it('exports generateXrpldConfig', () => {
+    expect(typeof generateXrpldConfig).toBe('function');
+  });
+
+  it('exports validateXrpldConfig', () => {
+    expect(typeof validateXrpldConfig).toBe('function');
+  });
+
+  it('exports generateValidatorsTxt', () => {
+    expect(typeof generateValidatorsTxt).toBe('function');
   });
 });
 
