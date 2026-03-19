@@ -2,11 +2,13 @@
 
 // #region Imports
 
-import { readFileSync, writeFileSync } from 'node:fs';
-import { parseEnvFile } from './parsers/env-parser.js';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { parseTextFile } from './parsers/env-parser.js';
 import { parseJsonFile } from './parsers/json-parser.js';
+import { parseCfgFile } from './parsers/cfg-parser.js';
+import { generateXrpldConfig } from './generators/xrpld.js';
 import { resolveXrpldConfig } from './defaults/xrpld.js';
-import { renderXrpldCfg } from './renderers/cfg-renderer.js';
 import { validateXrpldConfig } from './validation.js';
 
 // #endregion
@@ -15,9 +17,11 @@ import { validateXrpldConfig } from './validation.js';
 
 export interface CliArgs {
   target: 'xrpld';
-  envPath?: string;
+  inputPath?: string;
   jsonPath?: string;
+  parsePath?: string;
   outputPath?: string;
+  network?: 'mainnet' | 'testnet' | 'devnet';
   validateOnly: boolean;
 }
 
@@ -31,20 +35,25 @@ export interface CliResult {
 
 // #region Argument Parsing
 
-const USAGE = `Usage: config-gen <target> [options]
-
-Targets:
-  xrpld    Generate xrpld.cfg configuration
+const USAGE = `Usage: config-gen xrpld [options]
 
 Options:
-  --env <path>       Read overrides from a .env file
-  --json <path>      Read overrides from a JSON file
-  --output <path>    Write output to file (default: stdout)
-  --validate-only    Run validation without generating output
-  --help             Show this help message
+  --json <path>        Read overrides from a nested JSON file
+  --input <path>       Read overrides from a text file (SCREAMING_SNAKE_CASE keys)
+  --parse <cfg-path>   Parse an existing xrpld.cfg to JSON (stdout or --output)
+  --output <dir>       Write xrpld.cfg and validators.txt to directory
+  --network <name>     Network preset: mainnet, testnet, devnet
+  --validate-only      Run validation without generating output
+  --help               Show this help message
 
-When both --env and --json are provided, JSON values override .env values.
-Environment variables from process.env are used as lowest-priority fallback.`;
+Examples:
+  config-gen xrpld --network mainnet --output /opt/xrpl/etc
+  config-gen xrpld --json config.json --output /opt/xrpl/etc
+  config-gen xrpld --input config.txt --network testnet
+  config-gen xrpld --parse /opt/xrpl/etc/xrpld.cfg
+  config-gen xrpld --json config.json --validate-only`;
+
+const VALID_NETWORKS = new Set(['mainnet', 'testnet', 'devnet']);
 
 export function parseArgs(argv: string[]): CliArgs | { error: string; showUsage?: boolean } {
   const args = argv.slice(2);
@@ -62,17 +71,19 @@ export function parseArgs(argv: string[]): CliArgs | { error: string; showUsage?
     return { error: `Unknown target "${target}". Must be "xrpld".` };
   }
 
-  let envPath: string | undefined;
+  let inputPath: string | undefined;
   let jsonPath: string | undefined;
+  let parsePath: string | undefined;
   let outputPath: string | undefined;
+  let network: 'mainnet' | 'testnet' | 'devnet' | undefined;
   let validateOnly = false;
 
   for (let i = 1; i < args.length; i++) {
     switch (args[i]) {
-      case '--env':
-        envPath = args[++i];
-        if (!envPath) {
-          return { error: '--env requires a path argument.' };
+      case '--input':
+        inputPath = args[++i];
+        if (!inputPath) {
+          return { error: '--input requires a path argument.' };
         }
         break;
       case '--json':
@@ -81,12 +92,29 @@ export function parseArgs(argv: string[]): CliArgs | { error: string; showUsage?
           return { error: '--json requires a path argument.' };
         }
         break;
+      case '--parse':
+        parsePath = args[++i];
+        if (!parsePath) {
+          return { error: '--parse requires a path argument.' };
+        }
+        break;
       case '--output':
         outputPath = args[++i];
         if (!outputPath) {
           return { error: '--output requires a path argument.' };
         }
         break;
+      case '--network': {
+        const val = args[++i];
+        if (!val) {
+          return { error: '--network requires a value (mainnet, testnet, devnet).' };
+        }
+        if (!VALID_NETWORKS.has(val)) {
+          return { error: `Invalid network "${val}". Must be mainnet, testnet, or devnet.` };
+        }
+        network = val as 'mainnet' | 'testnet' | 'devnet';
+        break;
+      }
       case '--validate-only':
         validateOnly = true;
         break;
@@ -95,57 +123,57 @@ export function parseArgs(argv: string[]): CliArgs | { error: string; showUsage?
     }
   }
 
-  return { target, envPath, jsonPath, outputPath, validateOnly };
-}
-
-// #endregion
-
-// #region Override Resolution
-
-export function resolveOverrides(
-  args: CliArgs,
-  env: Record<string, string | undefined> = {},
-): Record<string, string> {
-  // Lowest priority: process.env (only uppercase keys matching config var pattern)
-  const envVars: Record<string, string> = {};
-  for (const [key, value] of Object.entries(env)) {
-    if (/^[A-Z][A-Z0-9_]*$/.test(key) && value !== undefined) {
-      envVars[key] = value;
-    }
-  }
-
-  // Medium priority: .env file
-  let envFileVars: Record<string, string> = {};
-  if (args.envPath) {
-    const content = readFileSync(args.envPath, 'utf-8');
-    envFileVars = parseEnvFile(content);
-  }
-
-  // Highest priority: JSON file
-  let jsonFileVars: Record<string, string> = {};
-  if (args.jsonPath) {
-    const content = readFileSync(args.jsonPath, 'utf-8');
-    jsonFileVars = parseJsonFile(content);
-  }
-
-  return { ...envVars, ...envFileVars, ...jsonFileVars };
+  return { target, inputPath, jsonPath, parsePath, outputPath, network, validateOnly };
 }
 
 // #endregion
 
 // #region Run
 
-export function run(args: CliArgs, env: Record<string, string | undefined> = {}): CliResult {
+export function run(args: CliArgs): CliResult {
   const stderr: string[] = [];
   let stdout = '';
   let exitCode = 0;
 
   try {
-    const overrides = resolveOverrides(args, env);
+    // Parse mode: read cfg file and output JSON
+    if (args.parsePath) {
+      const content = readFileSync(args.parsePath, 'utf-8');
+      const parsed = parseCfgFile(content);
+      const json = JSON.stringify(parsed, null, 2);
 
+      if (args.outputPath) {
+        const outFile = join(args.outputPath, 'xrpld.json');
+        mkdirSync(args.outputPath, { recursive: true });
+        writeFileSync(outFile, json, 'utf-8');
+        stderr.push(`Parsed config written to ${outFile}`);
+      } else {
+        stdout = json;
+      }
+      return { exitCode, stdout, stderr };
+    }
+
+    // Build input from sources
+    let input: Partial<import('./types/xrpld-input.js').XrpldInput> = {};
+
+    if (args.inputPath) {
+      const content = readFileSync(args.inputPath, 'utf-8');
+      input = { ...input, ...parseTextFile(content) };
+    }
+
+    if (args.jsonPath) {
+      const content = readFileSync(args.jsonPath, 'utf-8');
+      const jsonInput = parseJsonFile(content);
+      input = { ...input, ...jsonInput };
+    }
+
+    if (args.network) {
+      input = { ...input, network: args.network };
+    }
+
+    // Validate-only mode
     if (args.validateOnly) {
-      const network = (overrides.NETWORK?.toLowerCase() ?? 'mainnet') as 'mainnet' | 'testnet' | 'devnet';
-      const resolved = resolveXrpldConfig({ network });
+      const resolved = resolveXrpldConfig(input);
       const result = validateXrpldConfig(resolved);
 
       for (const warning of result.warnings) {
@@ -163,16 +191,23 @@ export function run(args: CliArgs, env: Record<string, string | undefined> = {})
       return { exitCode: 0, stdout, stderr };
     }
 
-    // Use new renderer: resolve config with defaults then render
-    const network = (overrides.NETWORK?.toLowerCase() ?? 'mainnet') as 'mainnet' | 'testnet' | 'devnet';
-    const resolved = resolveXrpldConfig({ network });
-    const config = renderXrpldCfg(resolved);
+    // Generate mode
+    const result = generateXrpldConfig(input);
+
+    for (const warning of result.warnings) {
+      stderr.push(`Warning: ${warning}`);
+    }
 
     if (args.outputPath) {
-      writeFileSync(args.outputPath, config, 'utf-8');
-      stderr.push(`Config written to ${args.outputPath}`);
+      mkdirSync(args.outputPath, { recursive: true });
+      const cfgPath = join(args.outputPath, 'xrpld.cfg');
+      const valPath = join(args.outputPath, 'validators.txt');
+      writeFileSync(cfgPath, result.config, 'utf-8');
+      writeFileSync(valPath, result.validatorsTxt, 'utf-8');
+      stderr.push(`Config written to ${cfgPath}`);
+      stderr.push(`Validators written to ${valPath}`);
     } else {
-      stdout = config;
+      stdout = result.config;
     }
   } catch (error) {
     if (error instanceof Error) {
@@ -208,7 +243,7 @@ function main(): void {
     process.exit(1);
   }
 
-  const result = run(parsed, process.env);
+  const result = run(parsed);
 
   for (const line of result.stderr) {
     console.error(line);
