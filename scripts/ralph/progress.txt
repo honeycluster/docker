@@ -16,9 +16,19 @@ Started: Thu Mar 19 09:46:01 PM UTC 2026
 - `@types/node` needed for Node.js type definitions (was added as devDep)
 - New renderer is in `src/config-gen/renderers/cfg-renderer.ts` — use `renderXrpldCfg(config)` to render XrpldInput to cfg string
 - Old template-based generator (generators/xrpld.ts, template.ts) and legacy `getXrpldDefaults()` have been deleted
-- To generate a config: `resolveXrpldConfig(input)` → `renderXrpldCfg(resolved)` pipeline
+- Full generator pipeline: `resolveXrpldConfig(input)` → `validateXrpldConfig(resolved)` → `renderXrpldCfg(resolved)` → `generateValidatorsTxt(resolved)`
+- Use `generateXrpldConfig(input)` for the all-in-one entry point returning `{ config, validatorsTxt, warnings }`
 - `XrpldPortConfig.protocol` is required — always include when defining ports
 - VL config is nested under `vl` property in XrpldInput (validator_list_sites, validator_list_keys), not top-level
+- `validateXrpldConfig(config: XrpldInput)` is in `validation.ts` — returns `{ errors, warnings }` with typed `ValidationEntry[]`
+- Default resolved configs generate warnings (no validator_token) — tests should not assert 0 warnings on defaults
+- Old flat env-based `validateXrpldInputs` is removed — all validation now uses typed `XrpldInput`
+- CFG parser is in `src/config-gen/parsers/cfg-parser.ts` — use `parseCfgFile(content)` to parse cfg string to XrpldInput
+- Text file parser is in `src/config-gen/parsers/env-parser.ts` — use `parseTextFile(content)` to parse SCREAMING_SNAKE_CASE text to `Partial<XrpldInput>`
+- JSON parser now returns `Partial<XrpldInput>` directly (nested structure, no flattening)
+- Example cfg file is at `src/xrpld/etc/xrpld-example.cfg`
+- CLI `run()` takes `CliArgs` only (no env param) — uses file-based inputs exclusively
+- CLI `--output` is a directory path — writes xrpld.cfg + validators.txt (or xrpld.json in parse mode)
 
 ---
 
@@ -84,4 +94,169 @@ Started: Thu Mar 19 09:46:01 PM UTC 2026
   - The `generators/` directory is now empty and will be recreated by US-004 with new implementation
   - CLI currently uses minimal renderer integration (network only) — US-008 will fully rewrite it
   - Integration test expected output files from old template generator are now stale — US-010 will regenerate them
+---
+
+## 2026-03-19 - US-004
+- Created `src/config-gen/generators/validators-txt.ts` with `generateValidatorsTxt(config)`:
+  - Renders [validator_list_sites], [validator_list_keys], and [validators] sections
+  - Omits empty sections gracefully
+- Created `src/config-gen/generators/xrpld.ts` with:
+  - `validateXrpldConfig(config)` — minimal stub (US-005 builds full validator)
+    - Validates node_db.type (NuDB/RocksDB), node_db.path required, mutually exclusive validation_seed/validator_token
+  - `generateXrpldConfig(input)` — main pipeline: resolveXrpldConfig → validateXrpldConfig → renderXrpldCfg → generateValidatorsTxt
+    - Returns `{ config, validatorsTxt, warnings }`
+    - Throws on validation errors with all messages listed
+- Updated `src/config-gen/index.ts` — exports generateXrpldConfig, validateXrpldConfig, generateValidatorsTxt
+- Updated `src/index.ts` — re-exports all new functions
+- Created `__tests__/validators-txt.test.ts` with 7 tests
+- Created `__tests__/xrpld-generator.test.ts` with 11 tests
+- Updated `__tests__/index.test.ts` with 3 new export verification tests
+- Files changed: 2 created, 3 modified, 2 test files created
+- **Learnings for future iterations:**
+  - The `generators/` directory was deleted by US-003 and recreated here with new implementation
+  - `validateXrpldConfig` is a stub — US-005 will replace it with comprehensive validation using ValidationEntry types from xrpld-input.ts
+  - The pipeline pattern (resolve → validate → render → validators) is clean and testable
+  - VL config is accessed via `config.vl?.validator_list_sites` — always use optional chaining
+---
+
+## 2026-03-19 - US-005
+- Replaced `src/config-gen/validation.ts` with comprehensive implementation using `XrpldInput` types
+- Moved `validateXrpldConfig` from `generators/xrpld.ts` to `validation.ts` — generator now imports it
+- Implemented all validation rules:
+  - Port: range, duplicates, no/multiple peer, mixed protocols, well-known ports, admin IP warnings
+  - Network: network_id range/names, node_size enum
+  - Database: node_db type/path/online_delete/nudb_block_size/earliest_seq, database_path, ledger_history, sqlite, warnings
+  - Protocol: ssl_verify, mutually exclusive fields, compression, signing_support, peer_private, beta_rpc_api, ledger_replay, relay_proposals/validations, max_transactions, workers, sweep_interval, path_search, validator_list_sites https
+  - Overlay, reduce_relay, voting, crawl ranges
+  - Peer: peer_private=1 without ips_fixed warning
+- Removed old `validateXrpldInputs` (flat env-based) — replaced entirely by typed `validateXrpldConfig`
+- Updated CLI to use new validation API
+- Updated index.ts to remove old validation exports (ValidationError, validateXrpldInputs)
+- Wrote 76 validation tests covering every error and warning rule
+- Files changed: `validation.ts`, `generators/xrpld.ts`, `index.ts`, `src/index.ts`, `cli.ts`, `__tests__/validation.test.ts`, `__tests__/xrpld-generator.test.ts`, `__tests__/index.test.ts`
+- **Learnings for future iterations:**
+  - `resolveXrpldConfig` adds default `online_delete: 512` — tests for "missing online_delete" must use raw config, not `makeConfig()`
+  - Default configs generate warnings (e.g., no validator_token) — don't assert `warnings.length === 0` on defaults
+  - Old validation used flat env-based Record<string, string> — new one uses typed XrpldInput directly
+---
+
+## 2026-03-19 - US-006
+- Created `src/config-gen/parsers/cfg-parser.ts` with `parseCfgFile(content: string): XrpldInput`
+- Hardcoded section-type mappings matching the renderer's SINGLE_VALUE_KEYS, KEY_VALUE_KEYS, LIST_KEYS
+- Two-pass parsing: first pass extracts port names from [server], second pass parses all sections
+- Handles comments (#), blank lines, section headers [name], key=value (with/without spaces), single values, lists
+- Port sections parsed from [server] port name list, each port section maps to XrpldPortConfig
+- rpc_startup list items parsed as JSON objects
+- Numeric strings auto-coerced to numbers via tryParseNumber
+- Exported from index.ts and src/index.ts
+- Created `__tests__/cfg-parser.test.ts` with 30 tests covering:
+  - 7 single-value section tests
+  - 7 key-value section tests (node_db, overlay, transaction_queue, voting, crawl, vl)
+  - 7 list section tests (sntp_servers, ips, ips_fixed, rpc_startup, cluster_nodes, amendments, veto_amendments)
+  - 3 port section tests (basic, send_queue_limit, secure_gateway)
+  - 4 comment/whitespace tests
+  - 1 multi-section integration test
+  - 1 integration test parsing xrpld-example.cfg
+- Files changed: `parsers/cfg-parser.ts` (created), `__tests__/cfg-parser.test.ts` (created), `index.ts`, `src/index.ts`
+- **Learnings for future iterations:**
+  - Example cfg is at `src/xrpld/etc/xrpld-example.cfg` (not `examples/rippled/cfg/`)
+  - Port sections use `key = value` format (spaces around =), key-value sections use `key=value` (no spaces) — parser handles both via trimming
+  - The [server] section contains port names as plain lines (not key=value), plus optional key=value defaults
+  - Unknown sections default to key-value parsing — safe fallback
+  - `import.meta.dirname` available in ESM context for resolving relative paths in tests
+---
+
+## 2026-03-19 - US-007
+- Replaced `src/config-gen/parsers/env-parser.ts` with new `parseTextFile` implementation
+  - KEY_MAP constant maps all SCREAMING_SNAKE_CASE keys to nested XrpldInput paths
+  - LIST_KEYS set identifies comma-separated list fields
+  - NUMERIC_KEYS set identifies fields that should parse as numbers
+  - Indexed port parsing: PORT_0_NAME, PORT_0_PORT, etc.
+  - setNestedValue helper builds nested objects from dot-separated paths
+  - Preserved legacy `parseEnvFile` for backward compatibility with CLI (US-008 will rewrite CLI)
+- Updated `src/config-gen/parsers/json-parser.ts` to accept nested structure directly
+  - Removed old flattening logic (flattenObject, toScreamingSnake)
+  - Now returns `Partial<XrpldInput>` instead of `Record<string, string>`
+- Exported `parseTextFile` from `src/config-gen/index.ts` and `src/index.ts`
+- Created `src/config-gen/parsers/__tests__/text-parser.test.ts` with 40+ tests
+  - Single-value keys, nested key-value mapping, comma-separated lists, indexed ports
+  - Comments/whitespace handling, error cases, equivalence with JSON input
+- Updated `src/config-gen/parsers/__tests__/json-parser.test.ts` for new nested passthrough behavior
+- Updated `src/config-gen/__tests__/index.test.ts` to verify `parseTextFile` export
+- Files changed: `env-parser.ts`, `json-parser.ts`, `index.ts` (x2), `index.test.ts`, `json-parser.test.ts`, `text-parser.test.ts` (created)
+- **Learnings for future iterations:**
+  - `parseEnvFile` kept for backward compat — CLI still uses it until US-008 rewrites CLI
+  - `parseJsonFile` now returns `Partial<XrpldInput>` directly (no flattening) — tests that asserted flat `Record<string, string>` output needed rewriting
+  - Port boolean fields (permessage_deflate, etc.) parse as `true`/`false` from text, but as native booleans from JSON
+  - KEY_MAP is the single source of truth for supported flat keys — unknown keys throw TextParseException
+---
+
+## 2026-03-19 - US-008
+- Rewrote `src/config-gen/cli.ts` with new API using generator pipeline:
+  - `--json <path>` accepts nested JSON input
+  - `--input <path>` accepts text file with SCREAMING_SNAKE_CASE keys (replaces `--env`)
+  - `--parse <cfg-path>` parses existing cfg to JSON output (stdout or --output dir as xrpld.json)
+  - `--output <dir>` writes both xrpld.cfg AND validators.txt to directory
+  - `--network <name>` shorthand for mainnet/testnet/devnet preset (combinable with --json/--input)
+  - `--validate-only` runs validation, reports errors/warnings with proper prefixes
+  - Removed `--env` flag and clio target entirely
+  - Exit code 1 on errors, 0 on warnings-only or clean
+  - Error:/Warning: prefixes on stderr
+  - Updated help text with all options and examples
+- Removed `resolveOverrides` function (no longer needed — parsers return typed input directly)
+- Removed `parseEnvFile` import from CLI (only `parseTextFile` used now)
+- Rewrote `src/config-gen/__tests__/cli.test.ts` with 36 tests covering:
+  - 15 parseArgs tests (all flags, missing args, invalid values, old --env rejection)
+  - 7 generate mode tests (default, network, json, input, output dir, override priority, combining flags)
+  - 2 parse mode tests (stdout, output dir)
+  - 3 validate-only tests (pass, warnings, errors)
+  - 3 error handling tests (missing files)
+- Files changed: `cli.ts`, `__tests__/cli.test.ts`
+- **Learnings for future iterations:**
+  - CLI no longer uses `resolveOverrides` or flat Record<string, string> — parsers return `Partial<XrpldInput>` directly
+  - `--output` writes to a directory (not a file) — both xrpld.cfg and validators.txt go there
+  - `--parse` with `--output` writes xrpld.json to the output directory
+  - cfg parser returns numbers for numeric fields (e.g., network_id=0 becomes `0` not `"0"`)
+  - `run()` no longer takes an `env` parameter — process.env handling was removed in favor of explicit file inputs
+---
+
+## 2026-03-19 - US-009
+- Cleaned up public API exports in `src/config-gen/index.ts` and `src/index.ts`:
+  - Removed `parseEnvFile`, renderer functions (`renderSingleValueSection`, `renderKeyValueSection`, `renderListSection`, `renderPortSection`, `renderServerSection`, `renderXrpldCfg`), and `generateValidatorsTxt` from public exports
+  - Public API now exports only: `generateXrpldConfig`, `parseCfgFile`, `parseTextFile`, `parseJsonFile`, `validateXrpldConfig`, `getNetworkDefaults`, `resolveXrpldConfig`, and all TypeScript interfaces
+- Removed legacy `parseEnvFile` function and `EnvParseException` class from `src/config-gen/parsers/env-parser.ts`
+- Deleted `src/config-gen/parsers/__tests__/env-parser.test.ts` (tested the removed legacy function)
+- Added JSDoc comments with `@param` and `@returns` to all 7 exported functions across 6 source files
+- Updated `src/config-gen/__tests__/index.test.ts` to verify only the new public API exports
+- Files changed: 10 files modified, 1 file deleted
+- **Learnings for future iterations:**
+  - `renderXrpldCfg` and `generateValidatorsTxt` are still used internally by the generator and tests — they're just not part of the public API
+  - Test files that import directly from module files (not index.ts) are unaffected by index.ts export changes
+  - Pre-existing test typecheck issues (import.meta in CommonJS mode) don't affect vitest runtime
+---
+
+## 2026-03-19 - US-010
+- Created comprehensive integration test suite with 39 tests covering all acceptance criteria
+- Regenerated expected output files for new renderer (deleted stale old template outputs)
+- Test categories:
+  - 7 network config generation tests (mainnet, testnet, devnet, default equivalence)
+  - 2 custom ports tests (fixture-based + structural)
+  - 6 advanced sections tests (overlay, transaction_queue, voting, reduce_relay, crawl, sqlite)
+  - 7 validators.txt tests (each network + content checks + uniqueness)
+  - 3 round-trip cfg parse tests (example.cfg, mainnet re-parse, testnet re-parse)
+  - 1 text/JSON equivalence test
+  - 9 validation error tests (bad port, bad db type, mutually exclusive, missing path, range, duplicates, no peer, bad node_size)
+  - 3 warning pass-through tests
+- Added fixtures: xrpld-advanced.json, xrpld-text-input.txt, updated xrpld-custom-ports.json
+- Added expected outputs: xrpld-advanced.cfg, validators.txt for each network
+- Removed stale expected files: xrpld-full.cfg, xrpld-small.cfg, xrpld-ssl.cfg
+- Updated generate-expected.ts script to use new generator API
+- Coverage: 95.36% stmts, 92.15% branches, 96.36% funcs, 95.6% lines (well above 80% target)
+- All 302 tests pass across 11 test files
+- Files changed: `integration.test.ts`, `generate-expected.ts`, 8 expected files, 3 fixture files
+- **Learnings for future iterations:**
+  - Expected output files must be regenerated when the renderer changes — old template outputs are not compatible
+  - `import.meta.dirname` in tests causes tsc errors in CommonJS mode but works fine in vitest ESM runtime
+  - Example cfg is 3 levels up from integration test dir: `../../../xrpld/etc/xrpld-example.cfg`
+  - Coverage provider `@vitest/coverage-v8` must be installed separately
 ---

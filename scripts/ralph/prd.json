@@ -96,7 +96,7 @@
         "Tests pass"
       ],
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "notes": "Depends on US-002 (defaults), US-003 (renderer). For validation, create a minimal stub that returns empty errors/warnings — US-006 will build the full validator."
     },
     {
@@ -120,7 +120,7 @@
         "Unit tests for every warning rule"
       ],
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "notes": "Depends on US-001 (types). This replaces the old validation.ts entirely. The generator from US-004 already calls this."
     },
     {
@@ -144,7 +144,7 @@
         "Integration test: parse examples/rippled/cfg/xrpld-example.cfg — key sections parse correctly"
       ],
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "notes": "Depends on US-001 (types). The section-type mapping is critical — use ConfigSections.h as reference."
     },
     {
@@ -168,7 +168,7 @@
         "Unit test: text file input produces identical XrpldInput as equivalent JSON"
       ],
       "priority": 7,
-      "passes": false,
+      "passes": true,
       "notes": "Depends on US-001 (types). The KEY_MAP is the single source of truth for supported flat keys."
     },
     {
@@ -192,7 +192,7 @@
         "Tests pass"
       ],
       "priority": 8,
-      "passes": false,
+      "passes": true,
       "notes": "Depends on US-004 (generator), US-006 (cfg parser), US-007 (text parser). This wires the CLI to the new API."
     },
     {
@@ -209,7 +209,7 @@
         "Tests pass"
       ],
       "priority": 9,
-      "passes": false,
+      "passes": true,
       "notes": "Depends on all previous stories being complete. Final cleanup pass."
     },
     {
@@ -232,7 +232,7 @@
         "Typecheck passes"
       ],
       "priority": 10,
-      "passes": false,
+      "passes": true,
       "notes": "Final story. Generate expected output files first, then write tests comparing against them."
     }
   ]

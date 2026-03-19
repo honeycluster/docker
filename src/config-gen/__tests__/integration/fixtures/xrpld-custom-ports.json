@@ -1,9 +1,10 @@
 {
-  "NETWORK": "MAINNET",
-  "PORT_PEER": "41235",
-  "PORT_RPC": "41234",
-  "PORT_WSS": "4005",
-  "PORT_GRPC": "40051",
-  "PORT_RPC_ADMIN_LOCAL": "4005",
-  "PORT_WSS_ADMIN_LOCAL": "4006"
+  "network": "mainnet",
+  "server": {
+    "ports": [
+      { "name": "port_peer", "port": 41235, "ip": "0.0.0.0", "protocol": "peer" },
+      { "name": "port_rpc", "port": 41234, "ip": "0.0.0.0", "protocol": "http", "admin": "127.0.0.1" },
+      { "name": "port_ws", "port": 4005, "ip": "0.0.0.0", "protocol": "ws" }
+    ]
+  }
 }
