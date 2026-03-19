@@ -2,6 +2,7 @@
 
 export { parseEnvFile } from './parsers/env-parser.js';
 export { parseJsonFile } from './parsers/json-parser.js';
+export { parseCfgFile } from './parsers/cfg-parser.js';
 export { validateXrpldConfig } from './validation.js';
 export { getNetworkDefaults, resolveXrpldConfig } from './defaults/xrpld.js';
 export {

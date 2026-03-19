@@ -1,6 +1,7 @@
 export {
   parseEnvFile,
   parseJsonFile,
+  parseCfgFile,
   getNetworkDefaults,
   resolveXrpldConfig,
   renderXrpldCfg,
