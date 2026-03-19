@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   parseEnvFile,
+  parseTextFile,
   parseJsonFile,
   validateXrpldConfig,
   getNetworkDefaults,
@@ -15,6 +16,10 @@ import {
 describe('config-gen index exports', () => {
   it('exports parseEnvFile', () => {
     expect(typeof parseEnvFile).toBe('function');
+  });
+
+  it('exports parseTextFile', () => {
+    expect(typeof parseTextFile).toBe('function');
   });
 
   it('exports parseJsonFile', () => {

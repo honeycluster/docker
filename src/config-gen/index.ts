@@ -1,6 +1,6 @@
 // #region Public API
 
-export { parseEnvFile } from './parsers/env-parser.js';
+export { parseEnvFile, parseTextFile } from './parsers/env-parser.js';
 export { parseJsonFile } from './parsers/json-parser.js';
 export { parseCfgFile } from './parsers/cfg-parser.js';
 export { validateXrpldConfig } from './validation.js';

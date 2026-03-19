@@ -1,5 +1,6 @@
 export {
   parseEnvFile,
+  parseTextFile,
   parseJsonFile,
   parseCfgFile,
   getNetworkDefaults,
