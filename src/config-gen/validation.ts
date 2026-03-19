@@ -219,40 +219,4 @@ export function validateXrpldInputs(
 
 // #endregion
 
-// #region Clio Validation
-
-export function validateClioInputs(
-  inputs: Record<string, string | undefined>
-): ValidationResult {
-  const errors: ValidationError[] = [];
-  const warnings: ValidationError[] = [];
-
-  // Ports
-  const portFields = [
-    'SERVER_PORT',
-    'CASSANDRA_PORT',
-    'ETL_SOURCE_WS_PORT',
-    'ETL_SOURCE_GRPC_PORT',
-  ];
-  for (const field of portFields) {
-    const err = validatePort(field, inputs[field]);
-    if (err) errors.push(err);
-  }
-
-  // Booleans
-  const boolFields = [
-    'SSL_GENERATE',
-    'ALLOW_NO_ETL',
-    'SERVER_LOCAL_ADMIN',
-    'READ_ONLY',
-    'PROMETHEUS_ENABLED',
-  ];
-  for (const field of boolFields) {
-    const err = validateBoolean(field, inputs[field]);
-    if (err) errors.push(err);
-  }
-
-  return { errors, warnings };
-}
-
 // #endregion

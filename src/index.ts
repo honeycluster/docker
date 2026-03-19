@@ -1,12 +1,9 @@
 export {
   generateXrpldConfigFromInput,
-  generateClioConfigFromInput,
   generateXrpldConfig,
-  generateClioConfig,
   parseEnvFile,
   parseJsonFile,
   validateXrpldInputs,
-  validateClioInputs,
 } from './config-gen/index.js';
 
 export type {
@@ -15,5 +12,23 @@ export type {
   ValidationError,
   ValidationResult,
   XrpldGeneratorResult,
-  ClioGeneratorResult,
 } from './config-gen/index.js';
+
+export type {
+  XrpldInput,
+  XrpldPortConfig,
+  XrpldNodeDbConfig,
+  XrpldOverlayConfig,
+  XrpldTransactionQueueConfig,
+  XrpldVotingConfig,
+  XrpldCrawlConfig,
+  XrpldReduceRelayConfig,
+  XrpldInsightConfig,
+  XrpldPerfConfig,
+  XrpldSqliteConfig,
+  XrpldVlConfig,
+  XrpldImportDbConfig,
+  XrpldGeneratorResult as XrpldGeneratorResultNew,
+  ValidationEntry,
+  ValidationResult as ValidationResultNew,
+} from './config-gen/types/xrpld-input.js';

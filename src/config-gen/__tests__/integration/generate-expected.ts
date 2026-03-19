@@ -1,6 +1,5 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { generateXrpldConfig } from '../../generators/xrpld.js';
-import { generateClioConfig } from '../../generators/clio.js';
 import { parseEnvFile } from '../../parsers/env-parser.js';
 import { parseJsonFile } from '../../parsers/json-parser.js';
 
@@ -31,19 +30,6 @@ const xrpldScenarios: [string, Record<string, string>][] = [
 
 for (const [filename, overrides] of xrpldScenarios) {
   const { config } = generateXrpldConfig(overrides);
-  writeFileSync(`${EXPECTED}${filename}`, config);
-  console.log(`Generated ${filename}`);
-}
-
-// clio scenarios
-const clioScenarios: [string, Record<string, string>][] = [
-  ['clio-default.json', {}],
-  ['clio-ssl.json', loadEnv('clio-ssl.env')],
-  ['clio-custom.json', loadJson('clio-custom.json')],
-];
-
-for (const [filename, overrides] of clioScenarios) {
-  const { config } = generateClioConfig(overrides);
   writeFileSync(`${EXPECTED}${filename}`, config);
   console.log(`Generated ${filename}`);
 }

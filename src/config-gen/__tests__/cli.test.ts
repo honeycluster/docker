@@ -69,11 +69,6 @@ describe('CLI', () => {
       expect(result.validateOnly).toBe(false);
     });
 
-    it('parses clio target', () => {
-      const result = parseArgs(['node', 'cli.ts', 'clio']) as CliArgs;
-      expect(result.target).toBe('clio');
-    });
-
     it('parses all options', () => {
       const result = parseArgs([
         'node', 'cli.ts', 'xrpld',
@@ -190,39 +185,11 @@ describe('CLI', () => {
 
   // #endregion
 
-  // #region run - clio
-
-  describe('run - clio', () => {
-    it('generates default clio config as valid JSON', () => {
-      const result = run({ target: 'clio', validateOnly: false });
-      expect(result.exitCode).toBe(0);
-      const parsed = JSON.parse(result.stdout);
-      expect(parsed).toHaveProperty('database');
-    });
-
-    it('generates clio config to output file', () => {
-      const outputPath = join(tmpDir, 'config.json');
-      const result = run({ target: 'clio', outputPath, validateOnly: false });
-      expect(result.exitCode).toBe(0);
-      const content = readFileSync(outputPath, 'utf-8');
-      const parsed = JSON.parse(content);
-      expect(parsed).toHaveProperty('database');
-    });
-  });
-
-  // #endregion
-
   // #region run - validate-only
 
   describe('run - validate-only', () => {
     it('passes validation for xrpld with defaults', () => {
       const result = run({ target: 'xrpld', validateOnly: true });
-      expect(result.exitCode).toBe(0);
-      expect(result.stderr.join('\n')).toContain('Validation passed');
-    });
-
-    it('passes validation for clio with defaults', () => {
-      const result = run({ target: 'clio', validateOnly: true });
       expect(result.exitCode).toBe(0);
       expect(result.stderr.join('\n')).toContain('Validation passed');
     });

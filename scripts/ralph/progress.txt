@@ -1,175 +1,43 @@
-## Codebase Patterns
-- `@xrpl-indexer/utils` must be built (`pnpm run build`) before packages that depend on it can run tests, since exports point to `dist/`
-- FetchUtil in `packages/utils/src/xrpl/fetch.ts` supports rate limiting via `rateLimit: { requestsPerMinute }` option and content-type based response parsing via `fetch()` and `getResponse()` methods
-- FetchResponse<T> type provides `{ status, headers, data }` for full response access
-- Pre-existing typecheck errors exist in services/db (Prisma generated), services/trpc (path aliases), and vitest configs (declaration files) — these are not regressions
-- Tests use `vi.stubGlobal('fetch', mockFetch)` pattern for mocking fetch in Vitest
-- xrpl.js exports `LedgerEntry` as a namespace — use `LedgerEntry.AccountRoot` etc. for ledger entry parser generics, `BaseLedgerEntry` from `'xrpl/dist/npm/models/ledger/BaseLedgerEntry.js'` for constraints
-- xrpl.js `BaseTransaction extends Record<string, unknown>` — `this.tx.AnyField` compiles; ledger types do NOT, use `this.raw` for fields missing from xrpl types
-- xrpl.js type definitions may differ from protocol (e.g., Delegate uses `Authorize` vs `Delegate`, Permission uses `PermissionValue` vs `PermissionType`) — handle both
-- In worktree environments, workspace packages may not resolve — use self-contained configs or symlinks
-- Use xrpl.js utility functions instead of custom implementations: `dropsToXrp()`, `rippleTimeToUnixTime()`, `convertHexToString()`, `getNFTokenID()`, `parseNFTokenID()`, `getBalanceChanges()`, `getXChainClaimID()`, `qualityToDecimal()`, `transferRateToDecimal()`, `decodeMPTokenMetadata()`
-- Use xrpl.js flag constants (`NFTokenMintFlags`, `TrustSetFlags`, `AccountSetAsfFlags`, `MPTokenIssuanceCreateFlags`, etc.) instead of hardcoded magic numbers
-- `rippleTimeToUnixTime()` returns MILLISECONDS — divide by 1000 for Unix seconds
-- `dropsToXrp()` returns a number (not string) — use `String(dropsToXrp(x))` when ICurrencyAmount.value expects string
-- xrpl.js `getBalanceChanges()` returns `{ account, balances: [{ currency, value, issuer? }] }[]` — layer custom classification (fee/exchange/payment_source/etc.) on top
-- Some XRPL responses provide `date` as Unix timestamp (>946684800), not Ripple epoch — check before calling `rippleTimeToUnixTime()`
-- `parseTransactionFlags()` and `parseAccountRootFlags()` only return truthy flags — absent keys mean false
-- `AccountRootFlagsInterface` must be imported from `'xrpl/dist/npm/models/ledger/AccountRoot.js'`, not main 'xrpl'
-- Use `decodeHexField()` from `utils/enrichment.ts` for hex-to-string decoding (same printability check as MemosParser)
-- Use `toDualTimestamp()` from `utils/enrichment.ts` for converting Ripple epoch to `{ unix, iso }` format
-- When adding `isNative` to ICurrencyAmount, update ALL manual constructions of ICurrencyAmount objects (exchanges.ts, RippleStateParser, OfferCreateParser)
-- `normalizeAmount()` converts XRP drops to decimal value AND adds `isNative: true` — tests must expect normalized values, not raw drops
-- `.claude/agents/` directory is not tracked in git by default — must be explicitly added when working in worktrees
-- Agent definitions are markdown files with YAML frontmatter; changes are documentation-only and don't require typecheck
-- Test CLI logic by exporting testable functions (`run()`, `parseArgs()`) — do NOT spawn child processes with `npx tsx` (too slow)
-- Use `node-types.d.ts` for Node.js type declarations since `@types/node` is not available in worktree
-- Clio uses `false`/`true` strings for booleans; xrpld uses `0`/`1` — validation must handle both conventions
-- This worktree root is `/workspace/.worktrees/config-generator/`, NOT `/workspace/` — all file writes must use worktree paths
-- The worktree tsconfig extends `@docs/configs/tsconfig/base.json` which isn't resolvable — use standalone `npx tsc --noEmit --strict --target ESNext --module ESNext --moduleResolution bundler` for typechecking
-- Bash source scripts are at `src/xrpld/scripts/defaults/` and `src/clio/scripts/defaults/` within the worktree
-- Vitest v4.1.0 is available globally via `npx vitest run <path>` — no project-level config needed for config-gen tests
-
-
-
 
 # Ralph Progress Log
-Started: Wed Mar 18 08:27:16 PM UTC 2026
+Started: Thu Mar 19 09:46:01 PM UTC 2026
+
+## Codebase Patterns
+- Code lives in `src/config-gen/` (NOT `packages/generator/` as PRD says — adapt paths accordingly)
+- Tests use Vitest with `import { describe, it, expect } from 'vitest'`
+- Test files are in `__tests__/` directories adjacent to source
+- Integration test fixtures in `src/config-gen/__tests__/integration/fixtures/`
+- Integration test expected outputs in `src/config-gen/__tests__/integration/expected/`
+- Root exports from `src/index.ts` re-export from `src/config-gen/index.ts`
+- Typecheck: `npx tsc --noEmit --target es2022 --module nodenext --moduleResolution nodenext --strict --skipLibCheck --esModuleInterop <files>`
+- Run tests: `npx vitest run`
+- The tsconfig extends `@docs/configs/tsconfig/base.json` which doesn't exist in this repo — use explicit tsc flags instead
+- CLI is at `src/config-gen/cli.ts`
+- `@types/node` needed for Node.js type definitions (was added as devDep)
+
 ---
 
-## 2026-03-18 - US-001
-- Implemented xrpld defaults schema in TypeScript at `src/config-gen/defaults/xrpld.ts`
-- Exports: `XrpldConfig` interface, `Network`/`Size` types, `NETWORK_DEFAULTS`, `LEDGER_RETENTION_BY_SIZE`, `buildSslDerived()`, all section builder functions, `getXrpldDefaults()`
-- Faithfully ports all logic from `src/xrpld/scripts/defaults/common.sh`, `config/defaults.sh`, and network-specific `mainnet.sh`/`testnet.sh`/`devnet.sh`
-- Files changed: `src/config-gen/defaults/xrpld.ts` (new)
+## 2026-03-19 - US-001
+- Deleted all Clio-related files: generators/clio.ts, defaults/clio.ts, generators/__tests__/clio.test.ts
+- Deleted Clio integration test fixtures and expected outputs (clio-custom.json, clio-default.json, clio-ssl.json)
+- Removed validateClioInputs from validation.ts
+- Removed all Clio imports/exports from index.ts, cli.ts, src/index.ts
+- Removed Clio references from all test files (index.test.ts, validation.test.ts, cli.test.ts, integration.test.ts, generate-expected.ts)
+- Created src/config-gen/types/xrpld-input.ts with all interfaces:
+  - XrpldPortConfig (all 24 fields), XrpldNodeDbConfig (11 fields), XrpldImportDbConfig, XrpldSqliteConfig
+  - XrpldOverlayConfig, XrpldTransactionQueueConfig (13 fields), XrpldVotingConfig, XrpldCrawlConfig
+  - XrpldReduceRelayConfig, XrpldInsightConfig, XrpldPerfConfig, XrpldVlConfig
+  - XrpldInput (60+ top-level keys), XrpldGeneratorResult, ValidationEntry, ValidationResult
+  - All properties use readonly, arrays use ReadonlyArray
+  - Optional network meta-field: 'mainnet' | 'testnet' | 'devnet'
+- Exported all new types from index.ts and src/index.ts
+- Updated CLI to xrpld-only (removed clio target)
+- Fixed integration tests to only use available fixture files
+- Files changed: 14 files modified, 7 files deleted, 1 file created
 - **Learnings for future iterations:**
-  - Worktree root is `/workspace/.worktrees/config-generator/`, not `/workspace/` — git only tracks files under worktree root
-  - The tsconfig in `config/tsconfig.build.json` extends `@docs/configs` which isn't resolvable in worktree — use standalone tsc for typecheck
-  - Bash scripts live at `src/xrpld/scripts/defaults/` in worktree, not `packages/docker/xrpld/scripts/defaults/`
----
-
-## 2026-03-18 - US-002
-- Implemented Clio defaults schema in TypeScript at `src/config-gen/defaults/clio.ts`
-- Exports: `ClioConfig` interface, `ClioSslDerived` interface, `buildClioSslDerived()`, `getClioDefaults()`
-- Faithfully ports all logic from `src/clio/scripts/defaults/common.sh`
-- Includes all database (Cassandra), ETL, server, logging, cache, prometheus, and API version defaults
-- SSL-derived computation: `SSL_CERT_FILE` and `SSL_KEY_FILE` from `SSL_CERT_PATH`
-- Files changed: `src/config-gen/defaults/clio.ts` (new)
-- **Learnings for future iterations:**
-  - Clio SSL is simpler than xrpld — just cert/key file paths, no protocol or verify logic
-  - Clio has no network-specific overrides (unlike xrpld which has MAINNET/TESTNET/DEVNET)
-  - Clio defaults use `false`/`true` strings for booleans (not `0`/`1` like xrpld)
----
-
-## 2026-03-18 - US-003
-- Implemented .env and JSON file parsers at `src/config-gen/parsers/env-parser.ts` and `src/config-gen/parsers/json-parser.ts`
-- `parseEnvFile()` handles KEY=VALUE, comments (#), blank lines, single/double quoted values, inline comments, empty values
-- `parseJsonFile()` handles flat and nested JSON, flattens to SCREAMING_SNAKE_CASE keys, converts all values to strings
-- Both return `Record<string, string>` and throw descriptive errors (`EnvParseException` with line numbers, `JsonParseException` with messages)
-- 32 unit tests covering all acceptance criteria
-- Files changed: `src/config-gen/parsers/env-parser.ts` (new), `src/config-gen/parsers/json-parser.ts` (new), `src/config-gen/parsers/__tests__/env-parser.test.ts` (new), `src/config-gen/parsers/__tests__/json-parser.test.ts` (new)
-- **Learnings for future iterations:**
-  - Vitest v4.1.0 is available globally via npx — no need to install or configure
-  - Tests can be run with `npx vitest run <path>` for specific test directories
-  - JSON parser uses `toScreamingSnake()` to convert camelCase keys — downstream stories should match this convention when accepting JSON input
----
-
-## 2026-03-18 - US-004
-- Implemented input validation at `src/config-gen/validation.ts`
-- Exports: `ValidationError`, `ValidationResult` interfaces, `validatePort()`, `validateBoolean()`, `validateUrl()`, `validateRequired()`, `validateXrpldInputs()`, `validateClioInputs()`
-- xrpld validates 6 ports, NETWORK enum, SIZE enum, 5 boolean fields, optional URL for VALIDATOR_LIST_SITES
-- Clio validates 4 ports, 5 boolean fields
-- Returns structured `{ errors, warnings }` with field/value/message per error
-- Warns on case-mismatched network/size values (e.g., "mainnet" instead of "MAINNET")
-- 33 unit tests covering valid inputs, invalid ports, invalid booleans, missing fields, network/size warnings, structured error format
-- Files changed: `src/config-gen/validation.ts` (new), `src/config-gen/__tests__/validation.test.ts` (new)
-- **Learnings for future iterations:**
-  - Validation tests live at `src/config-gen/__tests__/` (sibling to parsers tests at `src/config-gen/parsers/__tests__/`)
-  - Boolean validation accepts true/false/on/off/1/0/yes/no — both Clio-style (true/false) and xrpld-style (0/1) work
-  - Empty/undefined fields skip validation (treated as optional) — required field checking is separate via `validateRequired()`
----
-
-## 2026-03-18 - US-005
-- Implemented template substitution engine at `src/config-gen/template.ts`
-- `substitute(template, vars)` replaces `${VAR}` placeholders with values from vars record
-- Only matches uppercase variable names matching `^[A-Z][A-Z0-9_]*$` (same as envsubst.sh)
-- Unresolved variables replaced with empty string (envsubst behavior)
-- Handles multi-line section variables (NODE_SIZE_SECTION, SSL_LINES, etc.)
-- Cleans up 3+ consecutive blank lines to 2 (from empty optional sections)
-- 20 unit tests covering all acceptance criteria
-- Files changed: `src/config-gen/template.ts` (new), `src/config-gen/__tests__/template.test.ts` (new)
-- **Learnings for future iterations:**
-  - Template engine is intentionally simple — no escaping, no conditionals, just ${VAR} replacement
-  - The blank line cleanup (3+ → 2) ensures empty optional sections don't leave gaps in generated configs
-  - `$VAR` without braces is NOT replaced — only `${VAR}` syntax works
----
-
-## 2026-03-18 - US-006
-- Implemented xrpld config generator at `src/config-gen/generators/xrpld.ts`
-- `generateXrpldConfig(overrides)` orchestrates: load defaults → merge overrides → compute derived → validate → substitute template → output
-- Bundles the xrpld.cfg template as a string constant (from `src/xrpld/etc/xrpld.cfg`)
-- Returns `{ config, warnings }` — throws on validation errors with structured messages
-- 26 unit tests covering: default config, MAINNET/TESTNET/DEVNET, all SIZE presets, SSL enabled/disabled/chain, reporting mode, custom overrides, Postgres ledger_tx_tables, validation errors, output format
-- Files changed: `src/config-gen/generators/xrpld.ts` (new), `src/config-gen/generators/__tests__/xrpld.test.ts` (new)
-- **Learnings for future iterations:**
-  - `XrpldConfig` interface is not index-compatible with `Record<string, string | undefined>` — use `as unknown as Record<...>` cast when passing to `validateXrpldInputs()`
-  - The generator pattern is simple: defaults → validate → substitute → return. Same pattern should work for Clio (US-007)
-  - Template is embedded as a template literal with escaped `\${VAR}` — backtick strings need `\$` to avoid JS interpolation
----
-
-## 2026-03-18 - US-007
-- Implemented Clio config generator at `src/config-gen/generators/clio.ts`
-- `generateClioConfig(overrides)` orchestrates: load defaults → merge overrides → compute derived → validate → substitute template → output
-- Bundles the config.json template as a string constant (from `src/clio/etc/config.json`)
-- Returns `{ config, warnings }` — throws on validation errors with structured messages
-- Output is valid JSON when all variables are resolved
-- 22 unit tests covering: default config, valid JSON output, SSL enabled/disabled, custom Cassandra settings, custom ETL source, server settings, boolean fields, cache/logging, DoS guard, API version, validation errors, structure verification
-- Files changed: `src/config-gen/generators/clio.ts` (new), `src/config-gen/generators/__tests__/clio.test.ts` (new)
-- **Learnings for future iterations:**
-  - Clio generator follows identical pattern to xrpld: defaults → validate → substitute → return
-  - Clio config is JSON, so tests can parse output with `JSON.parse()` and assert on typed values — much easier to test than xrpld's INI-style format
-  - Clio booleans (`true`/`false`) and numbers are unquoted in the JSON template, so they become native JSON types after substitution
----
-
-## 2026-03-18 - US-008
-- Implemented CLI interface at `src/config-gen/cli.ts`
-- Exports: `parseArgs()`, `resolveOverrides()`, `run()` as testable functions, plus `CliArgs` and `CliResult` types
-- CLI supports `config-gen <xrpld|clio>` with `--env`, `--json`, `--output`, `--validate-only` flags
-- Override priority: process.env (lowest) < .env file < JSON file (highest)
-- Added `node-types.d.ts` for minimal Node.js type declarations (no @types/node in worktree)
-- Added `bin` field to root `package.json`
-- 30 unit tests covering: arg parsing, override resolution, xrpld/clio generation, validate-only mode, error handling
-- Files changed: `src/config-gen/cli.ts` (new), `src/config-gen/node-types.d.ts` (new), `src/config-gen/__tests__/cli.test.ts` (new), `package.json` (modified)
-- **Learnings for future iterations:**
-  - `npx tsx` is very slow in tests (~10s per spawn) — test CLI logic by exporting functions and testing directly, not via child process
-  - `@types/node` is not installed in the worktree — use a minimal `node-types.d.ts` for CLI-specific Node APIs
-  - CLI `run()` returns `{ exitCode, stdout, stderr[] }` making it easy to test without mocking process.exit/console
-  - The `isDirectExecution` guard prevents `main()` from running when the module is imported for testing
----
-
-## 2026-03-18 - US-009
-- Created `src/config-gen/index.ts` with programmatic API: `generateXrpldConfigFromInput()`, `generateClioConfigFromInput()` wrapper functions accepting `{ env?, json?, overrides? }` input
-- Re-exports all public functions: `generateXrpldConfig`, `generateClioConfig`, `parseEnvFile`, `parseJsonFile`, `validateXrpldInputs`, `validateClioInputs`
-- Added `exports` map to `package.json` with `"."` and `"./config-gen"` sub-exports
-- Created `src/index.ts` re-exporting everything from config-gen
-- 27 unit tests covering: all exports exist, xrpld/clio generation from env/json/overrides, priority ordering (overrides > json > env), validation errors, edge cases
-- Files changed: `src/config-gen/index.ts` (new), `src/index.ts` (new), `src/config-gen/__tests__/index.test.ts` (new), `package.json` (modified)
-- **Learnings for future iterations:**
-  - The wrapper functions (`generateXrpldConfigFromInput`/`generateClioConfigFromInput`) handle input merging; the low-level `generateXrpldConfig`/`generateClioConfig` accept pre-merged `Record<string, string>`
-  - Input priority: overrides > json > env (same as CLI but without process.env fallback)
-  - Both low-level and high-level generator functions are exported for flexibility
----
-
-## 2026-03-18 - US-010
-- Implemented integration tests with real templates comparing TypeScript generator output against expected golden files
-- Created fixture input files: .env files for xrpld (default, MAINNET, TESTNET, DEVNET, SIZE=SMALL, SIZE=FULL, SSL enabled) and clio (default, SSL), JSON files for custom ports/settings
-- Created expected output files generated by running the TypeScript generators (11 golden files)
-- 18 integration tests covering: all xrpld network presets, size presets, SSL mode, custom ports from JSON, clio default/SSL/custom, valid JSON output verification, programmatic API parity with direct generation, override priority
-- Includes a `generate-expected.ts` helper script to regenerate golden files when generators change
-- Files changed: `src/config-gen/__tests__/integration/integration.test.ts` (new), `src/config-gen/__tests__/integration/generate-expected.ts` (new), `src/config-gen/__tests__/integration/fixtures/` (10 fixture files), `src/config-gen/__tests__/integration/expected/` (11 expected output files)
-- **Learnings for future iterations:**
-  - Test files in worktree can't be typechecked (no vitest/@types/node declarations) — same as all existing test files, this is expected
-  - `import.meta.url` with `new URL()` is the reliable way to resolve file paths relative to the test file in ESM
-  - Default xrpld config is identical to explicit MAINNET config — test verifies this invariant
-  - Clio JSON outputs can be parsed and asserted on typed values, making structural verification easy
+  - PRD references `packages/generator/` but actual code is in `src/config-gen/` — always adapt paths
+  - tsconfig base is missing, use explicit tsc flags for typecheck
+  - Integration test .env fixtures (xrpld-mainnet.env, etc.) were never committed — tests were updated to work without them
+  - `@types/node` was not installed — needed for Node.js types
+  - vitest was not installed — added as devDependency
 ---

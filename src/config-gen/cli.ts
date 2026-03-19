@@ -6,15 +6,14 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { parseEnvFile } from './parsers/env-parser.js';
 import { parseJsonFile } from './parsers/json-parser.js';
 import { generateXrpldConfig } from './generators/xrpld.js';
-import { generateClioConfig } from './generators/clio.js';
-import { validateXrpldInputs, validateClioInputs } from './validation.js';
+import { validateXrpldInputs } from './validation.js';
 
 // #endregion
 
 // #region Types
 
 export interface CliArgs {
-  target: 'xrpld' | 'clio';
+  target: 'xrpld';
   envPath?: string;
   jsonPath?: string;
   outputPath?: string;
@@ -35,7 +34,6 @@ const USAGE = `Usage: config-gen <target> [options]
 
 Targets:
   xrpld    Generate xrpld.cfg configuration
-  clio     Generate Clio config.json configuration
 
 Options:
   --env <path>       Read overrides from a .env file
@@ -59,8 +57,8 @@ export function parseArgs(argv: string[]): CliArgs | { error: string; showUsage?
   }
 
   const target = args[0];
-  if (target !== 'xrpld' && target !== 'clio') {
-    return { error: `Unknown target "${target}". Must be "xrpld" or "clio".` };
+  if (target !== 'xrpld') {
+    return { error: `Unknown target "${target}". Must be "xrpld".` };
   }
 
   let envPath: string | undefined;
@@ -145,8 +143,7 @@ export function run(args: CliArgs, env: Record<string, string | undefined> = {})
     const overrides = resolveOverrides(args, env);
 
     if (args.validateOnly) {
-      const validate = args.target === 'xrpld' ? validateXrpldInputs : validateClioInputs;
-      const result = validate(overrides as Record<string, string | undefined>);
+      const result = validateXrpldInputs(overrides as Record<string, string | undefined>);
 
       for (const warning of result.warnings) {
         stderr.push(`Warning: ${warning.field}: ${warning.message}`);
@@ -163,8 +160,7 @@ export function run(args: CliArgs, env: Record<string, string | undefined> = {})
       return { exitCode: 0, stdout, stderr };
     }
 
-    const generate = args.target === 'xrpld' ? generateXrpldConfig : generateClioConfig;
-    const { config, warnings } = generate(overrides);
+    const { config, warnings } = generateXrpldConfig(overrides);
 
     for (const warning of warnings) {
       stderr.push(`Warning: ${warning}`);

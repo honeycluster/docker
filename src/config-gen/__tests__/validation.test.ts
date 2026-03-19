@@ -5,7 +5,6 @@ import {
   validateUrl,
   validateRequired,
   validateXrpldInputs,
-  validateClioInputs,
 } from '../validation.js';
 
 // #region Core Validators
@@ -168,7 +167,6 @@ describe('validateXrpldInputs', () => {
 
   it('warns on case-mismatched network', () => {
     const result = validateXrpldInputs({ NETWORK: 'mainnet' });
-    // 'mainnet' passes validateNetwork (case-insensitive) but triggers casing warning
     expect(result.warnings.some((w) => w.field === 'NETWORK')).toBe(true);
   });
 
@@ -193,85 +191,6 @@ describe('validateXrpldInputs', () => {
     expect(err.field).toBe('PORT_PEER');
     expect(err.value).toBe('bad');
     expect(typeof err.message).toBe('string');
-  });
-});
-
-// #endregion
-
-// #region Clio Validation
-
-describe('validateClioInputs', () => {
-  it('returns no errors for valid inputs', () => {
-    const result = validateClioInputs({
-      SERVER_PORT: '51233',
-      CASSANDRA_PORT: '9042',
-      ETL_SOURCE_WS_PORT: '6006',
-      ETL_SOURCE_GRPC_PORT: '50051',
-      SSL_GENERATE: 'false',
-      ALLOW_NO_ETL: 'false',
-      SERVER_LOCAL_ADMIN: 'false',
-      READ_ONLY: 'false',
-      PROMETHEUS_ENABLED: 'true',
-    });
-    expect(result.errors).toHaveLength(0);
-  });
-
-  it('returns errors for invalid ports', () => {
-    const result = validateClioInputs({
-      SERVER_PORT: '0',
-      CASSANDRA_PORT: '-5',
-    });
-    expect(result.errors).toHaveLength(2);
-    expect(result.errors[0].field).toBe('SERVER_PORT');
-    expect(result.errors[1].field).toBe('CASSANDRA_PORT');
-  });
-
-  it('returns errors for invalid booleans', () => {
-    const result = validateClioInputs({
-      ALLOW_NO_ETL: 'nah',
-      PROMETHEUS_ENABLED: 'enabled',
-      READ_ONLY: '3',
-    });
-    expect(result.errors).toHaveLength(3);
-  });
-
-  it('returns no errors when fields are empty/absent', () => {
-    const result = validateClioInputs({});
-    expect(result.errors).toHaveLength(0);
-  });
-
-  it('accepts Clio-style true/false booleans', () => {
-    const result = validateClioInputs({
-      SSL_GENERATE: 'true',
-      ALLOW_NO_ETL: 'false',
-      SERVER_LOCAL_ADMIN: 'true',
-      READ_ONLY: 'false',
-      PROMETHEUS_ENABLED: 'true',
-    });
-    expect(result.errors).toHaveLength(0);
-  });
-
-  it('accepts xrpld-style 0/1 booleans', () => {
-    const result = validateClioInputs({
-      SSL_GENERATE: '0',
-      ALLOW_NO_ETL: '1',
-    });
-    expect(result.errors).toHaveLength(0);
-  });
-
-  it('validates all 4 port fields', () => {
-    const result = validateClioInputs({
-      SERVER_PORT: 'x',
-      CASSANDRA_PORT: 'y',
-      ETL_SOURCE_WS_PORT: 'z',
-      ETL_SOURCE_GRPC_PORT: 'w',
-    });
-    expect(result.errors).toHaveLength(4);
-    const fields = result.errors.map((e) => e.field);
-    expect(fields).toContain('SERVER_PORT');
-    expect(fields).toContain('CASSANDRA_PORT');
-    expect(fields).toContain('ETL_SOURCE_WS_PORT');
-    expect(fields).toContain('ETL_SOURCE_GRPC_PORT');
   });
 });
 
