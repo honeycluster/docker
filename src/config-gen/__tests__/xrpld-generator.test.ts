@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { generateXrpldConfig, validateXrpldConfig } from '../generators/xrpld.js';
+import { generateXrpldConfig } from '../generators/xrpld.js';
+import { validateXrpldConfig } from '../validation.js';
 import { resolveXrpldConfig } from '../defaults/xrpld.js';
 
 describe('generateXrpldConfig', () => {
@@ -88,12 +89,12 @@ describe('generateXrpldConfig', () => {
 });
 
 describe('validateXrpldConfig', () => {
-  it('returns empty errors and warnings for valid config', () => {
+  it('returns no errors for valid config', () => {
     const config = resolveXrpldConfig({ network: 'mainnet' });
     const result = validateXrpldConfig(config);
 
     expect(result.errors).toHaveLength(0);
-    expect(result.warnings).toHaveLength(0);
+    // Warnings are expected (e.g., no validator_token configured)
   });
 
   it('returns error for invalid node_db type', () => {

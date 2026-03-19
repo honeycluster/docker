@@ -2,8 +2,7 @@
 
 export { parseEnvFile } from './parsers/env-parser.js';
 export { parseJsonFile } from './parsers/json-parser.js';
-export { validateXrpldInputs } from './validation.js';
-export type { ValidationError, ValidationResult } from './validation.js';
+export { validateXrpldConfig } from './validation.js';
 export { getNetworkDefaults, resolveXrpldConfig } from './defaults/xrpld.js';
 export {
   renderSingleValueSection,
@@ -13,7 +12,7 @@ export {
   renderServerSection,
   renderXrpldCfg,
 } from './renderers/cfg-renderer.js';
-export { generateXrpldConfig, validateXrpldConfig } from './generators/xrpld.js';
+export { generateXrpldConfig } from './generators/xrpld.js';
 export { generateValidatorsTxt } from './generators/validators-txt.js';
 
 // Re-export types
@@ -33,7 +32,7 @@ export type {
   XrpldImportDbConfig,
   XrpldGeneratorResult,
   ValidationEntry,
-  ValidationResult as ValidationResultType,
+  ValidationResult,
 } from './types/xrpld-input.js';
 
 // #endregion

@@ -7,7 +7,7 @@ import { parseEnvFile } from './parsers/env-parser.js';
 import { parseJsonFile } from './parsers/json-parser.js';
 import { resolveXrpldConfig } from './defaults/xrpld.js';
 import { renderXrpldCfg } from './renderers/cfg-renderer.js';
-import { validateXrpldInputs } from './validation.js';
+import { validateXrpldConfig } from './validation.js';
 
 // #endregion
 
@@ -144,15 +144,17 @@ export function run(args: CliArgs, env: Record<string, string | undefined> = {})
     const overrides = resolveOverrides(args, env);
 
     if (args.validateOnly) {
-      const result = validateXrpldInputs(overrides as Record<string, string | undefined>);
+      const network = (overrides.NETWORK?.toLowerCase() ?? 'mainnet') as 'mainnet' | 'testnet' | 'devnet';
+      const resolved = resolveXrpldConfig({ network });
+      const result = validateXrpldConfig(resolved);
 
       for (const warning of result.warnings) {
-        stderr.push(`Warning: ${warning.field}: ${warning.message}`);
+        stderr.push(`Warning: ${warning.section}.${warning.field}: ${warning.message}`);
       }
 
       if (result.errors.length > 0) {
         for (const error of result.errors) {
-          stderr.push(`Error: ${error.field}=${error.value ?? ''}: ${error.message}`);
+          stderr.push(`Error: ${error.section}.${error.field}: ${error.message}`);
         }
         return { exitCode: 1, stdout, stderr };
       }

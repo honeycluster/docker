@@ -2,12 +2,11 @@ import { describe, it, expect } from 'vitest';
 import {
   parseEnvFile,
   parseJsonFile,
-  validateXrpldInputs,
+  validateXrpldConfig,
   getNetworkDefaults,
   resolveXrpldConfig,
   renderXrpldCfg,
   generateXrpldConfig,
-  validateXrpldConfig,
   generateValidatorsTxt,
 } from '../index.js';
 
@@ -22,8 +21,8 @@ describe('config-gen index exports', () => {
     expect(typeof parseJsonFile).toBe('function');
   });
 
-  it('exports validateXrpldInputs', () => {
-    expect(typeof validateXrpldInputs).toBe('function');
+  it('exports validateXrpldConfig', () => {
+    expect(typeof validateXrpldConfig).toBe('function');
   });
 
   it('exports getNetworkDefaults', () => {
@@ -40,10 +39,6 @@ describe('config-gen index exports', () => {
 
   it('exports generateXrpldConfig', () => {
     expect(typeof generateXrpldConfig).toBe('function');
-  });
-
-  it('exports validateXrpldConfig', () => {
-    expect(typeof validateXrpldConfig).toBe('function');
   });
 
   it('exports generateValidatorsTxt', () => {
