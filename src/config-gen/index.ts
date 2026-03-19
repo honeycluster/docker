@@ -47,6 +47,7 @@ export { parseJsonFile } from './parsers/json-parser.js';
 export { validateXrpldInputs } from './validation.js';
 export type { ValidationError, ValidationResult } from './validation.js';
 export type { XrpldGeneratorResult } from './generators/xrpld.js';
+export { getNetworkDefaults, resolveXrpldConfig } from './defaults/xrpld.js';
 
 // Re-export types
 export type {
