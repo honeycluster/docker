@@ -45,6 +45,7 @@ yarn-error.log*
 ._*
 
 # Workspaces
+.vscode
 .turbo
 .nx
 .history
@@ -53,7 +54,4 @@ yarn-error.log*
 tasks
 
 tmp
-examples
 .pnpm*
-
-scripts/ralph

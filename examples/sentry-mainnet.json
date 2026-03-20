@@ -1,0 +1,10 @@
+{
+  "presets": {
+    "network": "mainnet",
+    "role": "sentry",
+    "size": "large",
+    "verbosity": "warning"
+  },
+  "ips_fixed": ["validator-internal.example.com 51235"],
+  "validators_file": "/opt/xrpl/etc/validators.txt"
+}

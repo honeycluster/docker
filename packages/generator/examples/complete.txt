@@ -1,0 +1,59 @@
+# xrpld configuration — SCREAMING_SNAKE_CASE text input
+# Parsed by env-parser / text-parser
+
+# Network
+NETWORK=mainnet
+
+# Ports (indexed: PORT_{index}_{field})
+PORT_0_NAME=port_peer
+PORT_0_PORT=51235
+PORT_0_IP=0.0.0.0
+PORT_0_PROTOCOL=peer
+
+PORT_1_NAME=port_rpc_admin_local
+PORT_1_PORT=5005
+PORT_1_IP=127.0.0.1
+PORT_1_ADMIN=127.0.0.1
+PORT_1_PROTOCOL=http
+
+PORT_2_NAME=port_ws_admin_local
+PORT_2_PORT=6006
+PORT_2_IP=127.0.0.1
+PORT_2_ADMIN=127.0.0.1
+PORT_2_PROTOCOL=ws
+
+PORT_3_NAME=port_grpc
+PORT_3_PORT=50051
+PORT_3_IP=127.0.0.1
+PORT_3_PROTOCOL=grpc
+PORT_3_SECURE_GATEWAY=127.0.0.1
+
+# Database
+NODE_DB_TYPE=NuDB
+NODE_DB_PATH=/var/lib/xrpld/db/nudb
+NODE_DB_ONLINE_DELETE=512
+NODE_DB_ADVISORY_DELETE=0
+DATABASE_PATH=/var/lib/xrpld/db
+
+# Logging
+DEBUG_LOGFILE=/var/log/xrpld/debug.log
+
+# SSL
+SSL_VERIFY=1
+
+# Time
+SNTP_SERVERS=pool.ntp.org
+
+# Node
+NODE_SIZE=medium
+LEDGER_HISTORY=256
+FETCH_DEPTH=full
+
+# Peer
+PEER_PRIVATE=0
+PEERS_MAX=21
+
+# Validators
+VL_VALIDATOR_LIST_SITES=https://vl.ripple.com
+VL_VALIDATOR_LIST_KEYS=ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734
+VALIDATORS_FILE=/opt/xrpl/etc/validators.txt

@@ -1,0 +1,8 @@
+{
+  "presets": {
+    "network": "mainnet",
+    "role": "stock",
+    "size": "medium",
+    "verbosity": "warning"
+  }
+}

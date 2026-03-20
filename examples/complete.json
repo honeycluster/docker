@@ -1,0 +1,32 @@
+{
+  "network": "mainnet",
+  "server": {
+    "ports": [
+      { "name": "port_peer", "port": 51235, "ip": "0.0.0.0", "protocol": "peer" },
+      { "name": "port_rpc_admin_local", "port": 5005, "ip": "127.0.0.1", "admin": "127.0.0.1", "protocol": "http" },
+      { "name": "port_ws_admin_local", "port": 6006, "ip": "127.0.0.1", "admin": "127.0.0.1", "protocol": "ws" },
+      { "name": "port_grpc", "port": 50051, "ip": "127.0.0.1", "protocol": "grpc", "secure_gateway": "127.0.0.1" }
+    ]
+  },
+  "node_db": {
+    "type": "NuDB",
+    "path": "/var/lib/xrpld/db/nudb",
+    "online_delete": 512,
+    "advisory_delete": 0
+  },
+  "database_path": "/var/lib/xrpld/db",
+  "debug_logfile": "/var/log/xrpld/debug.log",
+  "ssl_verify": "1",
+  "sntp_servers": ["pool.ntp.org"],
+  "node_size": "medium",
+  "ledger_history": "256",
+  "fetch_depth": "full",
+  "peer_private": "0",
+  "peers_max": 21,
+  "vl": {
+    "validator_list_sites": ["https://vl.ripple.com"],
+    "validator_list_keys": ["ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"]
+  },
+  "validators_file": "/opt/xrpl/etc/validators.txt",
+  "rpc_startup": [{ "command": "log_level", "severity": "warning" }]
+}

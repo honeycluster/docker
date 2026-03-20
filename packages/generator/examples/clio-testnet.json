@@ -1,0 +1,9 @@
+{
+  "presets": {
+    "network": "testnet",
+    "role": "clio",
+    "size": "medium",
+    "verbosity": "info"
+  },
+  "validators_file": "/opt/xrpl/etc/validators.txt"
+}

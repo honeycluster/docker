@@ -1,0 +1,8 @@
+{
+  "presets": {
+    "network": "devnet",
+    "role": "ephemeral",
+    "size": "tiny",
+    "verbosity": "trace"
+  }
+}

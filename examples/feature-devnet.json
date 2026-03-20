@@ -1,0 +1,9 @@
+{
+  "presets": {
+    "network": "devnet",
+    "role": "feature",
+    "size": "small",
+    "verbosity": "debug"
+  },
+  "amendment_majority_time": "5 minutes"
+}

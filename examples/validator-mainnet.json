@@ -1,0 +1,10 @@
+{
+  "presets": {
+    "network": "mainnet",
+    "role": "validator",
+    "size": "large",
+    "verbosity": "warning"
+  },
+  "validator_token": "YOUR_VALIDATOR_TOKEN_HERE",
+  "validators_file": "/opt/xrpl/etc/validators.txt"
+}

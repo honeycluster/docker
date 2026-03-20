@@ -1,0 +1,10 @@
+{
+  "presets": {
+    "network": "devnet",
+    "role": "hub",
+    "size": "huge",
+    "verbosity": "debug"
+  },
+  "peers_max": 500,
+  "validators_file": "/opt/xrpl/etc/validators.txt"
+}

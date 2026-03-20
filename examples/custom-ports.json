@@ -1,0 +1,16 @@
+{
+  "presets": {
+    "network": "mainnet",
+    "role": "stock",
+    "size": "medium",
+    "verbosity": "warning"
+  },
+  "server": {
+    "ports": [
+      { "name": "port_peer", "port": 51235, "ip": "0.0.0.0", "protocol": "peer" },
+      { "name": "port_rpc", "port": 8080, "ip": "0.0.0.0", "protocol": "http" },
+      { "name": "port_ws", "port": 8443, "ip": "0.0.0.0", "protocol": "wss", "ssl_key": "/etc/ssl/private/xrpld.key", "ssl_cert": "/etc/ssl/certs/xrpld.crt" }
+    ]
+  },
+  "validators_file": "/opt/xrpl/etc/validators.txt"
+}
