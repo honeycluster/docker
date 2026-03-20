@@ -195,7 +195,7 @@
       ],
       "priority": 5,
       "dependsOn": ["US-016", "US-017"],
-      "passes": false,
+      "passes": true,
       "notes": "This is the final story. Ensure backwards compatibility is proven by test: no presets = stock + medium + warning + mainnet = current output."
     }
   ]

@@ -14,6 +14,8 @@
 - Invalid preset values crash `resolveXrpldConfig` — test invalid presets by constructing config with spread, not via `makeConfig()`
 - Validation enforces ledger_history <= online_delete — size presets must respect this constraint
 - Default presets: network=mainnet, role=stock, size=medium, verbosity=warning
+- The `examples` directory is gitignored at repo root — don't create example files there
+- Always test presets through `generateXrpldConfig` (not just unit tests) to catch validation violations
 
 ---
 
@@ -127,4 +129,25 @@ Started: Fri Mar 20 03:24:12 PM UTC 2026
   - Invalid preset values must be tested by constructing config with spread (not makeConfig), since resolveXrpldConfig crashes on invalid presets
   - Warning deduplication: filter warnings array after all validators run rather than adding conditionals inside each validator
   - The 2 pre-existing test failures (missing xrpld-example.cfg) remain unrelated to preset work
+---
+
+## 2026-03-20 - US-018
+- Exported getSizeDefaults, getRoleDefaults, getVerbosityDefaults, VALID_SIZES, VALID_ROLES, VALID_LOG_LEVELS from index.ts
+- Types NodeRole, NodeSize, LogLevel, XrpldPresets were already exported from index.ts (done in US-011)
+- Created packages/generator/tests/integration/presets.test.ts with 28 integration tests:
+  - Each role x mainnet produces valid cfg (7 roles + 2 specific port assertions)
+  - Each size produces correct node_size + online_delete (5 sizes)
+  - Each verbosity level produces correct log_level in rpc_startup (7 levels)
+  - Combined presets (testnet + validator + large + info)
+  - Backwards compatibility: {} produces same output as stock + medium + warning + mainnet
+  - Presets object does NOT appear in rendered cfg output
+  - Text file with PRESET_* keys produces correct cfg
+  - CLI run() with preset args produces correct cfg
+- Fixed size presets: small ledger_history 512→256, large ledger_history 4096→2048 (validation constraint: ledger_history <= online_delete)
+- Examples directory is gitignored — example files cannot be committed
+- Files changed: src/index.ts, src/defaults/sizes.ts, tests/defaults/sizes.test.ts, tests/integration/presets.test.ts
+- **Learnings for future iterations:**
+  - The `examples` directory is gitignored at root level — cannot commit example files there
+  - Size presets from US-012 had ledger_history > online_delete for small and large — always validate presets through generateXrpldConfig, not just unit tests
+  - @vitest/coverage-v8 4.x is incompatible with vitest 3.x — coverage cannot be verified locally without matching versions
 ---
