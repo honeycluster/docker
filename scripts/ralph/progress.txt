@@ -115,3 +115,16 @@ Started: Fri Mar 20 03:24:12 PM UTC 2026
   - CLI presets merge over input source presets — CLI flags win
   - PRESET_NETWORK and NETWORK both map to presets.network in the env-parser
 ---
+
+## 2026-03-20 - US-017
+- Added `validatePresets()` function to validation.ts
+- Validates preset values: network, role, size, verbosity against VALID_* sets
+- Role-specific warnings: validator without token, sentry without ips_fixed, clio with non-0.0.0.0 gRPC
+- Suppresses generic "no validator_token" warning when role-specific validator warning fires
+- Added 13 new tests covering all acceptance criteria
+- Files changed: src/validation.ts, tests/validation.test.ts
+- **Learnings for future iterations:**
+  - Invalid preset values must be tested by constructing config with spread (not makeConfig), since resolveXrpldConfig crashes on invalid presets
+  - Warning deduplication: filter warnings array after all validators run rather than adding conditionals inside each validator
+  - The 2 pre-existing test failures (missing xrpld-example.cfg) remain unrelated to preset work
+---
