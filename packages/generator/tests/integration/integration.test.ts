@@ -25,41 +25,41 @@ function readFixture(filename: string): string {
 
 describe('network config generation', () => {
   it('generates mainnet config matching expected output', () => {
-    const result = generateXrpldConfig({ network: 'mainnet' });
+    const result = generateXrpldConfig({ presets: { network: 'mainnet' } });
     expect(result.config).toBe(readExpected('xrpld-mainnet.cfg'));
   });
 
   it('generates testnet config matching expected output', () => {
-    const result = generateXrpldConfig({ network: 'testnet' });
+    const result = generateXrpldConfig({ presets: { network: 'testnet' } });
     expect(result.config).toBe(readExpected('xrpld-testnet.cfg'));
   });
 
   it('generates devnet config matching expected output', () => {
-    const result = generateXrpldConfig({ network: 'devnet' });
+    const result = generateXrpldConfig({ presets: { network: 'devnet' } });
     expect(result.config).toBe(readExpected('xrpld-devnet.cfg'));
   });
 
   it('default config matches explicit mainnet config', () => {
     const defaultResult = generateXrpldConfig({});
-    const mainnetResult = generateXrpldConfig({ network: 'mainnet' });
+    const mainnetResult = generateXrpldConfig({ presets: { network: 'mainnet' } });
     expect(defaultResult.config).toBe(mainnetResult.config);
     expect(defaultResult.config).toBe(readExpected('xrpld-default.cfg'));
   });
 
   it('mainnet cfg contains correct network_id and VL sections', () => {
-    const result = generateXrpldConfig({ network: 'mainnet' });
+    const result = generateXrpldConfig({ presets: { network: 'mainnet' } });
     expect(result.config).toContain('[network_id]\n0');
     expect(result.config).not.toContain('[ips]');
   });
 
   it('testnet cfg contains correct network_id and ips', () => {
-    const result = generateXrpldConfig({ network: 'testnet' });
+    const result = generateXrpldConfig({ presets: { network: 'testnet' } });
     expect(result.config).toContain('[network_id]\n1');
     expect(result.config).toContain('[ips]\ns.altnet.rippletest.net 51235');
   });
 
   it('devnet cfg contains correct network_id and ips', () => {
-    const result = generateXrpldConfig({ network: 'devnet' });
+    const result = generateXrpldConfig({ presets: { network: 'devnet' } });
     expect(result.config).toContain('[network_id]\n2');
     expect(result.config).toContain('[ips]\ns.devnet.rippletest.net 51235');
   });
@@ -78,7 +78,7 @@ describe('custom ports config', () => {
 
   it('custom ports appear in server section and port sections', () => {
     const result = generateXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       server: {
         ports: [
           { name: 'port_peer', port: 41235, ip: '0.0.0.0', protocol: 'peer' },
@@ -105,7 +105,7 @@ describe('advanced sections config', () => {
 
   it('advanced config contains overlay section', () => {
     const result = generateXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       overlay: { ip_limit: 5, max_unknown_time: 300 },
     });
     expect(result.config).toContain('[overlay]');
@@ -115,7 +115,7 @@ describe('advanced sections config', () => {
 
   it('advanced config contains transaction_queue section', () => {
     const result = generateXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       transaction_queue: { ledgers_in_queue: 20, minimum_queue_size: 2000 },
     });
     expect(result.config).toContain('[transaction_queue]');
@@ -124,7 +124,7 @@ describe('advanced sections config', () => {
 
   it('advanced config contains voting section', () => {
     const result = generateXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       voting: { reference_fee: 10, account_reserve: 10000000 },
     });
     expect(result.config).toContain('[voting]');
@@ -134,7 +134,7 @@ describe('advanced sections config', () => {
 
   it('advanced config contains reduce_relay section', () => {
     const result = generateXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       reduce_relay: { vp_enable: 1, tx_enable: 1, tx_limit: 300 },
     });
     expect(result.config).toContain('[reduce_relay]');
@@ -144,7 +144,7 @@ describe('advanced sections config', () => {
 
   it('advanced config contains crawl section', () => {
     const result = generateXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       crawl: { overlay: 1, server: 1, counts: 1, unl: 1 },
     });
     expect(result.config).toContain('[crawl]');
@@ -153,7 +153,7 @@ describe('advanced sections config', () => {
 
   it('advanced config contains sqlite section', () => {
     const result = generateXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       sqlite: { ledger_page_size: 4096, transaction_page_size: 4096 },
     });
     expect(result.config).toContain('[sqlite]');
@@ -167,22 +167,22 @@ describe('advanced sections config', () => {
 
 describe('validators.txt generation', () => {
   it('mainnet validators.txt matches expected output', () => {
-    const result = generateXrpldConfig({ network: 'mainnet' });
+    const result = generateXrpldConfig({ presets: { network: 'mainnet' } });
     expect(result.validatorsTxt).toBe(readExpected('xrpld-mainnet-validators.txt'));
   });
 
   it('testnet validators.txt matches expected output', () => {
-    const result = generateXrpldConfig({ network: 'testnet' });
+    const result = generateXrpldConfig({ presets: { network: 'testnet' } });
     expect(result.validatorsTxt).toBe(readExpected('xrpld-testnet-validators.txt'));
   });
 
   it('devnet validators.txt matches expected output', () => {
-    const result = generateXrpldConfig({ network: 'devnet' });
+    const result = generateXrpldConfig({ presets: { network: 'devnet' } });
     expect(result.validatorsTxt).toBe(readExpected('xrpld-devnet-validators.txt'));
   });
 
   it('mainnet validators.txt contains ripple VL site and key', () => {
-    const result = generateXrpldConfig({ network: 'mainnet' });
+    const result = generateXrpldConfig({ presets: { network: 'mainnet' } });
     expect(result.validatorsTxt).toContain('[validator_list_sites]');
     expect(result.validatorsTxt).toContain('https://vl.ripple.com');
     expect(result.validatorsTxt).toContain('[validator_list_keys]');
@@ -192,7 +192,7 @@ describe('validators.txt generation', () => {
   });
 
   it('testnet validators.txt contains altnet VL site', () => {
-    const result = generateXrpldConfig({ network: 'testnet' });
+    const result = generateXrpldConfig({ presets: { network: 'testnet' } });
     expect(result.validatorsTxt).toContain('https://vl.altnet.rippletest.net');
     expect(result.validatorsTxt).toContain(
       'ED264807102805220DA0F312E71FC2C69E1552C9C5790F6C25E3729DEB573D5860',
@@ -200,7 +200,7 @@ describe('validators.txt generation', () => {
   });
 
   it('devnet validators.txt contains devnet VL site', () => {
-    const result = generateXrpldConfig({ network: 'devnet' });
+    const result = generateXrpldConfig({ presets: { network: 'devnet' } });
     expect(result.validatorsTxt).toContain('https://vl.devnet.rippletest.net');
     expect(result.validatorsTxt).toContain(
       'EDBB54B0D9AEE071BB37784AF5A9E7CC49AC7A0EFCE868C54532BCB966B9CFC13B',
@@ -208,9 +208,9 @@ describe('validators.txt generation', () => {
   });
 
   it('each network has different validator keys', () => {
-    const mn = generateXrpldConfig({ network: 'mainnet' });
-    const tn = generateXrpldConfig({ network: 'testnet' });
-    const dn = generateXrpldConfig({ network: 'devnet' });
+    const mn = generateXrpldConfig({ presets: { network: 'mainnet' } });
+    const tn = generateXrpldConfig({ presets: { network: 'testnet' } });
+    const dn = generateXrpldConfig({ presets: { network: 'devnet' } });
     expect(mn.validatorsTxt).not.toBe(tn.validatorsTxt);
     expect(tn.validatorsTxt).not.toBe(dn.validatorsTxt);
     expect(mn.validatorsTxt).not.toBe(dn.validatorsTxt);
@@ -267,7 +267,7 @@ describe('round-trip cfg parsing', () => {
   });
 
   it('generated mainnet cfg can be re-parsed to match key fields', () => {
-    const result = generateXrpldConfig({ network: 'mainnet' });
+    const result = generateXrpldConfig({ presets: { network: 'mainnet' } });
     const parsed = parseCfgFile(result.config);
 
     expect(parsed.network_id).toBe(0);
@@ -291,7 +291,7 @@ describe('round-trip cfg parsing', () => {
   });
 
   it('generated testnet cfg can be re-parsed with correct network_id and ips', () => {
-    const result = generateXrpldConfig({ network: 'testnet' });
+    const result = generateXrpldConfig({ presets: { network: 'testnet' } });
     const parsed = parseCfgFile(result.config);
     expect(parsed.network_id).toBe(1);
     expect(parsed.ips).toContain('s.altnet.rippletest.net 51235');
@@ -308,7 +308,7 @@ describe('text file and JSON input equivalence', () => {
     const textInput = parseTextFile(textContent);
 
     const jsonInput = {
-      network: 'mainnet' as const,
+      presets: { network: 'mainnet' as const },
       node_size: 'medium',
       node_db: {
         type: 'NuDB',
@@ -340,7 +340,7 @@ describe('validation catches intentionally bad configs', () => {
   it('rejects invalid port number', () => {
     expect(() =>
       generateXrpldConfig({
-        network: 'mainnet',
+        presets: { network: 'mainnet' },
         server: {
           ports: [{ name: 'port_peer', port: 99999, ip: '0.0.0.0', protocol: 'peer' }],
         },
@@ -351,7 +351,7 @@ describe('validation catches intentionally bad configs', () => {
   it('rejects invalid node_db type', () => {
     expect(() =>
       generateXrpldConfig({
-        network: 'mainnet',
+        presets: { network: 'mainnet' },
         node_db: { type: 'BadDB' as 'NuDB', path: '/data' },
       }),
     ).toThrow('node_db.type must be NuDB or RocksDB');
@@ -360,7 +360,7 @@ describe('validation catches intentionally bad configs', () => {
   it('rejects mutually exclusive validation_seed and validator_token', () => {
     expect(() =>
       generateXrpldConfig({
-        network: 'mainnet',
+        presets: { network: 'mainnet' },
         validation_seed: 'seed123',
         validator_token: 'token456',
       }),
@@ -370,7 +370,7 @@ describe('validation catches intentionally bad configs', () => {
   it('rejects missing node_db path', () => {
     expect(() =>
       generateXrpldConfig({
-        network: 'mainnet',
+        presets: { network: 'mainnet' },
         node_db: { type: 'NuDB', path: '' },
       }),
     ).toThrow('node_db.path is required');
@@ -379,7 +379,7 @@ describe('validation catches intentionally bad configs', () => {
   it('rejects invalid range for max_transactions', () => {
     expect(() =>
       generateXrpldConfig({
-        network: 'mainnet',
+        presets: { network: 'mainnet' },
         max_transactions: 50,
       }),
     ).toThrow('max_transactions must be between 100 and 1000');
@@ -388,7 +388,7 @@ describe('validation catches intentionally bad configs', () => {
   it('rejects online_delete < 256', () => {
     expect(() =>
       generateXrpldConfig({
-        network: 'mainnet',
+        presets: { network: 'mainnet' },
         node_db: { type: 'NuDB', path: '/data', online_delete: 100 },
       }),
     ).toThrow('online_delete must be >= 256');
@@ -397,7 +397,7 @@ describe('validation catches intentionally bad configs', () => {
   it('rejects duplicate port numbers', () => {
     expect(() =>
       generateXrpldConfig({
-        network: 'mainnet',
+        presets: { network: 'mainnet' },
         server: {
           ports: [
             { name: 'port_a', port: 51235, ip: '0.0.0.0', protocol: 'peer' },
@@ -411,7 +411,7 @@ describe('validation catches intentionally bad configs', () => {
   it('rejects no peer port', () => {
     expect(() =>
       generateXrpldConfig({
-        network: 'mainnet',
+        presets: { network: 'mainnet' },
         server: {
           ports: [
             { name: 'port_rpc', port: 5005, ip: '127.0.0.1', protocol: 'http' },
@@ -424,7 +424,7 @@ describe('validation catches intentionally bad configs', () => {
   it('rejects invalid node_size', () => {
     expect(() =>
       generateXrpldConfig({
-        network: 'mainnet',
+        presets: { network: 'mainnet' },
         node_size: 'massive' as 'huge',
       }),
     ).toThrow('node_size must be one of');
@@ -437,23 +437,23 @@ describe('validation catches intentionally bad configs', () => {
 
 describe('warnings pass through in generator result', () => {
   it('default config generates validator warning', () => {
-    const result = generateXrpldConfig({ network: 'mainnet' });
+    const result = generateXrpldConfig({ presets: { network: 'mainnet' } });
     expect(result.warnings.length).toBeGreaterThan(0);
     expect(result.warnings.some((w) => w.includes('validator'))).toBe(true);
   });
 
   it('config with validator_token has fewer warnings', () => {
     const withToken = generateXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       validator_token: 'mytoken',
     });
-    const withoutToken = generateXrpldConfig({ network: 'mainnet' });
+    const withoutToken = generateXrpldConfig({ presets: { network: 'mainnet' } });
     expect(withToken.warnings.length).toBeLessThan(withoutToken.warnings.length);
   });
 
   it('ssl_verify=0 generates warning', () => {
     const result = generateXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       ssl_verify: '0',
     });
     expect(result.warnings.some((w) => w.includes('ssl_verify'))).toBe(true);

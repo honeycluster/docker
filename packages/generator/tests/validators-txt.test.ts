@@ -5,7 +5,7 @@ import type { XrpldInput } from '../src/types/xrpld-input.js';
 
 describe('generateValidatorsTxt', () => {
   it('generates validators.txt with validator_list_sites and keys for mainnet', () => {
-    const config = resolveXrpldConfig({ network: 'mainnet' });
+    const config = resolveXrpldConfig({ presets: { network: 'mainnet' } });
     const result = generateValidatorsTxt(config);
 
     expect(result).toContain('[validator_list_sites]');
@@ -15,7 +15,7 @@ describe('generateValidatorsTxt', () => {
   });
 
   it('generates validators.txt for testnet', () => {
-    const config = resolveXrpldConfig({ network: 'testnet' });
+    const config = resolveXrpldConfig({ presets: { network: 'testnet' } });
     const result = generateValidatorsTxt(config);
 
     expect(result).toContain('[validator_list_sites]');
@@ -25,7 +25,7 @@ describe('generateValidatorsTxt', () => {
   });
 
   it('generates validators.txt for devnet', () => {
-    const config = resolveXrpldConfig({ network: 'devnet' });
+    const config = resolveXrpldConfig({ presets: { network: 'devnet' } });
     const result = generateValidatorsTxt(config);
 
     expect(result).toContain('[validator_list_sites]');
@@ -36,7 +36,7 @@ describe('generateValidatorsTxt', () => {
 
   it('includes [validators] section when validators array is provided', () => {
     const config = resolveXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       validators: ['nHBidG3pZK11zQD6kpNDoAhDxH6n8KnyoHmSMzPELCRBAeZcmXLP'],
     });
     const result = generateValidatorsTxt(config);
@@ -46,14 +46,14 @@ describe('generateValidatorsTxt', () => {
   });
 
   it('omits [validators] section when validators array is empty', () => {
-    const config = resolveXrpldConfig({ network: 'mainnet', validators: [] });
+    const config = resolveXrpldConfig({ presets: { network: 'mainnet' }, validators: [] });
     const result = generateValidatorsTxt(config);
 
     expect(result).not.toContain('[validators]');
   });
 
   it('omits sections when vl config is missing', () => {
-    const config = { network: 'mainnet' } as XrpldInput;
+    const config = { presets: { network: 'mainnet' } } as XrpldInput;
     const result = generateValidatorsTxt(config);
 
     expect(result).not.toContain('[validator_list_sites]');
@@ -62,7 +62,7 @@ describe('generateValidatorsTxt', () => {
 
   it('handles multiple validator list sites and keys', () => {
     const config = resolveXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       vl: {
         validator_list_sites: ['https://vl1.example.com', 'https://vl2.example.com'],
         validator_list_keys: ['KEY1', 'KEY2'],

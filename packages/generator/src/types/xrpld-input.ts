@@ -127,10 +127,27 @@ export interface XrpldVlConfig {
 
 // #endregion
 
+// #region Preset Types
+
+export type NodeRole = 'stock' | 'validator' | 'ephemeral' | 'sentry' | 'clio' | 'feature' | 'hub';
+
+export type NodeSize = 'tiny' | 'small' | 'medium' | 'large' | 'huge';
+
+export type LogLevel = 'silent' | 'fatal' | 'error' | 'warning' | 'info' | 'debug' | 'trace';
+
+export interface XrpldPresets {
+  readonly network?: 'mainnet' | 'testnet' | 'devnet';
+  readonly role?: NodeRole;
+  readonly size?: NodeSize;
+  readonly verbosity?: LogLevel;
+}
+
+// #endregion
+
 // #region Main Input
 
 export interface XrpldInput {
-  readonly network?: 'mainnet' | 'testnet' | 'devnet';
+  readonly presets?: XrpldPresets;
 
   // Server
   readonly server?: {

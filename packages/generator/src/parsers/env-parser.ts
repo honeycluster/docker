@@ -7,8 +7,8 @@ import type { XrpldInput, XrpldPortConfig } from '../types/xrpld-input.js';
  * Single source of truth for supported flat keys.
  */
 const KEY_MAP: Record<string, string> = {
-  // Meta
-  NETWORK: 'network',
+  // Meta / Presets
+  NETWORK: 'presets.network',
 
   // Single-value sections
   DATABASE_PATH: 'database_path',

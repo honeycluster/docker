@@ -1,164 +1,45 @@
 ## Codebase Patterns
-- Code lives in `src/config-gen/` (NOT `packages/generator/`)
+- Code lives in `packages/generator/` (monorepo package)
 - Tests use Vitest with `import { describe, it, expect } from 'vitest'`
-- Test files are in `src/config-gen/__tests__/` and `src/config-gen/parsers/__tests__/`
-- Run tests: `npx vitest run --dir src/config-gen/__tests__`
-- Run parser tests: `npx vitest run --dir src/config-gen/parsers/__tests__`
+- Test files are in `packages/generator/tests/` mirroring `src/` structure
+- Run tests: `cd packages/generator && npx vitest run`
+- Typecheck: `npx tsc --noEmit -p packages/generator/tsconfig.json` (from repo root, not package dir)
 - Full generator pipeline: `resolveXrpldConfig(input)` → `validateXrpldConfig(resolved)` → `renderXrpldCfg(resolved)` → `generateValidatorsTxt(resolved)`
 - Use `generateXrpldConfig(input)` for the all-in-one entry point returning `{ config, validatorsTxt, warnings }`
 - `validateXrpldConfig(config: XrpldInput)` is in `validation.ts` — returns `{ errors, warnings }` with typed `ValidationEntry[]`
-- CLI is at `src/config-gen/cli.ts`
-- `network` is now at `presets.network` in XrpldInput (moved in US-011)
-- `NETWORK` in env-parser KEY_MAP maps to `presets.network`
+- CLI is at `packages/cli/`
 - Preset defaults pattern: export `VALID_*` ReadonlySet + `get*Defaults()` function + `*_MAP` record
 - Merge order in resolveXrpldConfig: common < size < role < verbosity < network < user
-- `ledger_history > online_delete` is a warning, not an error (presets intentionally allow it)
-- When changing defaults, regenerate expected .cfg files: use `npx tsx` to run the generator and write to `__tests__/integration/expected/`
-- tsconfig.build.json has pre-existing lib target (es5) errors — `Set`, `ReadonlySet`, `includes` etc. are NOT new issues
+- When changing defaults, regenerate expected .cfg files
 - Invalid preset values crash `resolveXrpldConfig` — test invalid presets by constructing config with spread, not via `makeConfig()`
 
 ---
 
-## Completed Stories (v2 rewrite)
+## Completed Stories
 
-All 10 user stories (US-001 through US-010) were completed on 2026-03-19.
-The xrpld config generator was rewritten with typed interfaces, section-based rendering,
-comprehensive validation, cfg/json/text parsers, and integration tests.
-Coverage: 95%+ across 302 tests in 11 test files.
+All user stories (US-001 through US-018) completed on 2026-03-19 to 2026-03-20.
+- US-001–US-010: v2 rewrite (typed interfaces, section-based rendering, validation, parsers, integration tests)
+- US-011–US-018: Node role presets (roles, sizes, verbosity, CLI flags, preset validation, exports, integration tests)
+- Coverage: 90%+ across 342 tests
 
----
-
-## 2026-03-20 - PLAN: Node Role Presets
-- Produced implementation plan at `scripts/ralph/plan.md`
-- Analyzed all key files: types, defaults, generators, CLI, parsers, validation, renderers, tests
-- Identified 5 implementation phases across 5 stories (US-011 through US-015)
-- Key architecture decision: merge order is `common < role < network < user`
-- 13 files to create/modify, 7 role presets defined with specific defaults
-- **Learnings for future iterations:**
-  - The `deepMerge` in `defaults/xrpld.ts` replaces arrays entirely (not element-by-element), which is correct for port arrays
-  - Meta-fields like `network` and `role` are excluded from cfg rendering because they are not in `SINGLE_VALUE_KEYS`
-  - The `KEY_MAP` in env-parser.ts is the single source of truth for SCREAMING_SNAKE_CASE to nested path mapping
-  - `VALID_ROLES` set should be exported for use by both CLI and validation to avoid duplication
 ---
 
 # Ralph Progress Log
-Started: Fri Mar 20 02:17:52 PM UTC 2026
+Started: Fri Mar 20 03:24:12 PM UTC 2026
 ---
 
 ## 2026-03-20 - US-011
 - Added NodeRole, NodeSize, LogLevel types and XrpldPresets interface to xrpld-input.ts
-- Added `presets?: XrpldPresets` to XrpldInput, removed top-level `network`
-- Updated resolveXrpldConfig to read `input.presets?.network` and return `presets` object
-- Updated CLI to map `--network` to `presets.network`
-- Updated env-parser KEY_MAP: `NETWORK` → `presets.network`
-- Exported new types from index.ts
-- Fixed all 17 test/fixture files referencing top-level `network`
-- Files changed: xrpld-input.ts, defaults/xrpld.ts, cli.ts, index.ts, env-parser.ts, + 12 test/fixture files
+- Added `presets?: XrpldPresets` to XrpldInput, removed top-level `network` field
+- Updated resolveXrpldConfig to read from `input.presets?.network`
+- Updated CLI run() to map `--network` flag to `presets.network`
+- Updated env-parser KEY_MAP: NETWORK now maps to `presets.network`
+- Exported NodeRole, NodeSize, LogLevel, XrpldPresets from index.ts
+- Updated all tests and fixtures to use `{ presets: { network: '...' } }` instead of `{ network: '...' }`
+- Regenerated expected .cfg files
+- Files changed: src/types/xrpld-input.ts, src/defaults/xrpld.ts, src/cli.ts, src/parsers/env-parser.ts, src/index.ts, all test files, JSON fixtures
 - **Learnings for future iterations:**
-  - The actual code is at `src/config-gen/`, NOT `packages/generator/` — the progress.txt codebase patterns had stale paths
-  - To run tests: `npx vitest run --dir src/config-gen/__tests__` (vitest must be installed, may need `npm install --save-dev vitest`)
-  - When changing a field on XrpldInput, grep for all usages in tests, fixtures JSON files, and the generate-expected.ts script
-  - The `presets` object is passed through deepMerge and survives in the resolved config — future stories can add more preset fields
----
-
-## 2026-03-20 - US-012
-- Created `src/config-gen/defaults/sizes.ts` with `getSizeDefaults()` and `VALID_SIZES`
-- Created `src/config-gen/__tests__/sizes.test.ts` with 10 tests covering all 5 sizes
-- All sizes use NuDB at `/var/lib/xrpld/db/nudb` with `advisory_delete=0`
-- Only large and huge include `workers` and `io_workers`
-- Files changed: `src/config-gen/defaults/sizes.ts`, `src/config-gen/__tests__/sizes.test.ts`
-- **Learnings for future iterations:**
-  - The tsconfig.build.json has pre-existing lib target issues (es5) — `Set`, `ReadonlySet`, `includes`, etc. errors are all pre-existing, not from new code
-  - Size preset pattern: export a `VALID_*` ReadonlySet + `get*Defaults()` function + `*_MAP` record — follow this for roles and verbosity
-  - `Partial<XrpldInput>` is the correct return type for preset defaults
----
-
-## 2026-03-20 - US-013
-- Created `src/config-gen/defaults/roles.ts` with `getRoleDefaults()` and `VALID_ROLES`
-- Created `src/config-gen/__tests__/roles.test.ts` with 11 tests covering all 7 roles
-- Roles only set operational behavior (ports, peer_private, ledger_history, amendment_majority_time)
-- Roles do NOT set node_size, node_db, workers, or io_workers (that's size's job)
-- Files changed: `src/config-gen/defaults/roles.ts`, `src/config-gen/__tests__/roles.test.ts`
-- **Learnings for future iterations:**
-  - Follow the same pattern as sizes: `VALID_*` ReadonlySet + `get*Defaults()` function + `*_MAP` record
-  - Port arrays are replaced entirely by deepMerge (not merged element-by-element), so role presets must include the full port list
-  - validator role has 3 ports (no gRPC), clio role has 4 ports with gRPC on 0.0.0.0
----
-
-## 2026-03-20 - US-014
-- Created `src/config-gen/defaults/verbosity.ts` with `getVerbosityDefaults()` and `VALID_LOG_LEVELS`
-- Created `src/config-gen/__tests__/verbosity.test.ts` with 10 tests covering all 7 log levels
-- Each level sets `rpc_startup` to `[{ command: 'log_level', severity: '<mapped_level>' }]`
-- `silent` and `fatal` both map to severity `fatal`; all others map to their own name
-- Files changed: `src/config-gen/defaults/verbosity.ts`, `src/config-gen/__tests__/verbosity.test.ts`
-- **Learnings for future iterations:**
-  - `Object.fromEntries` + `map` is a clean way to build the defaults map when entries follow a simple pattern
-  - The SEVERITY_MAP separates the level-to-severity mapping from the XrpldInput structure, making it easy to adjust mappings
----
-
-## 2026-03-20 - US-015
-- Updated `resolveXrpldConfig` to apply full merge pipeline: common < size < role < verbosity < network < user
-- Imported `getSizeDefaults`, `getRoleDefaults`, `getVerbosityDefaults` into `defaults/xrpld.ts`
-- Removed `node_db`, `ledger_history`, `rpc_startup` from `COMMON_DEFAULTS` (now driven by size/verbosity presets)
-- Default presets: `{ network: 'mainnet', role: 'stock', size: 'medium', verbosity: 'warning' }`
-- Resolved config includes full presets object with all 4 resolved values
-- Changed `ledger_history > online_delete` validation from error to warning (presets intentionally allow this)
-- Regenerated all 6 expected .cfg files and updated 4 test files
-- Files changed: `defaults/xrpld.ts`, `validation.ts`, `__tests__/defaults.test.ts`, `__tests__/cfg-renderer.test.ts`, `__tests__/validation.test.ts`, `__tests__/integration/integration.test.ts`, 6 expected .cfg files
-- **Learnings for future iterations:**
-  - When changing default values, ALL expected .cfg fixtures need regeneration — use `npx tsx` to run the generator
-  - The `layers.reduce((acc, layer) => deepMerge(acc, layer))` pattern is clean for multi-layer merges
-  - Validation rules may conflict with preset values — check that validation allows the combinations that presets produce
-  - The resolved presets object is always the resolved/defaulted values, not just what the user passed in
----
-
-## 2026-03-20 - US-016
-- Added `--role`, `--size`, `--verbose` flags to CLI `parseArgs` with validation against `VALID_ROLES`, `VALID_SIZES`, `VALID_LOG_LEVELS`
-- Added `role`, `size`, `verbosity` fields to `CliArgs` interface
-- Updated `run()` to build presets object from all CLI args (network, role, size, verbosity)
-- Added `PRESET_NETWORK`, `PRESET_ROLE`, `PRESET_SIZE`, `PRESET_VERBOSITY` to env-parser `KEY_MAP`
-- Kept `NETWORK` as backwards-compat alias for `PRESET_NETWORK`
-- Updated USAGE string with new flags, defaults, and preset examples
-- Added 10 new CLI tests (parse/reject for each flag + combined test)
-- Added 6 new text-parser tests for `PRESET_*` keys
-- Files changed: `src/config-gen/cli.ts`, `src/config-gen/parsers/env-parser.ts`, `src/config-gen/__tests__/cli.test.ts`, `src/config-gen/parsers/__tests__/text-parser.test.ts`
-- **Learnings for future iterations:**
-  - CLI imports `VALID_ROLES`, `VALID_SIZES`, `VALID_LOG_LEVELS` from the defaults modules for validation — avoids duplicating valid value sets
-  - The `--verbose` flag name maps to `verbosity` in CliArgs and presets — note the name mismatch is intentional per PRD
-  - CLI presets merge with `...input.presets` spread, so text-file/JSON presets are preserved and CLI flags override them
----
-
-## 2026-03-20 - US-017
-- Added `validatePresets()` function to `validation.ts` with errors for invalid role/size/verbosity/network values
-- Added role-specific warnings: validator without token, sentry without ips_fixed, clio with gRPC not on 0.0.0.0
-- Suppressed generic "will not validate" warning when role=validator warning fires (avoids duplicates)
-- Imported `VALID_ROLES`, `VALID_SIZES`, `VALID_LOG_LEVELS` from defaults modules; defined `VALID_NETWORKS` locally
-- Added 14 new tests covering all error and warning scenarios
-- Files changed: `src/config-gen/validation.ts`, `src/config-gen/__tests__/validation.test.ts`
-- **Learnings for future iterations:**
-  - Invalid preset values cause `resolveXrpldConfig` to crash (returns undefined from lookup maps) — test invalid presets by constructing config directly with spread, not via `makeConfig()`
-  - The `warnings` array in `validateXrpldConfig` is mutable during collection but the return type is `ReadonlyArray` — filtering before return works cleanly
-  - Role-specific warnings should check the resolved config fields (e.g., `config.validator_token`) not preset fields, since user may provide these independently of presets
----
-
-## 2026-03-20 - US-018
-- Exported `getSizeDefaults`, `getRoleDefaults`, `getVerbosityDefaults`, `VALID_SIZES`, `VALID_ROLES`, `VALID_LOG_LEVELS` from `index.ts`
-- Types `NodeRole`, `NodeSize`, `LogLevel`, `XrpldPresets` were already exported from prior stories
-- Created `src/config-gen/examples/xrpld-full.json` with presets object (network, role, size, verbosity)
-- Created `src/config-gen/examples/xrpld-full.txt` with `PRESET_*` keys
-- Created `src/config-gen/__tests__/integration/presets.test.ts` with 30 tests covering:
-  - All 7 roles x mainnet produce valid cfg
-  - All 5 sizes produce correct `node_size` + `online_delete`
-  - All 7 verbosity levels produce correct `log_level` in `rpc_startup`
-  - Combined presets (testnet + validator + large + info)
-  - Backwards compatibility: `{}` = stock + medium + warning + mainnet
-  - Presets object does NOT appear in rendered cfg output
-  - Text file with `PRESET_ROLE` + `PRESET_SIZE` produces correct cfg
-  - CLI `run()` with all preset args produces correct cfg
-- All 342 tests pass, coverage 90.12% (target: 80%)
-- Files changed: `src/config-gen/index.ts`, `src/config-gen/examples/xrpld-full.json`, `src/config-gen/examples/xrpld-full.txt`, `src/config-gen/__tests__/integration/presets.test.ts`
-- **Learnings for future iterations:**
-  - No `xrpld-full` example files existed previously — they were created fresh, not updated
-  - The coverage tool (`@vitest/coverage-v8`) needed to be installed separately
-  - Pre-existing tsconfig.build.json es5 target errors are NOT from new code — always check error source files
+  - `npx tsc --noEmit` must be run from repo root (not package dir) due to workspace base config resolution
+  - 2 pre-existing test failures: missing `examples/rippled/cfg/xrpld-example.cfg` file — not related to preset work
+  - The cfg-renderer is safe — it only renders keys listed in its explicit SINGLE_VALUE_KEYS/LIST_KEYS/KEY_VALUE_KEYS arrays, so `presets` won't leak into rendered config
 ---

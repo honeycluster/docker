@@ -34,6 +34,10 @@ export type {
   XrpldGeneratorResult,
   ValidationEntry,
   ValidationResult,
+  NodeRole,
+  NodeSize,
+  LogLevel,
+  XrpldPresets,
 } from './types/xrpld-input.js';
 
 // #endregion

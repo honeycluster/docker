@@ -4,7 +4,7 @@ import { resolveXrpldConfig } from '../src/defaults/xrpld.js';
 import type { XrpldInput } from '../src/types/xrpld-input.js';
 
 function makeConfig(overrides: Partial<XrpldInput> = {}): XrpldInput {
-  return resolveXrpldConfig({ network: 'mainnet', ...overrides });
+  return resolveXrpldConfig({ presets: { network: 'mainnet' }, ...overrides });
 }
 
 function hasError(config: XrpldInput, field: string): boolean {

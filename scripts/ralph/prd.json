@@ -42,7 +42,7 @@
       ],
       "priority": 2,
       "dependsOn": ["US-011"],
-      "passes": true,
+      "passes": false,
       "notes": "Size presets handle resource/capacity tuning. Role presets handle operational behavior — no overlap."
     },
     {
@@ -66,7 +66,7 @@
       ],
       "priority": 2,
       "dependsOn": ["US-011"],
-      "passes": true,
+      "passes": false,
       "notes": "Roles focus purely on operational behavior. Size handles capacity. Users combine both via presets."
     },
     {
@@ -85,7 +85,7 @@
       ],
       "priority": 2,
       "dependsOn": ["US-011"],
-      "passes": true,
+      "passes": false,
       "notes": "Future versions could add per-partition log levels. V1 only controls the global rpc_startup log_level."
     },
     {
@@ -112,7 +112,7 @@
       ],
       "priority": 3,
       "dependsOn": ["US-012", "US-013", "US-014"],
-      "passes": true,
+      "passes": false,
       "notes": "This is the critical integration story. The merge order must be exact: common < size < role < verbosity < network < user. Deep merge replaces arrays entirely (ports, rpc_startup) which is the desired behavior."
     },
     {
@@ -144,7 +144,7 @@
       ],
       "priority": 4,
       "dependsOn": ["US-015"],
-      "passes": true,
+      "passes": false,
       "notes": "CLI flag is --verbose but CliArgs field and preset key are verbosity. The --network flag continues to work as before but internally maps to presets.network."
     },
     {
@@ -168,7 +168,7 @@
       ],
       "priority": 4,
       "dependsOn": ["US-015"],
-      "passes": true,
+      "passes": false,
       "notes": "Validator without token is a warning, not an error — users may generate config before having the token. Suppress the generic 'no validator_token' warning when the role-specific one fires to avoid duplicates."
     },
     {
@@ -195,7 +195,7 @@
       ],
       "priority": 5,
       "dependsOn": ["US-016", "US-017"],
-      "passes": true,
+      "passes": false,
       "notes": "This is the final story. Ensure backwards compatibility is proven by test: no presets = stock + medium + warning + mainnet = current output."
     }
   ]

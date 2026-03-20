@@ -57,7 +57,7 @@ describe('generateXrpldConfig smoke test', () => {
 
   it('generates config for each network', () => {
     for (const network of ['mainnet', 'testnet', 'devnet'] as const) {
-      const result = generateXrpldConfig({ network });
+      const result = generateXrpldConfig({ presets: { network } });
       expect(result.config).toContain('[network_id]');
     }
   });

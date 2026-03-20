@@ -4,12 +4,12 @@ import { parseJsonFile, JsonParseException } from '../../src/parsers/json-parser
 describe('parseJsonFile', () => {
   it('parses nested structure directly', () => {
     const input = JSON.stringify({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       node_db: { type: 'NuDB', path: '/var/lib/xrpld/db/nudb' },
     });
     const result = parseJsonFile(input);
     expect(result).toEqual({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       node_db: { type: 'NuDB', path: '/var/lib/xrpld/db/nudb' },
     });
   });

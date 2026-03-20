@@ -8,7 +8,7 @@ describe('parseTextFile', () => {
   describe('single-value keys', () => {
     it('parses NETWORK meta-field', () => {
       const result = parseTextFile('NETWORK=mainnet');
-      expect(result.network).toBe('mainnet');
+      expect(result.presets?.network).toBe('mainnet');
     });
 
     it('parses top-level string fields', () => {
@@ -376,7 +376,7 @@ describe('parseTextFile', () => {
       ].join('\n');
 
       const jsonInput = JSON.stringify({
-        network: 'mainnet',
+        presets: { network: 'mainnet' },
         node_db: { type: 'NuDB', path: '/var/lib/xrpld/db/nudb', online_delete: 512 },
         database_path: '/var/lib/xrpld/db',
         debug_logfile: '/var/log/xrpld/debug.log',
@@ -444,7 +444,7 @@ describe('parseTextFile', () => {
 
       const result = parseTextFile(content);
 
-      expect(result.network).toBe('mainnet');
+      expect(result.presets?.network).toBe('mainnet');
       expect(result.node_db?.type).toBe('NuDB');
       expect(result.node_db?.path).toBe('/var/lib/xrpld/db/nudb');
       expect(result.node_db?.online_delete).toBe(512);

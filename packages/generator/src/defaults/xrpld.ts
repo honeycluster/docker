@@ -142,7 +142,7 @@ function deepMerge<T extends Record<string, unknown>>(
 export function resolveXrpldConfig(
   input: Partial<XrpldInput> = {},
 ): XrpldInput {
-  const network = input.network ?? 'mainnet';
+  const network = input.presets?.network ?? 'mainnet';
   const networkDefaults = getNetworkDefaults(network);
 
   // Merge: common < network < user
@@ -154,7 +154,7 @@ export function resolveXrpldConfig(
     input as Record<string, unknown>,
   ) as XrpldInput;
 
-  return { ...merged, network };
+  return { ...merged, presets: { ...input.presets, network } };
 }
 
 // #endregion
