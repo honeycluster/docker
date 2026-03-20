@@ -4,6 +4,9 @@ import type {
   ValidationEntry,
   ValidationResult,
 } from './types/xrpld-input.js';
+import { VALID_ROLES } from './defaults/roles.js';
+import { VALID_SIZES } from './defaults/sizes.js';
+import { VALID_LOG_LEVELS } from './defaults/verbosity.js';
 
 // #region Helpers
 
@@ -389,6 +392,50 @@ function validatePeers(config: XrpldInput, warnings: ValidationEntry[]): void {
 
 // #endregion
 
+// #region Preset Validation
+
+const VALID_NETWORKS: ReadonlySet<string> = new Set(['mainnet', 'testnet', 'devnet']);
+
+function validatePresets(config: XrpldInput, errors: ValidationEntry[], warnings: ValidationEntry[]): void {
+  const presets = config.presets;
+  if (!presets) return;
+
+  // Validate preset values
+  if (presets.network !== undefined && !VALID_NETWORKS.has(presets.network)) {
+    errors.push(entry('presets', 'network', presets.network, `Invalid preset network: '${presets.network}'. Must be one of: mainnet, testnet, devnet`, 'error'));
+  }
+
+  if (presets.role !== undefined && !VALID_ROLES.has(presets.role)) {
+    errors.push(entry('presets', 'role', presets.role, `Invalid preset role: '${presets.role}'. Must be one of: ${[...VALID_ROLES].join(', ')}`, 'error'));
+  }
+
+  if (presets.size !== undefined && !VALID_SIZES.has(presets.size)) {
+    errors.push(entry('presets', 'size', presets.size, `Invalid preset size: '${presets.size}'. Must be one of: ${[...VALID_SIZES].join(', ')}`, 'error'));
+  }
+
+  if (presets.verbosity !== undefined && !VALID_LOG_LEVELS.has(presets.verbosity)) {
+    errors.push(entry('presets', 'verbosity', presets.verbosity, `Invalid preset verbosity: '${presets.verbosity}'. Must be one of: ${[...VALID_LOG_LEVELS].join(', ')}`, 'error'));
+  }
+
+  // Role-specific warnings
+  if (presets.role === 'validator' && !config.validator_token && !config.validation_seed) {
+    warnings.push(entry('presets', 'role', 'validator', 'validator role requires validator_token to participate in consensus', 'warning'));
+  }
+
+  if (presets.role === 'sentry' && (!config.ips_fixed || config.ips_fixed.length === 0)) {
+    warnings.push(entry('presets', 'role', 'sentry', 'sentry role should have ips_fixed pointing to the validator it protects', 'warning'));
+  }
+
+  if (presets.role === 'clio') {
+    const grpcPort = config.server?.ports?.find((p) => p.protocol === 'grpc');
+    if (grpcPort && grpcPort.ip !== '0.0.0.0') {
+      warnings.push(entry('presets', 'role', 'clio', `clio role expects gRPC port bound to 0.0.0.0 but found '${grpcPort.ip ?? 'undefined'}'`, 'warning'));
+    }
+  }
+}
+
+// #endregion
+
 // #region Main Export
 
 /**
@@ -410,8 +457,19 @@ export function validateXrpldConfig(config: XrpldInput): ValidationResult {
   validateVoting(config, errors);
   validateCrawl(config, errors);
   validatePeers(config, warnings);
+  validatePresets(config, errors, warnings);
 
-  return { errors, warnings };
+  // Suppress generic "no validator_token" warning when role-specific validator warning fires
+  const hasRoleValidatorWarning = warnings.some(
+    (w) => w.section === 'presets' && w.field === 'role' && w.value === 'validator',
+  );
+  const filteredWarnings = hasRoleValidatorWarning
+    ? warnings.filter(
+        (w) => !(w.section === 'validators' && w.field === 'validator_token' && w.message.includes('will not validate')),
+      )
+    : warnings;
+
+  return { errors, warnings: filteredWarnings };
 }
 
 // #endregion
