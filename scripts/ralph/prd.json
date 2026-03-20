@@ -112,7 +112,7 @@
       ],
       "priority": 3,
       "dependsOn": ["US-012", "US-013", "US-014"],
-      "passes": false,
+      "passes": true,
       "notes": "This is the critical integration story. The merge order must be exact: common < size < role < verbosity < network < user. Deep merge replaces arrays entirely (ports, rpc_startup) which is the desired behavior."
     },
     {

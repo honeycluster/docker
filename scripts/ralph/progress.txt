@@ -12,6 +12,8 @@
 - Merge order in resolveXrpldConfig: common < size < role < verbosity < network < user
 - When changing defaults, regenerate expected .cfg files
 - Invalid preset values crash `resolveXrpldConfig` — test invalid presets by constructing config with spread, not via `makeConfig()`
+- Validation enforces ledger_history <= online_delete — size presets must respect this constraint
+- Default presets: network=mainnet, role=stock, size=medium, verbosity=warning
 
 ---
 
@@ -78,4 +80,22 @@ Started: Fri Mar 20 03:24:12 PM UTC 2026
   - Verbosity presets only set rpc_startup — no other fields
   - silent and fatal produce identical output (both map to 'fatal' severity)
   - Follow same pattern: VALID_* set + *_MAP record + get*Defaults() function
+---
+
+## 2026-03-20 - US-015
+- Updated `resolveXrpldConfig` to apply full merge pipeline: common < size < role < verbosity < network < user
+- Imported getSizeDefaults, getRoleDefaults, getVerbosityDefaults into defaults/xrpld.ts
+- Removed node_db, ledger_history, rpc_startup from COMMON_DEFAULTS (now driven by size/verbosity presets)
+- Default presets: network=mainnet, role=stock, size=medium, verbosity=warning
+- Resolved config includes presets object with all 4 resolved values
+- Fixed medium size preset: ledger_history changed from '1024' to '512' to satisfy validation (ledger_history <= online_delete)
+- Regenerated all expected .cfg fixture files (now include node_size and peers_max sections)
+- Updated defaults.test.ts with comprehensive merge pipeline tests (size, role, verbosity, combinations, user overrides)
+- Updated cfg-renderer.test.ts and integration.test.ts assertions for new default values
+- Files changed: src/defaults/xrpld.ts, src/defaults/sizes.ts, tests/defaults.test.ts, tests/defaults/sizes.test.ts, tests/cfg-renderer.test.ts, tests/integration/integration.test.ts, 6 expected .cfg files
+- **Learnings for future iterations:**
+  - Validation enforces ledger_history <= online_delete — size presets must respect this constraint
+  - When changing defaults, always regenerate expected .cfg fixture files using tsx
+  - The cfg renderer will output any field in SINGLE_VALUE_KEYS that has a value, so new preset defaults (node_size, peers_max) automatically appear in cfg output
+  - 2 pre-existing test failures remain: missing examples/rippled/cfg/xrpld-example.cfg file (not related to preset work)
 ---
