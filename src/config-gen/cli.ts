@@ -168,7 +168,7 @@ export function run(args: CliArgs): CliResult {
     }
 
     if (args.network) {
-      input = { ...input, network: args.network };
+      input = { ...input, presets: { ...input.presets, network: args.network } };
     }
 
     // Validate-only mode

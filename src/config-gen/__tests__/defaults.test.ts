@@ -48,7 +48,7 @@ describe('getNetworkDefaults', () => {
 describe('resolveXrpldConfig', () => {
   it('returns common defaults when no input provided', () => {
     const config = resolveXrpldConfig();
-    expect(config.network).toBe('mainnet');
+    expect(config.presets?.network).toBe('mainnet');
     expect(config.node_db?.type).toBe('NuDB');
     expect(config.node_db?.path).toBe('/var/lib/xrpld/db/nudb');
     expect(config.node_db?.online_delete).toBe(512);
@@ -94,7 +94,7 @@ describe('resolveXrpldConfig', () => {
   });
 
   it('applies mainnet network defaults', () => {
-    const config = resolveXrpldConfig({ network: 'mainnet' });
+    const config = resolveXrpldConfig({ presets: { network: 'mainnet' } });
     expect(config.network_id).toBe('0');
     expect(config.vl?.validator_list_sites).toEqual([
       'https://vl.ripple.com',
@@ -102,7 +102,7 @@ describe('resolveXrpldConfig', () => {
   });
 
   it('applies testnet network defaults', () => {
-    const config = resolveXrpldConfig({ network: 'testnet' });
+    const config = resolveXrpldConfig({ presets: { network: 'testnet' } });
     expect(config.network_id).toBe('1');
     expect(config.ips).toEqual(['s.altnet.rippletest.net 51235']);
     expect(config.vl?.validator_list_sites).toEqual([
@@ -111,7 +111,7 @@ describe('resolveXrpldConfig', () => {
   });
 
   it('applies devnet network defaults', () => {
-    const config = resolveXrpldConfig({ network: 'devnet' });
+    const config = resolveXrpldConfig({ presets: { network: 'devnet' } });
     expect(config.network_id).toBe('2');
     expect(config.ips).toEqual(['s.devnet.rippletest.net 51235']);
     expect(config.vl?.validator_list_sites).toEqual([
@@ -121,7 +121,7 @@ describe('resolveXrpldConfig', () => {
 
   it('user overrides win over network defaults', () => {
     const config = resolveXrpldConfig({
-      network: 'testnet',
+      presets: { network: 'testnet' },
       network_id: '42',
       ips: ['my-custom-peer 51235'],
     });
@@ -173,7 +173,7 @@ describe('resolveXrpldConfig', () => {
 
   it('user can override VL within a network', () => {
     const config = resolveXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       vl: {
         validator_list_sites: ['https://custom-vl.example.com'],
         validator_list_keys: ['DEADBEEF'],
@@ -187,7 +187,7 @@ describe('resolveXrpldConfig', () => {
 
   it('defaults to mainnet when network not specified', () => {
     const config = resolveXrpldConfig({});
-    expect(config.network).toBe('mainnet');
+    expect(config.presets?.network).toBe('mainnet');
     expect(config.network_id).toBe('0');
   });
 

@@ -6,13 +6,13 @@ const EXPECTED = new URL('./expected/', import.meta.url).pathname;
 
 const scenarios: [string, Partial<XrpldInput>][] = [
   ['xrpld-default.cfg', {}],
-  ['xrpld-mainnet.cfg', { network: 'mainnet' }],
-  ['xrpld-testnet.cfg', { network: 'testnet' }],
-  ['xrpld-devnet.cfg', { network: 'devnet' }],
+  ['xrpld-mainnet.cfg', { presets: { network: 'mainnet' } }],
+  ['xrpld-testnet.cfg', { presets: { network: 'testnet' } }],
+  ['xrpld-devnet.cfg', { presets: { network: 'devnet' } }],
   [
     'xrpld-custom-ports.cfg',
     {
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       server: {
         ports: [
           { name: 'port_peer', port: 41235, ip: '0.0.0.0', protocol: 'peer' },
@@ -25,7 +25,7 @@ const scenarios: [string, Partial<XrpldInput>][] = [
   [
     'xrpld-advanced.cfg',
     {
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       overlay: { ip_limit: 5, max_unknown_time: 300, connect_timeout: 15 },
       transaction_queue: { ledgers_in_queue: 20, minimum_queue_size: 2000, retry_sequence_percent: 25 },
       voting: { reference_fee: 10, account_reserve: 10000000, owner_reserve: 2000000 },

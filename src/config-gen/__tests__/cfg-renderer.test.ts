@@ -202,7 +202,7 @@ describe('renderServerSection', () => {
 
 describe('renderXrpldCfg', () => {
   it('renders mainnet resolved config with all expected sections', () => {
-    const config = resolveXrpldConfig({ network: 'mainnet' });
+    const config = resolveXrpldConfig({ presets: { network: 'mainnet' } });
     const cfg = renderXrpldCfg(config);
 
     // Header
@@ -243,7 +243,7 @@ describe('renderXrpldCfg', () => {
   });
 
   it('renders testnet config with testnet-specific values', () => {
-    const config = resolveXrpldConfig({ network: 'testnet' });
+    const config = resolveXrpldConfig({ presets: { network: 'testnet' } });
     const cfg = renderXrpldCfg(config);
 
     expect(cfg).toContain('[network_id]\n1');
@@ -252,7 +252,7 @@ describe('renderXrpldCfg', () => {
   });
 
   it('renders devnet config with devnet-specific values', () => {
-    const config = resolveXrpldConfig({ network: 'devnet' });
+    const config = resolveXrpldConfig({ presets: { network: 'devnet' } });
     const cfg = renderXrpldCfg(config);
 
     expect(cfg).toContain('[network_id]\n2');
@@ -262,7 +262,7 @@ describe('renderXrpldCfg', () => {
 
   it('omits empty sections', () => {
     const config: XrpldInput = {
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       database_path: '/var/lib/xrpld/db',
     };
     const cfg = renderXrpldCfg(config);
@@ -273,7 +273,7 @@ describe('renderXrpldCfg', () => {
 
   it('renders config with custom ports', () => {
     const config = resolveXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       server: {
         ports: [
           { name: 'port_peer', port: 41235, ip: '0.0.0.0', protocol: 'peer' },
@@ -290,7 +290,7 @@ describe('renderXrpldCfg', () => {
 
   it('renders config with advanced sections', () => {
     const config = resolveXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       overlay: { ip_limit: 10, max_peers_per_ip: 3 },
       transaction_queue: { ledgers_in_queue: 20, minimum_queue_size: 5 },
       voting: { reference_fee: 10, account_reserve: 10000000 },
@@ -309,7 +309,7 @@ describe('renderXrpldCfg', () => {
   });
 
   it('sections are separated by blank lines', () => {
-    const config = resolveXrpldConfig({ network: 'mainnet' });
+    const config = resolveXrpldConfig({ presets: { network: 'mainnet' } });
     const cfg = renderXrpldCfg(config);
     // Each section ends with \n and sections are joined with \n (so \n\n between them)
     expect(cfg).toContain('\n\n[');

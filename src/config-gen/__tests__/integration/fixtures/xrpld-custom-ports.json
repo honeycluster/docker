@@ -1,5 +1,5 @@
 {
-  "network": "mainnet",
+  "presets": { "network": "mainnet" },
   "server": {
     "ports": [
       { "name": "port_peer", "port": 41235, "ip": "0.0.0.0", "protocol": "peer" },

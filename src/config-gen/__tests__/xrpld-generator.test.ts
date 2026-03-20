@@ -5,7 +5,7 @@ import { resolveXrpldConfig } from '../defaults/xrpld.js';
 
 describe('generateXrpldConfig', () => {
   it('returns valid cfg and validators.txt for mainnet', () => {
-    const result = generateXrpldConfig({ network: 'mainnet' });
+    const result = generateXrpldConfig({ presets: { network: 'mainnet' } });
 
     expect(result.config).toContain('[server]');
     expect(result.config).toContain('[node_db]');
@@ -17,7 +17,7 @@ describe('generateXrpldConfig', () => {
   });
 
   it('returns valid cfg and validators.txt for testnet', () => {
-    const result = generateXrpldConfig({ network: 'testnet' });
+    const result = generateXrpldConfig({ presets: { network: 'testnet' } });
 
     expect(result.config).toContain('[network_id]');
     expect(result.config).toContain('1');
@@ -26,7 +26,7 @@ describe('generateXrpldConfig', () => {
   });
 
   it('returns valid cfg and validators.txt for devnet', () => {
-    const result = generateXrpldConfig({ network: 'devnet' });
+    const result = generateXrpldConfig({ presets: { network: 'devnet' } });
 
     expect(result.config).toContain('[network_id]');
     expect(result.config).toContain('2');
@@ -42,7 +42,7 @@ describe('generateXrpldConfig', () => {
 
   it('applies user overrides', () => {
     const result = generateXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       node_size: 'large',
       ledger_history: 'full',
     });
@@ -55,7 +55,7 @@ describe('generateXrpldConfig', () => {
 
   it('includes validators.txt with custom validators', () => {
     const result = generateXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       validators: ['nHBidG3pZK11zQD6kpNDoAhDxH6n8KnyoHmSMzPELCRBAeZcmXLP'],
     });
 
@@ -66,7 +66,7 @@ describe('generateXrpldConfig', () => {
   it('throws on validation errors (bad node_db type)', () => {
     expect(() =>
       generateXrpldConfig({
-        network: 'mainnet',
+        presets: { network: 'mainnet' },
         node_db: { type: 'BadDB', path: '/tmp/db' },
       }),
     ).toThrow('Validation failed');
@@ -75,7 +75,7 @@ describe('generateXrpldConfig', () => {
   it('throws on validation errors (mutually exclusive fields)', () => {
     expect(() =>
       generateXrpldConfig({
-        network: 'mainnet',
+        presets: { network: 'mainnet' },
         validation_seed: 'seed123',
         validator_token: 'token456',
       }),
@@ -83,14 +83,14 @@ describe('generateXrpldConfig', () => {
   });
 
   it('passes warnings through in result', () => {
-    const result = generateXrpldConfig({ network: 'mainnet' });
+    const result = generateXrpldConfig({ presets: { network: 'mainnet' } });
     expect(Array.isArray(result.warnings)).toBe(true);
   });
 });
 
 describe('validateXrpldConfig', () => {
   it('returns no errors for valid config', () => {
-    const config = resolveXrpldConfig({ network: 'mainnet' });
+    const config = resolveXrpldConfig({ presets: { network: 'mainnet' } });
     const result = validateXrpldConfig(config);
 
     expect(result.errors).toHaveLength(0);
@@ -99,7 +99,7 @@ describe('validateXrpldConfig', () => {
 
   it('returns error for invalid node_db type', () => {
     const config = resolveXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       node_db: { type: 'InvalidDB', path: '/tmp/db' },
     });
     const result = validateXrpldConfig(config);
@@ -111,7 +111,7 @@ describe('validateXrpldConfig', () => {
 
   it('returns error for mutually exclusive validation_seed and validator_token', () => {
     const config = resolveXrpldConfig({
-      network: 'mainnet',
+      presets: { network: 'mainnet' },
       validation_seed: 'seed',
       validator_token: 'token',
     });

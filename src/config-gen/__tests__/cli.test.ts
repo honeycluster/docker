@@ -171,7 +171,7 @@ describe('CLI', () => {
 
     it('generates config from --json input', () => {
       const jsonPath = join(tmpDir, 'test.json');
-      writeFileSync(jsonPath, JSON.stringify({ network: 'devnet' }), 'utf-8');
+      writeFileSync(jsonPath, JSON.stringify({ presets: { network: 'devnet' } }), 'utf-8');
       const result = run({ target: 'xrpld', jsonPath, validateOnly: false });
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('[server]');
