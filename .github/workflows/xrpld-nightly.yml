@@ -156,12 +156,7 @@ jobs:
 
   summary:
     runs-on: ubuntu-latest
-    needs:
-      [
-        fetch-rippled-develop,
-        build-binary,
-        build-and-push-base,
-      ]
+    needs: [fetch-rippled-develop, build-binary, build-and-push-base]
     if: always()
 
     steps:
