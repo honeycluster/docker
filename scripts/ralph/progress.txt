@@ -140,3 +140,25 @@ Started: Fri Mar 20 02:17:52 PM UTC 2026
   - The `warnings` array in `validateXrpldConfig` is mutable during collection but the return type is `ReadonlyArray` — filtering before return works cleanly
   - Role-specific warnings should check the resolved config fields (e.g., `config.validator_token`) not preset fields, since user may provide these independently of presets
 ---
+
+## 2026-03-20 - US-018
+- Exported `getSizeDefaults`, `getRoleDefaults`, `getVerbosityDefaults`, `VALID_SIZES`, `VALID_ROLES`, `VALID_LOG_LEVELS` from `index.ts`
+- Types `NodeRole`, `NodeSize`, `LogLevel`, `XrpldPresets` were already exported from prior stories
+- Created `src/config-gen/examples/xrpld-full.json` with presets object (network, role, size, verbosity)
+- Created `src/config-gen/examples/xrpld-full.txt` with `PRESET_*` keys
+- Created `src/config-gen/__tests__/integration/presets.test.ts` with 30 tests covering:
+  - All 7 roles x mainnet produce valid cfg
+  - All 5 sizes produce correct `node_size` + `online_delete`
+  - All 7 verbosity levels produce correct `log_level` in `rpc_startup`
+  - Combined presets (testnet + validator + large + info)
+  - Backwards compatibility: `{}` = stock + medium + warning + mainnet
+  - Presets object does NOT appear in rendered cfg output
+  - Text file with `PRESET_ROLE` + `PRESET_SIZE` produces correct cfg
+  - CLI `run()` with all preset args produces correct cfg
+- All 342 tests pass, coverage 90.12% (target: 80%)
+- Files changed: `src/config-gen/index.ts`, `src/config-gen/examples/xrpld-full.json`, `src/config-gen/examples/xrpld-full.txt`, `src/config-gen/__tests__/integration/presets.test.ts`
+- **Learnings for future iterations:**
+  - No `xrpld-full` example files existed previously — they were created fresh, not updated
+  - The coverage tool (`@vitest/coverage-v8`) needed to be installed separately
+  - Pre-existing tsconfig.build.json es5 target errors are NOT from new code — always check error source files
+---
