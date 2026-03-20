@@ -42,7 +42,7 @@
       ],
       "priority": 2,
       "dependsOn": ["US-011"],
-      "passes": false,
+      "passes": true,
       "notes": "Size presets handle resource/capacity tuning. Role presets handle operational behavior — no overlap."
     },
     {

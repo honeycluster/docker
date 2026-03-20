@@ -43,3 +43,15 @@ Started: Fri Mar 20 03:24:12 PM UTC 2026
   - 2 pre-existing test failures: missing `examples/rippled/cfg/xrpld-example.cfg` file — not related to preset work
   - The cfg-renderer is safe — it only renders keys listed in its explicit SINGLE_VALUE_KEYS/LIST_KEYS/KEY_VALUE_KEYS arrays, so `presets` won't leak into rendered config
 ---
+
+## 2026-03-20 - US-012
+- Created `packages/generator/src/defaults/sizes.ts` with `getSizeDefaults()` and `VALID_SIZES`
+- 5 size presets (tiny, small, medium, large, huge) with node_size, node_db, ledger_history, peers_max, and optional workers/io_workers
+- All sizes use NuDB at /var/lib/xrpld/db/nudb with advisory_delete=0
+- Created `packages/generator/tests/defaults/sizes.test.ts` with 9 tests covering all sizes
+- Files changed: src/defaults/sizes.ts, tests/defaults/sizes.test.ts
+- **Learnings for future iterations:**
+  - Follow the existing pattern in xrpld.ts: `*_MAP` record + `get*Defaults()` function + `VALID_*` set
+  - Size presets set: node_size, node_db, ledger_history, peers_max, and optionally workers/io_workers
+  - Large and huge are the only sizes that set workers/io_workers
+---
