@@ -1,23 +1,18 @@
-// #region Types
-
-type JsonValue = string | number | boolean | null | JsonObject | JsonValue[];
-interface JsonObject {
-  [key: string]: JsonValue;
-}
-
-// #endregion
+import type { XrpldInput } from '../types/xrpld-input.js';
 
 // #region Parser
 
 /**
- * Parse a JSON file string into flat key-value pairs.
- * Nested objects are flattened using underscore-separated uppercase keys.
- * e.g., { "ssl": { "certFile": "/path" } } -> { "SSL_CERT_FILE": "/path" }
+ * Parse a JSON string into a Partial<XrpldInput>.
+ * Accepts nested structure directly — no flattening.
+ * @param content - Raw JSON string representing xrpld configuration
+ * @returns Parsed configuration as Partial<XrpldInput>
+ * @throws JsonParseException if JSON is invalid or not an object
  */
-export function parseJsonFile(content: string): Record<string, string> {
-  let parsed: JsonValue;
+export function parseJsonFile(content: string): Partial<XrpldInput> {
+  let parsed: unknown;
   try {
-    parsed = JSON.parse(content) as JsonValue;
+    parsed = JSON.parse(content);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     throw new JsonParseException(`Invalid JSON: ${msg}`);
@@ -27,49 +22,7 @@ export function parseJsonFile(content: string): Record<string, string> {
     throw new JsonParseException(`Expected a JSON object at root, got ${Array.isArray(parsed) ? 'array' : typeof parsed}`);
   }
 
-  const result: Record<string, string> = {};
-  flattenObject(parsed, '', result);
-  return result;
-}
-
-// #endregion
-
-// #region Helpers
-
-function flattenObject(
-  obj: JsonObject,
-  prefix: string,
-  result: Record<string, string>,
-): void {
-  for (const [key, value] of Object.entries(obj)) {
-    const fullKey = prefix ? `${prefix}_${toScreamingSnake(key)}` : toScreamingSnake(key);
-
-    if (value === null) {
-      result[fullKey] = '';
-    } else if (typeof value === 'object' && !Array.isArray(value)) {
-      flattenObject(value as JsonObject, fullKey, result);
-    } else if (Array.isArray(value)) {
-      result[fullKey] = JSON.stringify(value);
-    } else {
-      result[fullKey] = String(value);
-    }
-  }
-}
-
-/**
- * Convert a camelCase or PascalCase key to SCREAMING_SNAKE_CASE.
- * Keys already in SCREAMING_SNAKE_CASE pass through unchanged.
- */
-function toScreamingSnake(key: string): string {
-  // If already SCREAMING_SNAKE_CASE, return as-is
-  if (/^[A-Z][A-Z0-9_]*$/.test(key)) {
-    return key;
-  }
-
-  return key
-    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
-    .toUpperCase();
+  return parsed as Partial<XrpldInput>;
 }
 
 // #endregion

@@ -1,49 +1,50 @@
-import { readFileSync, writeFileSync } from 'fs';
+import { writeFileSync } from 'fs';
 import { generateXrpldConfig } from '../../generators/xrpld.js';
-import { generateClioConfig } from '../../generators/clio.js';
-import { parseEnvFile } from '../../parsers/env-parser.js';
-import { parseJsonFile } from '../../parsers/json-parser.js';
+import type { XrpldInput } from '../../types/xrpld-input.js';
 
-const FIXTURES = new URL('./fixtures/', import.meta.url).pathname;
 const EXPECTED = new URL('./expected/', import.meta.url).pathname;
 
-function loadEnv(name: string): Record<string, string> {
-  const content = readFileSync(`${FIXTURES}${name}`, 'utf-8');
-  return parseEnvFile(content);
-}
-
-function loadJson(name: string): Record<string, string> {
-  const content = readFileSync(`${FIXTURES}${name}`, 'utf-8');
-  return parseJsonFile(content);
-}
-
-// xrpld scenarios
-const xrpldScenarios: [string, Record<string, string>][] = [
+const scenarios: [string, Partial<XrpldInput>][] = [
   ['xrpld-default.cfg', {}],
-  ['xrpld-mainnet.cfg', loadEnv('xrpld-mainnet.env')],
-  ['xrpld-testnet.cfg', loadEnv('xrpld-testnet.env')],
-  ['xrpld-devnet.cfg', loadEnv('xrpld-devnet.env')],
-  ['xrpld-small.cfg', loadEnv('xrpld-small.env')],
-  ['xrpld-full.cfg', loadEnv('xrpld-full.env')],
-  ['xrpld-ssl.cfg', loadEnv('xrpld-ssl.env')],
-  ['xrpld-custom-ports.cfg', loadJson('xrpld-custom-ports.json')],
+  ['xrpld-mainnet.cfg', { network: 'mainnet' }],
+  ['xrpld-testnet.cfg', { network: 'testnet' }],
+  ['xrpld-devnet.cfg', { network: 'devnet' }],
+  [
+    'xrpld-custom-ports.cfg',
+    {
+      network: 'mainnet',
+      server: {
+        ports: [
+          { name: 'port_peer', port: 41235, ip: '0.0.0.0', protocol: 'peer' },
+          { name: 'port_rpc', port: 41234, ip: '0.0.0.0', protocol: 'http', admin: '127.0.0.1' },
+          { name: 'port_ws', port: 4005, ip: '0.0.0.0', protocol: 'ws' },
+        ],
+      },
+    },
+  ],
+  [
+    'xrpld-advanced.cfg',
+    {
+      network: 'mainnet',
+      overlay: { ip_limit: 5, max_unknown_time: 300, connect_timeout: 15 },
+      transaction_queue: { ledgers_in_queue: 20, minimum_queue_size: 2000, retry_sequence_percent: 25 },
+      voting: { reference_fee: 10, account_reserve: 10000000, owner_reserve: 2000000 },
+      reduce_relay: { vp_enable: 1, vp_squelch: 600, tx_enable: 1, tx_limit: 300 },
+      crawl: { overlay: 1, server: 1, counts: 1, unl: 1 },
+      sqlite: { ledger_page_size: 4096, transaction_page_size: 4096, account_page_size: 4096 },
+    },
+  ],
 ];
 
-for (const [filename, overrides] of xrpldScenarios) {
-  const { config } = generateXrpldConfig(overrides);
-  writeFileSync(`${EXPECTED}${filename}`, config);
-  console.log(`Generated ${filename}`);
-}
+for (const [filename, input] of scenarios) {
+  const result = generateXrpldConfig(input);
+  writeFileSync(`${EXPECTED}${filename}`, result.config);
 
-// clio scenarios
-const clioScenarios: [string, Record<string, string>][] = [
-  ['clio-default.json', {}],
-  ['clio-ssl.json', loadEnv('clio-ssl.env')],
-  ['clio-custom.json', loadJson('clio-custom.json')],
-];
+  // Write validators.txt for network scenarios
+  if (filename.includes('mainnet') || filename.includes('testnet') || filename.includes('devnet')) {
+    const baseName = filename.replace('.cfg', '-validators.txt');
+    writeFileSync(`${EXPECTED}${baseName}`, result.validatorsTxt);
+  }
 
-for (const [filename, overrides] of clioScenarios) {
-  const { config } = generateClioConfig(overrides);
-  writeFileSync(`${EXPECTED}${filename}`, config);
   console.log(`Generated ${filename}`);
 }

@@ -1,0 +1,13 @@
+# Text file input equivalent to mainnet defaults with custom node_size
+NETWORK=mainnet
+NODE_SIZE=medium
+NODE_DB_TYPE=NuDB
+NODE_DB_PATH=/var/lib/xrpld/db/nudb
+NODE_DB_ONLINE_DELETE=512
+DATABASE_PATH=/var/lib/xrpld/db
+DEBUG_LOGFILE=/var/log/xrpld/debug.log
+SSL_VERIFY=1
+SNTP_SERVERS=pool.ntp.org
+PEER_PRIVATE=0
+FETCH_DEPTH=full
+LEDGER_HISTORY=256
