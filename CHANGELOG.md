@@ -1,3 +1,7 @@
+## 0.0.1-a.6 (2026-03-20)
+
+This was a version bump only, there were no code changes.
+
 ## 0.0.1-a.5 (2026-03-20)
 
 ### Chores
