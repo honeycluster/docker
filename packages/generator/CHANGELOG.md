@@ -1,3 +1,7 @@
+## 0.0.1-a.4 (2026-03-20)
+
+This was a version bump only for @honeycluster/xrpld-cfg-gen to align it with other projects, there were no code changes.
+
 ## 0.0.1-a.3 (2026-03-20)
 
 ### Fixes

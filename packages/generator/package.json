@@ -1,6 +1,6 @@
 {
   "name": "@honeycluster/xrpld-cfg-gen",
-  "version": "0.0.1-a.3",
+  "version": "0.0.1-a.4",
   "description": "TypeScript config generator for xrpld.cfg — presets, validation, multi-format input",
   "type": "module",
   "license": "MIT",
