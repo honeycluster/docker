@@ -110,3 +110,19 @@ Started: Fri Mar 20 02:17:52 PM UTC 2026
   - Validation rules may conflict with preset values — check that validation allows the combinations that presets produce
   - The resolved presets object is always the resolved/defaulted values, not just what the user passed in
 ---
+
+## 2026-03-20 - US-016
+- Added `--role`, `--size`, `--verbose` flags to CLI `parseArgs` with validation against `VALID_ROLES`, `VALID_SIZES`, `VALID_LOG_LEVELS`
+- Added `role`, `size`, `verbosity` fields to `CliArgs` interface
+- Updated `run()` to build presets object from all CLI args (network, role, size, verbosity)
+- Added `PRESET_NETWORK`, `PRESET_ROLE`, `PRESET_SIZE`, `PRESET_VERBOSITY` to env-parser `KEY_MAP`
+- Kept `NETWORK` as backwards-compat alias for `PRESET_NETWORK`
+- Updated USAGE string with new flags, defaults, and preset examples
+- Added 10 new CLI tests (parse/reject for each flag + combined test)
+- Added 6 new text-parser tests for `PRESET_*` keys
+- Files changed: `src/config-gen/cli.ts`, `src/config-gen/parsers/env-parser.ts`, `src/config-gen/__tests__/cli.test.ts`, `src/config-gen/parsers/__tests__/text-parser.test.ts`
+- **Learnings for future iterations:**
+  - CLI imports `VALID_ROLES`, `VALID_SIZES`, `VALID_LOG_LEVELS` from the defaults modules for validation — avoids duplicating valid value sets
+  - The `--verbose` flag name maps to `verbosity` in CliArgs and presets — note the name mismatch is intentional per PRD
+  - CLI presets merge with `...input.presets` spread, so text-file/JSON presets are preserved and CLI flags override them
+---
