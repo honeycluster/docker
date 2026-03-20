@@ -254,7 +254,7 @@ export function run(args: CliArgs): CliResult {
       stderr.push(`Config written to ${cfgPath}`);
       stderr.push(`Validators written to ${valPath}`);
     } else {
-      stdout = result.config;
+      stdout = `# ── xrpld.cfg ────────────────────────────────────────\n\n${result.config}\n# ── validators.txt ───────────────────────────────────\n\n${result.validatorsTxt}`;
     }
   } catch (error) {
     if (error instanceof Error) {
@@ -305,14 +305,6 @@ function main(): void {
   }
 }
 
-// Only run main when executed directly (not imported)
-const isDirectExecution =
-  typeof process !== 'undefined' &&
-  process.argv[1] &&
-  (process.argv[1].endsWith('/cli.ts') || process.argv[1].endsWith('/cli.js'));
-
-if (isDirectExecution) {
-  main();
-}
+main();
 
 // #endregion -- Main ----------------------------------
