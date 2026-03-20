@@ -228,7 +228,7 @@ describe('renderXrpldCfg', () => {
     expect(cfg).toContain('[debug_logfile]\n/var/log/xrpld/debug.log');
     expect(cfg).toContain('[database_path]\n/var/lib/xrpld/db');
     expect(cfg).toContain('[ssl_verify]\n1');
-    expect(cfg).toContain('[ledger_history]\n256');
+    expect(cfg).toContain('[ledger_history]\n512');
     expect(cfg).toContain('[fetch_depth]\nfull');
     expect(cfg).toContain('[peer_private]\n0');
     expect(cfg).toContain('[network_id]\n0');

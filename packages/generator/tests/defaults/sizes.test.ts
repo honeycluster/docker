@@ -49,7 +49,7 @@ describe('getSizeDefaults', () => {
     const result = getSizeDefaults('medium');
     expect(result.node_size).toBe('medium');
     expect(result.node_db).toEqual({ ...BASE_DB, online_delete: 512 });
-    expect(result.ledger_history).toBe('1024');
+    expect(result.ledger_history).toBe('512');
     expect(result.peers_max).toBe(21);
     expect(result.workers).toBeUndefined();
     expect(result.io_workers).toBeUndefined();

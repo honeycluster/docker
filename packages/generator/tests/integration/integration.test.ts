@@ -274,7 +274,7 @@ describe('round-trip cfg parsing', () => {
     expect(parsed.ssl_verify).toBe(1);
     expect(parsed.database_path).toBe('/var/lib/xrpld/db');
     expect(parsed.debug_logfile).toBe('/var/log/xrpld/debug.log');
-    expect(parsed.ledger_history).toBe(256);
+    expect(parsed.ledger_history).toBe(512);
     expect(parsed.fetch_depth).toBe('full');
     expect(parsed.peer_private).toBe(0);
 
