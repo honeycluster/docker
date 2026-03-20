@@ -15,6 +15,7 @@
 - `ledger_history > online_delete` is a warning, not an error (presets intentionally allow it)
 - When changing defaults, regenerate expected .cfg files: use `npx tsx` to run the generator and write to `__tests__/integration/expected/`
 - tsconfig.build.json has pre-existing lib target (es5) errors — `Set`, `ReadonlySet`, `includes` etc. are NOT new issues
+- Invalid preset values crash `resolveXrpldConfig` — test invalid presets by constructing config with spread, not via `makeConfig()`
 
 ---
 
@@ -125,4 +126,17 @@ Started: Fri Mar 20 02:17:52 PM UTC 2026
   - CLI imports `VALID_ROLES`, `VALID_SIZES`, `VALID_LOG_LEVELS` from the defaults modules for validation — avoids duplicating valid value sets
   - The `--verbose` flag name maps to `verbosity` in CliArgs and presets — note the name mismatch is intentional per PRD
   - CLI presets merge with `...input.presets` spread, so text-file/JSON presets are preserved and CLI flags override them
+---
+
+## 2026-03-20 - US-017
+- Added `validatePresets()` function to `validation.ts` with errors for invalid role/size/verbosity/network values
+- Added role-specific warnings: validator without token, sentry without ips_fixed, clio with gRPC not on 0.0.0.0
+- Suppressed generic "will not validate" warning when role=validator warning fires (avoids duplicates)
+- Imported `VALID_ROLES`, `VALID_SIZES`, `VALID_LOG_LEVELS` from defaults modules; defined `VALID_NETWORKS` locally
+- Added 14 new tests covering all error and warning scenarios
+- Files changed: `src/config-gen/validation.ts`, `src/config-gen/__tests__/validation.test.ts`
+- **Learnings for future iterations:**
+  - Invalid preset values cause `resolveXrpldConfig` to crash (returns undefined from lookup maps) — test invalid presets by constructing config directly with spread, not via `makeConfig()`
+  - The `warnings` array in `validateXrpldConfig` is mutable during collection but the return type is `ReadonlyArray` — filtering before return works cleanly
+  - Role-specific warnings should check the resolved config fields (e.g., `config.validator_token`) not preset fields, since user may provide these independently of presets
 ---

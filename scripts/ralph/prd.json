@@ -168,7 +168,7 @@
       ],
       "priority": 4,
       "dependsOn": ["US-015"],
-      "passes": false,
+      "passes": true,
       "notes": "Validator without token is a warning, not an error — users may generate config before having the token. Suppress the generic 'no validator_token' warning when the role-specific one fires to avoid duplicates."
     },
     {
