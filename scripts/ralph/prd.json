@@ -144,7 +144,7 @@
       ],
       "priority": 4,
       "dependsOn": ["US-015"],
-      "passes": false,
+      "passes": true,
       "notes": "CLI flag is --verbose but CliArgs field and preset key are verbosity. The --network flag continues to work as before but internally maps to presets.network."
     },
     {

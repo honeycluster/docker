@@ -99,3 +99,19 @@ Started: Fri Mar 20 03:24:12 PM UTC 2026
   - The cfg renderer will output any field in SINGLE_VALUE_KEYS that has a value, so new preset defaults (node_size, peers_max) automatically appear in cfg output
   - 2 pre-existing test failures remain: missing examples/rippled/cfg/xrpld-example.cfg file (not related to preset work)
 ---
+
+## 2026-03-20 - US-016
+- Added --role, --size, --verbose flags to CLI parseArgs with validation against VALID_ROLES, VALID_SIZES, VALID_LOG_LEVELS
+- Added role, size, verbosity fields to CliArgs interface
+- Updated run() to build presets object from all CLI args (network, role, size, verbosity) merged over input source presets
+- Updated USAGE string with new flags, defaults, and preset combination examples
+- Added PRESET_NETWORK, PRESET_ROLE, PRESET_SIZE, PRESET_VERBOSITY to env-parser KEY_MAP
+- Kept NETWORK as backwards-compat alias for PRESET_NETWORK
+- Added 10 new CLI tests (3 per flag: parse/missing/invalid + combined flags test)
+- Added 7 new text-parser tests for PRESET_* keys
+- Files changed: src/cli.ts, src/parsers/env-parser.ts, tests/cli.test.ts, tests/parsers/text-parser.test.ts
+- **Learnings for future iterations:**
+  - CLI flag is --verbose but CliArgs field is verbosity (per PRD notes)
+  - CLI presets merge over input source presets — CLI flags win
+  - PRESET_NETWORK and NETWORK both map to presets.network in the env-parser
+---
