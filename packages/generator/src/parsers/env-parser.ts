@@ -9,6 +9,10 @@ import type { XrpldInput, XrpldPortConfig } from '../types/xrpld-input.js';
 const KEY_MAP: Record<string, string> = {
   // Meta / Presets
   NETWORK: 'presets.network',
+  PRESET_NETWORK: 'presets.network',
+  PRESET_ROLE: 'presets.role',
+  PRESET_SIZE: 'presets.size',
+  PRESET_VERBOSITY: 'presets.verbosity',
 
   // Single-value sections
   DATABASE_PATH: 'database_path',

@@ -11,7 +11,10 @@ import {
   resolveXrpldConfig,
   validateXrpldConfig,
 } from './index.js';
-import type { XrpldInput } from './types/xrpld-input.js';
+import { VALID_ROLES } from './defaults/roles.js';
+import { VALID_SIZES } from './defaults/sizes.js';
+import { VALID_LOG_LEVELS } from './defaults/verbosity.js';
+import type { XrpldInput, NodeRole, NodeSize, LogLevel } from './types/xrpld-input.js';
 // #endregion -- Imports -------------------------------
 
 // #region -- Types ------------------------------------
@@ -21,6 +24,9 @@ export interface CliArgs {
   parsePath?: string;
   outputPath?: string;
   network?: 'mainnet' | 'testnet' | 'devnet';
+  role?: NodeRole;
+  size?: NodeSize;
+  verbosity?: LogLevel;
   validateOnly: boolean;
 }
 
@@ -40,17 +46,22 @@ Options:
   --parse <cfg-path>   Parse an existing xrpld.cfg to JSON (stdout or --output)
   --output <dir>       Write xrpld.cfg and validators.txt to directory
   --network <name>     Network preset: mainnet, testnet, devnet (default: mainnet)
+  --role <role>        Node role: stock, validator, ephemeral, sentry, clio, feature, hub (default: stock)
+  --size <size>        Node size: tiny, small, medium, large, huge (default: medium)
+  --verbose <level>    Log verbosity: silent, fatal, error, warning, info, debug, trace (default: warning)
   --validate-only      Run validation without generating output
   --help               Show this help message
 
-Input sources are merged in order: defaults < network < --input < --json < --network.
-When no input is provided, mainnet defaults are used.
+Input sources are merged in order: defaults < size < role < verbosity < network < --input < --json < CLI flags.
+When no input is provided, mainnet defaults with stock role, medium size, and warning verbosity are used.
 
 Examples:
   xrpl-cfg-gen --network mainnet --output /var/lib/xrpld/etc
+  xrpl-cfg-gen --role validator --size large --network mainnet --output /var/lib/xrpld/etc
+  xrpl-cfg-gen --role clio --network testnet --verbose info
+  xrpl-cfg-gen --size huge --verbose debug --output /var/lib/xrpld/etc
   xrpl-cfg-gen --json overrides.json --output /var/lib/xrpld/etc
   xrpl-cfg-gen --input config.txt --network testnet
-  xrpl-cfg-gen --input config.txt --json overrides.json --output /var/lib/xrpld/etc
   xrpl-cfg-gen --parse /var/lib/xrpld/etc/xrpld.cfg
   xrpl-cfg-gen --json overrides.json --validate-only`;
 
@@ -68,6 +79,9 @@ export function parseArgs(argv: string[]): CliArgs | { error: string; showUsage?
   let parsePath: string | undefined;
   let outputPath: string | undefined;
   let network: 'mainnet' | 'testnet' | 'devnet' | undefined;
+  let role: NodeRole | undefined;
+  let size: NodeSize | undefined;
+  let verbosity: LogLevel | undefined;
   let validateOnly = false;
 
   for (let i = 0; i < args.length; i++) {
@@ -107,6 +121,39 @@ export function parseArgs(argv: string[]): CliArgs | { error: string; showUsage?
         network = val as 'mainnet' | 'testnet' | 'devnet';
         break;
       }
+      case '--role': {
+        const val = args[++i];
+        if (!val) {
+          return { error: '--role requires a value (stock, validator, ephemeral, sentry, clio, feature, hub).' };
+        }
+        if (!VALID_ROLES.has(val)) {
+          return { error: `Invalid role "${val}". Must be one of: ${[...VALID_ROLES].join(', ')}.` };
+        }
+        role = val as NodeRole;
+        break;
+      }
+      case '--size': {
+        const val = args[++i];
+        if (!val) {
+          return { error: '--size requires a value (tiny, small, medium, large, huge).' };
+        }
+        if (!VALID_SIZES.has(val)) {
+          return { error: `Invalid size "${val}". Must be one of: ${[...VALID_SIZES].join(', ')}.` };
+        }
+        size = val as NodeSize;
+        break;
+      }
+      case '--verbose': {
+        const val = args[++i];
+        if (!val) {
+          return { error: '--verbose requires a value (silent, fatal, error, warning, info, debug, trace).' };
+        }
+        if (!VALID_LOG_LEVELS.has(val)) {
+          return { error: `Invalid verbosity "${val}". Must be one of: ${[...VALID_LOG_LEVELS].join(', ')}.` };
+        }
+        verbosity = val as LogLevel;
+        break;
+      }
       case '--validate-only':
         validateOnly = true;
         break;
@@ -115,7 +162,7 @@ export function parseArgs(argv: string[]): CliArgs | { error: string; showUsage?
     }
   }
 
-  return { inputPath, jsonPath, parsePath, outputPath, network, validateOnly };
+  return { inputPath, jsonPath, parsePath, outputPath, network, role, size, verbosity, validateOnly };
 }
 
 // #endregion -- Argument Parsing ----------------------
@@ -159,8 +206,16 @@ export function run(args: CliArgs): CliResult {
       input = { ...input, ...jsonInput };
     }
 
-    if (args.network) {
-      input = { ...input, presets: { ...input.presets, network: args.network } };
+    // Build presets from CLI flags, merging over any presets from input sources
+    const cliPresets = {
+      ...input.presets,
+      ...(args.network ? { network: args.network } : {}),
+      ...(args.role ? { role: args.role } : {}),
+      ...(args.size ? { size: args.size } : {}),
+      ...(args.verbosity ? { verbosity: args.verbosity } : {}),
+    };
+    if (Object.keys(cliPresets).length > 0) {
+      input = { ...input, presets: cliPresets };
     }
 
     // Validate-only mode

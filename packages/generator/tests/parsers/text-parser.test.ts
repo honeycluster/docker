@@ -11,6 +11,46 @@ describe('parseTextFile', () => {
       expect(result.presets?.network).toBe('mainnet');
     });
 
+    it('parses PRESET_NETWORK as alias for NETWORK', () => {
+      const result = parseTextFile('PRESET_NETWORK=testnet');
+      expect(result.presets?.network).toBe('testnet');
+    });
+
+    it('parses PRESET_ROLE to presets.role', () => {
+      const result = parseTextFile('PRESET_ROLE=validator');
+      expect(result.presets?.role).toBe('validator');
+    });
+
+    it('parses PRESET_SIZE to presets.size', () => {
+      const result = parseTextFile('PRESET_SIZE=large');
+      expect(result.presets?.size).toBe('large');
+    });
+
+    it('parses PRESET_VERBOSITY to presets.verbosity', () => {
+      const result = parseTextFile('PRESET_VERBOSITY=debug');
+      expect(result.presets?.verbosity).toBe('debug');
+    });
+
+    it('parses all PRESET_* keys together', () => {
+      const result = parseTextFile([
+        'PRESET_NETWORK=testnet',
+        'PRESET_ROLE=validator',
+        'PRESET_SIZE=large',
+        'PRESET_VERBOSITY=info',
+      ].join('\n'));
+      expect(result.presets).toEqual({
+        network: 'testnet',
+        role: 'validator',
+        size: 'large',
+        verbosity: 'info',
+      });
+    });
+
+    it('NETWORK backwards compat maps to presets.network', () => {
+      const result = parseTextFile('NETWORK=mainnet');
+      expect(result.presets?.network).toBe('mainnet');
+    });
+
     it('parses top-level string fields', () => {
       const result = parseTextFile([
         'NETWORK_ID=0',
