@@ -55,3 +55,15 @@ Started: Fri Mar 20 03:24:12 PM UTC 2026
   - Size presets set: node_size, node_db, ledger_history, peers_max, and optionally workers/io_workers
   - Large and huge are the only sizes that set workers/io_workers
 ---
+
+## 2026-03-20 - US-013
+- Created `packages/generator/src/defaults/roles.ts` with `getRoleDefaults()` and `VALID_ROLES`
+- 7 role presets (stock, validator, ephemeral, sentry, clio, feature, hub)
+- stock/ephemeral return empty objects; validator has 3 ports (no gRPC) + peer_private=1; clio has 4 ports with gRPC on 0.0.0.0 + ledger_history=full; sentry/hub set peer_private=0; feature sets amendment_majority_time
+- Created `packages/generator/tests/defaults/roles.test.ts` with 11 tests covering all roles
+- Files changed: src/defaults/roles.ts, tests/defaults/roles.test.ts
+- **Learnings for future iterations:**
+  - Role presets must NOT set node_size, node_db, workers, io_workers — that is size's job
+  - Validator role removes gRPC port entirely (3 ports instead of 4)
+  - Clio role sets gRPC ip and secure_gateway both to 0.0.0.0
+---

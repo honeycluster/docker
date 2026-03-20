@@ -66,7 +66,7 @@
       ],
       "priority": 2,
       "dependsOn": ["US-011"],
-      "passes": false,
+      "passes": true,
       "notes": "Roles focus purely on operational behavior. Size handles capacity. Users combine both via presets."
     },
     {
