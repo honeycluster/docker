@@ -26,7 +26,7 @@ const SIZE_MAP: Record<NodeSize, Partial<XrpldInput>> = {
   small: {
     node_size: 'small',
     node_db: { ...BASE_NODE_DB, online_delete: 256 },
-    ledger_history: '512',
+    ledger_history: '256',
     peers_max: 15,
   },
   medium: {
@@ -38,7 +38,7 @@ const SIZE_MAP: Record<NodeSize, Partial<XrpldInput>> = {
   large: {
     node_size: 'large',
     node_db: { ...BASE_NODE_DB, online_delete: 2048 },
-    ledger_history: '4096',
+    ledger_history: '2048',
     peers_max: 50,
     workers: 4,
     io_workers: 2,

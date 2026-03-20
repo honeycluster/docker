@@ -39,7 +39,7 @@ describe('getSizeDefaults', () => {
     const result = getSizeDefaults('small');
     expect(result.node_size).toBe('small');
     expect(result.node_db).toEqual({ ...BASE_DB, online_delete: 256 });
-    expect(result.ledger_history).toBe('512');
+    expect(result.ledger_history).toBe('256');
     expect(result.peers_max).toBe(15);
     expect(result.workers).toBeUndefined();
     expect(result.io_workers).toBeUndefined();
@@ -59,7 +59,7 @@ describe('getSizeDefaults', () => {
     const result = getSizeDefaults('large');
     expect(result.node_size).toBe('large');
     expect(result.node_db).toEqual({ ...BASE_DB, online_delete: 2048 });
-    expect(result.ledger_history).toBe('4096');
+    expect(result.ledger_history).toBe('2048');
     expect(result.peers_max).toBe(50);
     expect(result.workers).toBe(4);
     expect(result.io_workers).toBe(2);
