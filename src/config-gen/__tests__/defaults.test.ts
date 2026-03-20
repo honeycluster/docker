@@ -43,29 +43,42 @@ describe('getNetworkDefaults', () => {
 
 // #endregion
 
-// #region resolveXrpldConfig
+// #region resolveXrpldConfig — default behavior
 
 describe('resolveXrpldConfig', () => {
-  it('returns common defaults when no input provided', () => {
+  it('returns defaults when no input provided (stock + medium + warning + mainnet)', () => {
     const config = resolveXrpldConfig();
-    expect(config.presets?.network).toBe('mainnet');
-    expect(config.node_db?.type).toBe('NuDB');
-    expect(config.node_db?.path).toBe('/var/lib/xrpld/db/nudb');
-    expect(config.node_db?.online_delete).toBe(512);
-    expect(config.node_db?.advisory_delete).toBe(0);
+    // Preset defaults
+    expect(config.presets).toEqual({
+      network: 'mainnet',
+      role: 'stock',
+      size: 'medium',
+      verbosity: 'warning',
+    });
+    // Common defaults
     expect(config.database_path).toBe('/var/lib/xrpld/db');
     expect(config.debug_logfile).toBe('/var/log/xrpld/debug.log');
     expect(config.ssl_verify).toBe('1');
     expect(config.sntp_servers).toEqual(['pool.ntp.org']);
     expect(config.peer_private).toBe('0');
     expect(config.fetch_depth).toBe('full');
-    expect(config.ledger_history).toBe('256');
+    // From size=medium
+    expect(config.node_size).toBe('medium');
+    expect(config.node_db?.type).toBe('NuDB');
+    expect(config.node_db?.path).toBe('/var/lib/xrpld/db/nudb');
+    expect(config.node_db?.online_delete).toBe(512);
+    expect(config.node_db?.advisory_delete).toBe(0);
+    expect(config.ledger_history).toBe('1024');
+    expect(config.peers_max).toBe(21);
+    // From verbosity=warning
     expect(config.rpc_startup).toEqual([
       { command: 'log_level', severity: 'warning' },
     ]);
+    // From network=mainnet
+    expect(config.network_id).toBe('0');
   });
 
-  it('includes default ports', () => {
+  it('includes default ports (4 ports from common defaults)', () => {
     const config = resolveXrpldConfig();
     const ports = config.server?.ports;
     expect(ports).toHaveLength(4);
@@ -154,8 +167,7 @@ describe('resolveXrpldConfig', () => {
     // User values override
     expect(config.node_db?.type).toBe('RocksDB');
     expect(config.node_db?.path).toBe('/custom/db');
-    // Common defaults should not survive a merge because user replaced the whole object
-    // Actually with deep merge, the online_delete from common should survive
+    // Deep merge preserves non-overridden fields from size defaults
     expect(config.node_db?.online_delete).toBe(512);
     expect(config.node_db?.advisory_delete).toBe(0);
   });
@@ -200,6 +212,122 @@ describe('resolveXrpldConfig', () => {
     expect(config.validator_token).toBe('my-token');
     expect(config.node_size).toBe('huge');
     expect(config.workers).toBe(8);
+  });
+});
+
+// #endregion
+
+// #region resolveXrpldConfig — merge pipeline
+
+describe('resolveXrpldConfig merge pipeline', () => {
+  it('resolved config includes presets object with resolved values', () => {
+    const config = resolveXrpldConfig({ presets: { size: 'large', role: 'validator' } });
+    expect(config.presets).toEqual({
+      network: 'mainnet',
+      role: 'validator',
+      size: 'large',
+      verbosity: 'warning',
+    });
+  });
+
+  it('size=huge produces node_size=huge, online_delete=8192, peers_max=300', () => {
+    const config = resolveXrpldConfig({ presets: { size: 'huge' } });
+    expect(config.node_size).toBe('huge');
+    expect(config.node_db?.online_delete).toBe(8192);
+    expect(config.peers_max).toBe(300);
+    expect(config.workers).toBe(8);
+    expect(config.io_workers).toBe(4);
+  });
+
+  it('role=validator + size=large has large db settings + validator ports (3 ports, no gRPC)', () => {
+    const config = resolveXrpldConfig({ presets: { role: 'validator', size: 'large' } });
+    // Size: large
+    expect(config.node_size).toBe('large');
+    expect(config.node_db?.online_delete).toBe(2048);
+    expect(config.peers_max).toBe(50);
+    expect(config.workers).toBe(4);
+    // Role: validator overrides ports (3 ports, no gRPC) and peer_private
+    expect(config.peer_private).toBe('1');
+    expect(config.server?.ports).toHaveLength(3);
+    const portNames = config.server?.ports.map((p) => p.name);
+    expect(portNames).toEqual(['port_peer', 'port_rpc_admin_local', 'port_ws_admin_local']);
+  });
+
+  it('verbosity=debug produces log_level=debug in rpc_startup', () => {
+    const config = resolveXrpldConfig({ presets: { verbosity: 'debug' } });
+    expect(config.rpc_startup).toEqual([
+      { command: 'log_level', severity: 'debug' },
+    ]);
+  });
+
+  it('network=testnet + role=clio has testnet VL keys + clio ports with gRPC on 0.0.0.0', () => {
+    const config = resolveXrpldConfig({ presets: { network: 'testnet', role: 'clio' } });
+    // Network: testnet
+    expect(config.network_id).toBe('1');
+    expect(config.vl?.validator_list_sites).toEqual([
+      'https://vl.altnet.rippletest.net',
+    ]);
+    // Role: clio
+    expect(config.ledger_history).toBe('full');
+    expect(config.server?.ports).toHaveLength(4);
+    const grpcPort = config.server?.ports.find((p) => p.name === 'port_grpc');
+    expect(grpcPort?.ip).toBe('0.0.0.0');
+    expect(grpcPort?.secure_gateway).toBe('0.0.0.0');
+  });
+
+  it('user override wins over size preset: { presets: { size: "huge" }, node_size: "large" }', () => {
+    const config = resolveXrpldConfig({
+      presets: { size: 'huge' },
+      node_size: 'large',
+    });
+    expect(config.node_size).toBe('large');
+    // Other huge defaults still apply
+    expect(config.node_db?.online_delete).toBe(8192);
+    expect(config.peers_max).toBe(300);
+  });
+
+  it('user override wins over verbosity: custom rpc_startup replaces preset', () => {
+    const customStartup = [{ command: 'log_level', severity: 'trace' }];
+    const config = resolveXrpldConfig({
+      presets: { verbosity: 'debug' },
+      rpc_startup: customStartup,
+    });
+    expect(config.rpc_startup).toEqual(customStartup);
+  });
+
+  it('merge order: role overrides size for overlapping fields', () => {
+    // clio role sets ledger_history='full', which should override size medium's '1024'
+    const config = resolveXrpldConfig({ presets: { role: 'clio', size: 'medium' } });
+    expect(config.ledger_history).toBe('full');
+  });
+
+  it('merge order: network overrides lower layers', () => {
+    // Network provides network_id, VL keys — these override anything from lower layers
+    const config = resolveXrpldConfig({ presets: { network: 'devnet' } });
+    expect(config.network_id).toBe('2');
+  });
+
+  it('all preset dimensions default when empty input', () => {
+    const config = resolveXrpldConfig({});
+    expect(config.presets).toEqual({
+      network: 'mainnet',
+      role: 'stock',
+      size: 'medium',
+      verbosity: 'warning',
+    });
+  });
+
+  it('size=tiny produces tiny node settings', () => {
+    const config = resolveXrpldConfig({ presets: { size: 'tiny' } });
+    expect(config.node_size).toBe('tiny');
+    expect(config.node_db?.online_delete).toBe(256);
+    expect(config.ledger_history).toBe('256');
+    expect(config.peers_max).toBe(10);
+  });
+
+  it('role=feature sets amendment_majority_time', () => {
+    const config = resolveXrpldConfig({ presets: { role: 'feature' } });
+    expect(config.amendment_majority_time).toBe('5 minutes');
   });
 });
 

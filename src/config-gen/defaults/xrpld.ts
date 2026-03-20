@@ -1,4 +1,7 @@
-import type { XrpldInput, XrpldPortConfig } from '../types/xrpld-input.js';
+import type { XrpldInput, XrpldPortConfig, NodeRole, NodeSize, LogLevel } from '../types/xrpld-input.js';
+import { getSizeDefaults } from './sizes.js';
+import { getRoleDefaults } from './roles.js';
+import { getVerbosityDefaults } from './verbosity.js';
 
 // #region Network Defaults
 
@@ -84,20 +87,12 @@ const DEFAULT_PORTS: ReadonlyArray<XrpldPortConfig> = [
 
 const COMMON_DEFAULTS: Partial<XrpldInput> = {
   server: { ports: DEFAULT_PORTS },
-  node_db: {
-    type: 'NuDB',
-    path: '/var/lib/xrpld/db/nudb',
-    online_delete: 512,
-    advisory_delete: 0,
-  },
   database_path: '/var/lib/xrpld/db',
   debug_logfile: '/var/log/xrpld/debug.log',
   ssl_verify: '1',
   sntp_servers: ['pool.ntp.org'],
   peer_private: '0',
   fetch_depth: 'full',
-  ledger_history: '256',
-  rpc_startup: [{ command: 'log_level', severity: 'warning' }],
 };
 
 // #endregion
@@ -134,8 +129,8 @@ function deepMerge<T extends Record<string, unknown>>(
 // #region Resolve Config
 
 /**
- * Resolve a partial xrpld configuration by deep-merging common defaults, network defaults, and user overrides.
- * Merge priority: common < network < user input.
+ * Resolve a partial xrpld configuration by deep-merging preset layers and user overrides.
+ * Merge priority: common < size < role < verbosity < network < user input.
  * @param input - Partial user configuration (user overrides always win)
  * @returns Fully resolved XrpldInput with all defaults applied
  */
@@ -143,18 +138,28 @@ export function resolveXrpldConfig(
   input: Partial<XrpldInput> = {},
 ): XrpldInput {
   const network = input.presets?.network ?? 'mainnet';
+  const role: NodeRole = input.presets?.role ?? 'stock';
+  const size: NodeSize = input.presets?.size ?? 'medium';
+  const verbosity: LogLevel = input.presets?.verbosity ?? 'warning';
+
   const networkDefaults = getNetworkDefaults(network);
+  const sizeDefaults = getSizeDefaults(size);
+  const roleDefaults = getRoleDefaults(role);
+  const verbosityDefaults = getVerbosityDefaults(verbosity);
 
-  // Merge: common < network < user
-  const merged = deepMerge(
-    deepMerge(
-      COMMON_DEFAULTS as Record<string, unknown>,
-      networkDefaults as Record<string, unknown>,
-    ),
+  // Merge order: common < size < role < verbosity < network < user
+  const layers: Array<Record<string, unknown>> = [
+    COMMON_DEFAULTS as Record<string, unknown>,
+    sizeDefaults as Record<string, unknown>,
+    roleDefaults as Record<string, unknown>,
+    verbosityDefaults as Record<string, unknown>,
+    networkDefaults as Record<string, unknown>,
     input as Record<string, unknown>,
-  ) as XrpldInput;
+  ];
 
-  return { ...merged, presets: { ...input.presets, network } };
+  const merged = layers.reduce((acc, layer) => deepMerge(acc, layer)) as XrpldInput;
+
+  return { ...merged, presets: { network, role, size, verbosity } };
 }
 
 // #endregion

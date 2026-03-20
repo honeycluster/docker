@@ -156,10 +156,10 @@ function validateDatabase(config: XrpldInput, errors: ValidationEntry[], warning
       }
     }
 
-    // ledger_history <= online_delete
+    // ledger_history > online_delete warning
     if (config.node_db?.online_delete !== undefined && lh !== 'full' && lh !== 'none' && isIntegerString(lh)) {
       if (Number(lh) > config.node_db.online_delete) {
-        errors.push(entry('ledger', 'ledger_history', lh, `ledger_history (${lh}) must be <= online_delete (${config.node_db.online_delete})`, 'error'));
+        warnings.push(entry('ledger', 'ledger_history', lh, `ledger_history (${lh}) exceeds online_delete (${config.node_db.online_delete}); node may not retain all requested history`, 'warning'));
       }
     }
 

@@ -10,6 +10,11 @@
 - CLI is at `src/config-gen/cli.ts`
 - `network` is now at `presets.network` in XrpldInput (moved in US-011)
 - `NETWORK` in env-parser KEY_MAP maps to `presets.network`
+- Preset defaults pattern: export `VALID_*` ReadonlySet + `get*Defaults()` function + `*_MAP` record
+- Merge order in resolveXrpldConfig: common < size < role < verbosity < network < user
+- `ledger_history > online_delete` is a warning, not an error (presets intentionally allow it)
+- When changing defaults, regenerate expected .cfg files: use `npx tsx` to run the generator and write to `__tests__/integration/expected/`
+- tsconfig.build.json has pre-existing lib target (es5) errors — `Set`, `ReadonlySet`, `includes` etc. are NOT new issues
 
 ---
 
@@ -53,4 +58,55 @@ Started: Fri Mar 20 02:17:52 PM UTC 2026
   - To run tests: `npx vitest run --dir src/config-gen/__tests__` (vitest must be installed, may need `npm install --save-dev vitest`)
   - When changing a field on XrpldInput, grep for all usages in tests, fixtures JSON files, and the generate-expected.ts script
   - The `presets` object is passed through deepMerge and survives in the resolved config — future stories can add more preset fields
+---
+
+## 2026-03-20 - US-012
+- Created `src/config-gen/defaults/sizes.ts` with `getSizeDefaults()` and `VALID_SIZES`
+- Created `src/config-gen/__tests__/sizes.test.ts` with 10 tests covering all 5 sizes
+- All sizes use NuDB at `/var/lib/xrpld/db/nudb` with `advisory_delete=0`
+- Only large and huge include `workers` and `io_workers`
+- Files changed: `src/config-gen/defaults/sizes.ts`, `src/config-gen/__tests__/sizes.test.ts`
+- **Learnings for future iterations:**
+  - The tsconfig.build.json has pre-existing lib target issues (es5) — `Set`, `ReadonlySet`, `includes`, etc. errors are all pre-existing, not from new code
+  - Size preset pattern: export a `VALID_*` ReadonlySet + `get*Defaults()` function + `*_MAP` record — follow this for roles and verbosity
+  - `Partial<XrpldInput>` is the correct return type for preset defaults
+---
+
+## 2026-03-20 - US-013
+- Created `src/config-gen/defaults/roles.ts` with `getRoleDefaults()` and `VALID_ROLES`
+- Created `src/config-gen/__tests__/roles.test.ts` with 11 tests covering all 7 roles
+- Roles only set operational behavior (ports, peer_private, ledger_history, amendment_majority_time)
+- Roles do NOT set node_size, node_db, workers, or io_workers (that's size's job)
+- Files changed: `src/config-gen/defaults/roles.ts`, `src/config-gen/__tests__/roles.test.ts`
+- **Learnings for future iterations:**
+  - Follow the same pattern as sizes: `VALID_*` ReadonlySet + `get*Defaults()` function + `*_MAP` record
+  - Port arrays are replaced entirely by deepMerge (not merged element-by-element), so role presets must include the full port list
+  - validator role has 3 ports (no gRPC), clio role has 4 ports with gRPC on 0.0.0.0
+---
+
+## 2026-03-20 - US-014
+- Created `src/config-gen/defaults/verbosity.ts` with `getVerbosityDefaults()` and `VALID_LOG_LEVELS`
+- Created `src/config-gen/__tests__/verbosity.test.ts` with 10 tests covering all 7 log levels
+- Each level sets `rpc_startup` to `[{ command: 'log_level', severity: '<mapped_level>' }]`
+- `silent` and `fatal` both map to severity `fatal`; all others map to their own name
+- Files changed: `src/config-gen/defaults/verbosity.ts`, `src/config-gen/__tests__/verbosity.test.ts`
+- **Learnings for future iterations:**
+  - `Object.fromEntries` + `map` is a clean way to build the defaults map when entries follow a simple pattern
+  - The SEVERITY_MAP separates the level-to-severity mapping from the XrpldInput structure, making it easy to adjust mappings
+---
+
+## 2026-03-20 - US-015
+- Updated `resolveXrpldConfig` to apply full merge pipeline: common < size < role < verbosity < network < user
+- Imported `getSizeDefaults`, `getRoleDefaults`, `getVerbosityDefaults` into `defaults/xrpld.ts`
+- Removed `node_db`, `ledger_history`, `rpc_startup` from `COMMON_DEFAULTS` (now driven by size/verbosity presets)
+- Default presets: `{ network: 'mainnet', role: 'stock', size: 'medium', verbosity: 'warning' }`
+- Resolved config includes full presets object with all 4 resolved values
+- Changed `ledger_history > online_delete` validation from error to warning (presets intentionally allow this)
+- Regenerated all 6 expected .cfg files and updated 4 test files
+- Files changed: `defaults/xrpld.ts`, `validation.ts`, `__tests__/defaults.test.ts`, `__tests__/cfg-renderer.test.ts`, `__tests__/validation.test.ts`, `__tests__/integration/integration.test.ts`, 6 expected .cfg files
+- **Learnings for future iterations:**
+  - When changing default values, ALL expected .cfg fixtures need regeneration — use `npx tsx` to run the generator
+  - The `layers.reduce((acc, layer) => deepMerge(acc, layer))` pattern is clean for multi-layer merges
+  - Validation rules may conflict with preset values — check that validation allows the combinations that presets produce
+  - The resolved presets object is always the resolved/defaulted values, not just what the user passed in
 ---

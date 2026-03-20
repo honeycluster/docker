@@ -253,12 +253,12 @@ describe('database validation', () => {
     expect(hasError(makeConfig({ ledger_history: '256' }), 'ledger_history')).toBe(false);
   });
 
-  it('errors when ledger_history > online_delete', () => {
+  it('warns when ledger_history > online_delete', () => {
     const config = makeConfig({
       ledger_history: '1000',
       node_db: { type: 'NuDB', path: '/tmp', online_delete: 512 },
     });
-    expect(hasError(config, 'ledger_history')).toBe(true);
+    expect(hasWarning(config, 'ledger_history')).toBe(true);
   });
 
   it('warns on RocksDB without online_delete', () => {

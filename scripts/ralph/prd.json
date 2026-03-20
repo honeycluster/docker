@@ -42,7 +42,7 @@
       ],
       "priority": 2,
       "dependsOn": ["US-011"],
-      "passes": false,
+      "passes": true,
       "notes": "Size presets handle resource/capacity tuning. Role presets handle operational behavior — no overlap."
     },
     {
@@ -66,7 +66,7 @@
       ],
       "priority": 2,
       "dependsOn": ["US-011"],
-      "passes": false,
+      "passes": true,
       "notes": "Roles focus purely on operational behavior. Size handles capacity. Users combine both via presets."
     },
     {
@@ -85,7 +85,7 @@
       ],
       "priority": 2,
       "dependsOn": ["US-011"],
-      "passes": false,
+      "passes": true,
       "notes": "Future versions could add per-partition log levels. V1 only controls the global rpc_startup log_level."
     },
     {
@@ -112,7 +112,7 @@
       ],
       "priority": 3,
       "dependsOn": ["US-012", "US-013", "US-014"],
-      "passes": false,
+      "passes": true,
       "notes": "This is the critical integration story. The merge order must be exact: common < size < role < verbosity < network < user. Deep merge replaces arrays entirely (ports, rpc_startup) which is the desired behavior."
     },
     {
