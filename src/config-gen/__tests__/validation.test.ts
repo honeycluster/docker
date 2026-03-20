@@ -551,3 +551,96 @@ describe('ValidationEntry structure', () => {
 });
 
 // #endregion
+
+// #region Preset Validation
+
+describe('preset validation', () => {
+  it('errors on invalid role value', () => {
+    const config: XrpldInput = { ...makeConfig(), presets: { network: 'mainnet', role: 'invalid' as never, size: 'medium', verbosity: 'warning' } };
+    const result = validateXrpldConfig(config);
+    expect(result.errors.some((e) => e.section === 'presets' && e.field === 'role')).toBe(true);
+  });
+
+  it('errors on invalid size value', () => {
+    const config: XrpldInput = { ...makeConfig(), presets: { network: 'mainnet', role: 'stock', size: 'xxl' as never, verbosity: 'warning' } };
+    const result = validateXrpldConfig(config);
+    expect(result.errors.some((e) => e.section === 'presets' && e.field === 'size')).toBe(true);
+  });
+
+  it('errors on invalid verbosity value', () => {
+    const config: XrpldInput = { ...makeConfig(), presets: { network: 'mainnet', role: 'stock', size: 'medium', verbosity: 'verbose' as never } };
+    const result = validateXrpldConfig(config);
+    expect(result.errors.some((e) => e.section === 'presets' && e.field === 'verbosity')).toBe(true);
+  });
+
+  it('errors on invalid network value', () => {
+    const config: XrpldInput = { ...makeConfig(), presets: { network: 'localnet' as never, role: 'stock', size: 'medium', verbosity: 'warning' } };
+    const result = validateXrpldConfig(config);
+    expect(result.errors.some((e) => e.section === 'presets' && e.field === 'network')).toBe(true);
+  });
+
+  it('warns when role=validator without validator_token or validation_seed', () => {
+    const config = makeConfig({ presets: { network: 'mainnet', role: 'validator' } });
+    const result = validateXrpldConfig(config);
+    expect(result.warnings.some((w) => w.section === 'presets' && w.value === 'validator' && w.message.includes('validator_token'))).toBe(true);
+  });
+
+  it('suppresses generic no-validator warning when role=validator warning fires', () => {
+    const config = makeConfig({ presets: { network: 'mainnet', role: 'validator' } });
+    const result = validateXrpldConfig(config);
+    expect(result.warnings.some((w) => w.section === 'presets' && w.value === 'validator')).toBe(true);
+    expect(result.warnings.some((w) => w.section === 'validators' && w.message.includes('will not validate'))).toBe(false);
+  });
+
+  it('no validator warning when validator_token is set', () => {
+    const config = makeConfig({ presets: { network: 'mainnet', role: 'validator' }, validator_token: 'some_token' });
+    const result = validateXrpldConfig(config);
+    expect(result.warnings.some((w) => w.section === 'presets' && w.value === 'validator')).toBe(false);
+  });
+
+  it('warns when role=sentry without ips_fixed', () => {
+    const config = makeConfig({ presets: { network: 'mainnet', role: 'sentry' } });
+    const result = validateXrpldConfig(config);
+    expect(result.warnings.some((w) => w.section === 'presets' && w.value === 'sentry' && w.message.includes('ips_fixed'))).toBe(true);
+  });
+
+  it('no sentry warning when ips_fixed is provided', () => {
+    const config = makeConfig({ presets: { network: 'mainnet', role: 'sentry' }, ips_fixed: ['1.2.3.4 51235'] });
+    const result = validateXrpldConfig(config);
+    expect(result.warnings.some((w) => w.section === 'presets' && w.value === 'sentry')).toBe(false);
+  });
+
+  it('warns when role=clio and gRPC port not on 0.0.0.0', () => {
+    const config = makeConfig({
+      presets: { network: 'mainnet', role: 'clio' },
+      server: {
+        ports: [
+          { name: 'port_peer', port: 51235, ip: '0.0.0.0', protocol: 'peer' },
+          { name: 'port_grpc', port: 50051, ip: '127.0.0.1', protocol: 'grpc' },
+        ],
+      },
+    });
+    const result = validateXrpldConfig(config);
+    expect(result.warnings.some((w) => w.section === 'presets' && w.value === 'clio' && w.message.includes('gRPC'))).toBe(true);
+  });
+
+  it('no clio warning when gRPC port is on 0.0.0.0', () => {
+    const config = makeConfig({ presets: { network: 'mainnet', role: 'clio' } });
+    const result = validateXrpldConfig(config);
+    expect(result.warnings.some((w) => w.section === 'presets' && w.value === 'clio')).toBe(false);
+  });
+
+  it('role=stock does not produce role-specific warnings', () => {
+    const config = makeConfig({ presets: { network: 'mainnet', role: 'stock' }, validator_token: 'token' });
+    const result = validateXrpldConfig(config);
+    expect(result.warnings.filter((w) => w.section === 'presets')).toHaveLength(0);
+  });
+
+  it('valid presets do not produce errors', () => {
+    const config = makeConfig({ presets: { network: 'testnet', role: 'hub', size: 'large', verbosity: 'info' } });
+    const result = validateXrpldConfig(config);
+    expect(result.errors.filter((e) => e.section === 'presets')).toHaveLength(0);
+  });
+});
+
+// #endregion
