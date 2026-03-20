@@ -1,0 +1,10 @@
+# xrpld configuration using preset keys
+# Presets drive high-level configuration knobs
+PRESET_NETWORK=mainnet
+PRESET_ROLE=validator
+PRESET_SIZE=large
+PRESET_VERBOSITY=info
+
+# User overrides (applied on top of preset defaults)
+VALIDATOR_TOKEN=YOUR_VALIDATOR_TOKEN_HERE
+SERVER_DOMAIN=example.com

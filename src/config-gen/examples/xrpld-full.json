@@ -1,0 +1,34 @@
+{
+  "presets": {
+    "network": "mainnet",
+    "role": "validator",
+    "size": "large",
+    "verbosity": "info"
+  },
+  "validator_token": "YOUR_VALIDATOR_TOKEN_HERE",
+  "server_domain": "example.com",
+  "server": {
+    "ports": [
+      {
+        "name": "port_peer",
+        "port": 51235,
+        "ip": "0.0.0.0",
+        "protocol": "peer"
+      },
+      {
+        "name": "port_rpc_admin_local",
+        "port": 5005,
+        "ip": "127.0.0.1",
+        "admin": "127.0.0.1",
+        "protocol": "http"
+      },
+      {
+        "name": "port_ws_admin_local",
+        "port": 6006,
+        "ip": "127.0.0.1",
+        "admin": "127.0.0.1",
+        "protocol": "ws"
+      }
+    ]
+  }
+}

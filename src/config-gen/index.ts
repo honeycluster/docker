@@ -6,6 +6,9 @@ export { parseTextFile } from './parsers/env-parser.js';
 export { parseJsonFile } from './parsers/json-parser.js';
 export { validateXrpldConfig } from './validation.js';
 export { getNetworkDefaults, resolveXrpldConfig } from './defaults/xrpld.js';
+export { getSizeDefaults, VALID_SIZES } from './defaults/sizes.js';
+export { getRoleDefaults, VALID_ROLES } from './defaults/roles.js';
+export { getVerbosityDefaults, VALID_LOG_LEVELS } from './defaults/verbosity.js';
 
 // Re-export types
 export type {
