@@ -1,6 +1,6 @@
 {
   "name": "@honeycluster/xrpld-cfg-gen",
-  "version": "0.0.1-a.1",
+  "version": "0.0.1-a.2",
   "description": "TypeScript config generator for xrpld.cfg — presets, validation, multi-format input",
   "type": "module",
   "license": "MIT",
@@ -59,6 +59,9 @@
     "testOne": "vitest run"
   },
   "prettier": "./config/prettier.config.cjs",
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@honeycluster/configs": "workspace:^",
     "@types/node": "catalog:",
