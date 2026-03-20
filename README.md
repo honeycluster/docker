@@ -132,14 +132,14 @@ Requires `GITHUB_TOKEN` for GitHub releases and `NODE_AUTH_TOKEN` for npm publis
 
 Nightly builds and publish workflows run during XRPL low-activity hours (UTC):
 
-| UTC   | Workflow          |
-|-------|-------------------|
-| 04:00 | xrpld nightly     |
-| 04:30 | rippled nightly   |
-| 05:00 | clio nightly      |
-| 05:30 | xrpld publish     |
-| 06:00 | rippled publish   |
-| 06:30 | clio publish      |
+| UTC   | Workflow        |
+| ----- | --------------- |
+| 04:00 | xrpld nightly   |
+| 04:30 | rippled nightly |
+| 05:00 | clio nightly    |
+| 05:30 | xrpld publish   |
+| 06:00 | rippled publish |
+| 06:30 | clio publish    |
 
 ## Config Mount Points
 

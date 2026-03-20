@@ -27,15 +27,15 @@
   "engines": {
     "node": ">=20"
   },
-  "main": "./dist/cjs/src/index.js",
-  "types": "./dist/cjs/src/index.d.ts",
+  "main": "./dist/esm/src/index.js",
+  "types": "./dist/esm/src/index.d.ts",
   "files": [
     "dist",
     "README.md",
     "examples"
   ],
   "bin": {
-    "xrpld-cfg-gen": "./dist/cjs/src/cli.js"
+    "xrpld-cfg-gen": "./dist/esm/src/cli.js"
   },
   "exports": {
     ".": {
