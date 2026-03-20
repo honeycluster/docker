@@ -1,116 +1,140 @@
-<img src="https://i.imgur.com/Dej2mWa.png" alt="Honeycluster logo" width="100" />
+###
 
+<img src="https://i.imgur.com/kmtfYnM.png" alt="XRP logo" width="100" />
+
+###
 
 # Clio: Build Image (Ubuntu 24.04)
 
-Multi-stage image that **builds Clio from source** (Conan) and produces runtime images with the built binary. The `build.dockerfile` supports multiple targets: `build`, `common`, `base`, `slim`, and `envt`.
+Multi-stage image that **builds Clio from source** (Conan) and produces a runtime image with the compiled `clio_server` binary.
+
+## About Clio
+
+Clio is an XRP Ledger API server optimized for HTTP and WebSocket API calls. It stores validated ledger data in a more space-efficient format (Cassandra/ScyllaDB) and delegates `rippled` P2P requests to a trusted `rippled` node.
+
+The binary is `clio_server` and is installed at `/opt/clio/bin/clio_server`. Symlinks are created for convenience:
+
+```
+/opt/clio/bin/clio_server          # primary binary
+/usr/bin/clio_server         -> /opt/clio/bin/clio_server
+/usr/local/bin/clio_server   -> /opt/clio/bin/clio_server
+```
 
 ## Build
 
-The `build.dockerfile` is used to build the **base**, **slim**, and **envt** images from source. All images on Docker Hub are built using this dockerfile.
+The `build.dockerfile` produces a single published target: `base`.
 
 ### Building the base image
 
 ```bash
 docker build -f images/build.dockerfile --target base -t clio:base .
-# With custom version/branch:
+
+# With custom version:
 docker build -f images/build.dockerfile --target base \
-  --build-arg VERSION=2.7.0 \
+  --build-arg VERSION=2.3.0 \
   --build-arg BRANCH=develop \
   -t clio:base .
 ```
 
-### Building the slim image
+### Build args
 
-```bash
-docker build -f images/build.dockerfile --target slim -t clio:slim .
-# With custom version/branch:
-docker build -f images/build.dockerfile --target slim \
-  --build-arg VERSION=2.7.0 \
-  --build-arg BRANCH=develop \
-  -t clio:slim .
-```
-
-### Building the envt image
-
-```bash
-docker build -f images/build.dockerfile --target envt -t clio:envt .
-# With custom version/branch:
-docker build -f images/build.dockerfile --target envt \
-  --build-arg VERSION=2.7.0 \
-  --build-arg BRANCH=develop \
-  -t clio:envt .
-```
-
-**Build args**
-
-| Arg | Default | Description |
-|-----|---------|-------------|
-| `VERSION` | (from build script) | Clio version/tag to build from source |
-| `BRANCH` | `develop` | Git branch to build from |
-| `GCC_RELEASE` | `14` | GCC version for build |
-| `CONAN_VERSION` | `2.24` | Conan version for build |
-| `CMAKE_VERSION` | — | CMake version (optional) |
-| `PYTHON_VERSION` | — | Python version (optional) |
+| Arg              | Default   | Description                            |
+| ---------------- | --------- | -------------------------------------- |
+| `VERSION`        | —         | Clio version/tag to build from source  |
+| `BRANCH`         | `develop` | Git branch to build from               |
+| `GCC_RELEASE`    | `14`      | GCC version for build                  |
+| `CONAN_VERSION`  | `2.24`    | Conan version for build                |
+| `CMAKE_VERSION`  | —         | CMake version (optional)               |
+| `PYTHON_VERSION` | —         | Python version (optional)              |
 
 ## Stages
 
-1. **`build`** — Ubuntu 24.04, runs the build script to produce the `clio_server` binary.
-2. **`common`** — Ubuntu 24.04; shared runtime setup (binary, config, scripts) for **base** and **envt**.
-3. **`base`** — From `common`; static config, no templates. Uses `entrypoint.sh` (no injection). Publishes as `clio`.
-4. **`slim`** — Debian slim base; minimal footprint. Uses `entrypoint.sh` (no injection). Publishes as `clio-slim`. Cannot inherit from `common` due to different base image.
-5. **`envt`** — From `common`; copies `etc` to `templates`, uses `entrypoint.sub.sh` with envsubst. Publishes as `clio-envt`.
+1. **`build`** — Ubuntu 24.04, compiles the `clio_server` binary from source using Conan.
+2. **`common`** — Ubuntu 24.04; shared runtime setup (binary, config, scripts).
+3. **`base`** — From `common`; static config, entrypoint. Published as `honeycluster/clio`.
 
 ## Runtime
 
-### Base target
-
 - **Workdir:** `/opt/clio`
-- **Entrypoint:** `./scripts/entrypoint.sh` — starts `clio_server` (no config injection).
-- **Binary:** `clio_server`.
-- **Config:** `/opt/clio/etc/config.json` — static; mount your own or use example defaults.
-
-### Slim target
-
-- **Workdir:** `/opt/clio`
-- **Entrypoint:** `./scripts/entrypoint.sh` — starts `clio_server` (no config injection).
-- **Binary:** `clio_server`.
-- **Config:** `/opt/clio/etc/config.json` — static; same as base but Debian slim base.
-
-### Envt target
-
-- **Workdir:** `/opt/clio`
-- **Entrypoint:** `./scripts/entrypoint.sub.sh` — runs validation, envsubst from `/opt/clio/templates` → `/opt/clio/etc`, then starts `clio_server`.
-- **Binary:** `clio_server`.
-- **Config:** Generated from templates at startup; use env vars for database, ETL, server, etc.
+- **Entrypoint:** `./scripts/entrypoint.sh` — starts `clio_server`.
+- **Config:** `/opt/clio/etc/config.json`
+  - **Defaults:** Example config if not mounted.
+  - **Custom:** Mount your own config to `/opt/clio/etc/`.
 
 ### Mounts
 
-| Path | Purpose |
-|------|---------|
-| `/opt/clio/etc` | Config directory. For **base** and **slim**: mount your own config; it is not overwritten. For **envt**: resolved config written here; template injection runs on startup. |
-| `/opt/clio/log` | Log output. |
+| Path            | Purpose                                                                 |
+| --------------- | ----------------------------------------------------------------------- |
+| `/opt/clio/etc` | Config directory. Mount `config.json`. Not overwritten at startup.      |
+| `/opt/clio/log` | Log output.                                                             |
+
+### Example: docker run
+
+```bash
+docker run -d \
+  -v /path/to/my/config.json:/opt/clio/etc/config.json \
+  -p 51233:51233 \
+  honeycluster/clio:latest
+```
+
+### Example: docker compose
+
+Clio requires a `rippled` node for ETL and a Cassandra/ScyllaDB instance for storage:
+
+```yaml
+services:
+  clio:
+    image: honeycluster/clio:latest
+    container_name: clio
+    restart: unless-stopped
+    ports:
+      - '51233:51233'
+    volumes:
+      - ./config/config.json:/opt/clio/etc/config.json:ro
+    depends_on:
+      - scylladb
+      - xrpld
+
+  xrpld:
+    image: honeycluster/xrpld:latest
+    ports:
+      - '51235:51235'
+      - '5005:5005'
+      - '6006:6006'
+      - '50051:50051'
+    volumes:
+      - ./config/xrpld.cfg:/opt/xrpl/etc/xrpld.cfg:ro
+      - ./config/validators.txt:/opt/xrpl/etc/validators.txt:ro
+      - xrpld-data:/opt/xrpl/db
+
+  scylladb:
+    image: scylladb/scylla:latest
+    ports:
+      - '9042:9042'
+    volumes:
+      - scylla-data:/var/lib/scylla
+
+volumes:
+  xrpld-data:
+  scylla-data:
+```
+
+### Key config.json fields
+
+| Field | Description |
+| ----- | ----------- |
+| `etl_sources` | Array of `rippled` gRPC endpoints Clio connects to for ledger data |
+| `database` | Cassandra/ScyllaDB connection settings (`contact_points`, `port`, `keyspace`) |
+| `server.ip` | Bind address for the Clio API server |
+| `server.port` | Port for the Clio API server (default `51233`) |
 
 ## When to use
 
-- You need a custom Clio build or a version not in the Ripple apt repo.
-- You are building for a platform where the official deb is not provided.
-- You want to build from source to match published images.
-
-## Alternative dockerfiles
-
-There are also alternative dockerfiles that build from the Clio `.deb` package:
-
-- `base.dockerfile` — base image from deb (Ubuntu); static config.
-- `slim.dockerfile` — slim image from deb (Debian bookworm-slim); static config.
-- `envt.dockerfile` — envt image from deb; envsubst templates.
-
-These are provided for reference but are not used for the images published on Docker Hub.
+- You need a custom Clio build or a version not available as a pre-built release.
+- You are building for a platform where pre-built binaries are not provided.
+- You want to build from source to match the Docker Hub images.
 
 ## See also
 
-- [Base image](https://github.com/honeycluster/nodekit/blob/develop/src/clio/docs/base.md) — runtime usage, static config
-- [Slim image](https://github.com/honeycluster/nodekit/blob/develop/src/clio/docs/slim.md) — Debian slim, minimal footprint
-- [Envt image](https://github.com/honeycluster/nodekit/blob/develop/src/clio/docs/envt.md) — template injection, env-based config
-- [Configuration](https://github.com/honeycluster/nodekit/blob/develop/src/clio/docs/configuration.md) — all configuration options
-- [BUILD.md](https://github.com/honeycluster/nodekit/blob/develop/src/clio/docs/BUILD.md) — upstream Clio build (CMake/Conan) for building Clio outside Docker
+- [Base image](base.md) — pre-built from GitHub releases
+- [Configuration](configuration.md) — all configuration options

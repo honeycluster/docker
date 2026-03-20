@@ -4,9 +4,9 @@
 
 ###
 
-# Clio: Node Container Image (Base)
+# Clio: Base Image (Ubuntu 24.04)
 
-Clio image with **static** `config.json`. No envsubst or template injection — config is used as-is from the package default, example file, or your mount.
+Clio API server image with **static** `config.json`. No envsubst or template injection — config is used as-is from the example default or your mount.
 
 **Image tags:** `honeycluster/clio:${version | nightly | latest}`
 
@@ -14,24 +14,23 @@ Clio image with **static** `config.json`. No envsubst or template injection — 
 - `nightly` — Nightly build from develop branch
 - `${version}` — Specific version tag (e.g., `2.3.0`)
 
-> **Note:** The base image on Docker Hub is built from source using `build.dockerfile` with the `base` target. A standalone `base.dockerfile` is also available for installing from pre-built GitHub release binaries. For build instructions, see [Build image](https://github.com/honeycluster/nodekit/blob/develop/docs/clio/build.md).
-
 ## Runtime
 
 - **Workdir:** `/opt/clio`
-- **Entrypoint:** `./scripts/entrypoint.sh` — starts `clio_server` (no config injection).
+- **Entrypoint:** `./scripts/entrypoint.sh` — starts `clio_server`.
+- **Binary:** `/opt/clio/bin/clio_server` (also symlinked at `/usr/bin/clio_server`)
 - **Config:** `/opt/clio/etc/config.json`
-  - **Defaults:** Package or example config if not mounted.
-  - **Custom:** Mount your own config to `/opt/clio/etc/` to override.
+  - **Defaults:** Example config if not mounted.
+  - **Custom:** Mount your own config to `/opt/clio/etc/`.
 
 ### Mounts
 
-| Path                | Purpose                                                                                                                                                                                |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`/opt/clio/etc`** | **Config directory.** Mount your own `config.json` here to override defaults. The base image does **not** run template injection, so mounted files are **not** overwritten at startup. |
-| `/opt/clio/log`     | Log output (if used).                                                                                                                                                                  |
+| Path            | Purpose                                                            |
+| --------------- | ------------------------------------------------------------------ |
+| `/opt/clio/etc` | Config directory. Mount `config.json`. Not overwritten at startup. |
+| `/opt/clio/log` | Log output.                                                        |
 
-### Example: docker run with custom config
+### Example: docker run
 
 ```bash
 docker run -d \
@@ -40,7 +39,9 @@ docker run -d \
   honeycluster/clio:latest
 ```
 
-### Example: docker-compose
+### Example: docker compose
+
+Clio requires a `rippled` node for ETL and a Cassandra/ScyllaDB instance for storage:
 
 ```yaml
 services:
@@ -52,19 +53,49 @@ services:
       - '51233:51233'
     volumes:
       - ./config/config.json:/opt/clio/etc/config.json:ro
-    healthcheck:
-      test: ['CMD', 'clio_server', 'info']
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    depends_on:
+      - scylladb
+      - xrpld
+
+  xrpld:
+    image: honeycluster/xrpld:latest
+    ports:
+      - '51235:51235'
+      - '5005:5005'
+      - '6006:6006'
+      - '50051:50051'
+    volumes:
+      - ./config/xrpld.cfg:/opt/xrpl/etc/xrpld.cfg:ro
+      - ./config/validators.txt:/opt/xrpl/etc/validators.txt:ro
+      - xrpld-data:/opt/xrpl/db
+
+  scylladb:
+    image: scylladb/scylla:latest
+    ports:
+      - '9042:9042'
+    volumes:
+      - scylla-data:/var/lib/scylla
+
+volumes:
+  xrpld-data:
+  scylla-data:
 ```
+
+### Key config.json fields
+
+| Field | Description |
+| ----- | ----------- |
+| `etl_sources` | Array of `rippled` gRPC endpoints Clio connects to for ledger data |
+| `database` | Cassandra/ScyllaDB connection settings (`contact_points`, `port`, `keyspace`) |
+| `server.ip` | Bind address for the Clio API server |
+| `server.port` | Port for the Clio API server (default `51233`) |
 
 ## When to use
 
 - You want full control over `config.json` and do not need env-based templating.
-- You prefer to manage config via bind-mounts or a CM/orchestrator.
+- You prefer to manage config via bind-mounts or an orchestrator.
 
 ## See also
 
-- [Build image](https://github.com/honeycluster/nodekit/blob/develop/docs/clio/build.md) — build instructions for base image
-- [Configuration options](https://github.com/honeycluster/nodekit/blob/develop/docs/clio/configuration.md) (for reference; base does not use envsubst)
+- [Build image (source)](build.md) — build from source using Conan
+- [Configuration](configuration.md) — all configuration options
