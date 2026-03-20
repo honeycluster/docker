@@ -5,35 +5,30 @@
 #   ./up.sh up              # Start services (recommended - loads credentials automatically)
 #   ./up.sh down            # Stop services
 #   ./up.sh ps              # List services
-#
-# Database credentials are defined in ./credentials.env
-# - MySQL host points to local 'mysql' service (172.20.0.30)
-# - Redis host points to local 'redis' service
-# - All services in the simulate stack use the same credentials.env file
 
-name: simulation-stack
+name: docker-simulate
 
 include:
-  # Simulate Scylla cluster
-  - path: ../src/scylla/compose.yml
+  # Simulate ScyllaDB cluster
+  - path: ./scylla/compose.yml
   # Simulate Rippled application stack
-  - path: ../src/xrpld/compose.yml
+  - path: ./xrpld/compose.yml
   # Simulate Clio application stack
-  - path: ../src/clio/compose.yml
+  - path: ./clio/compose.yml
 
 # Shared network for all stack services (same subnet, static IPs).
 networks:
-  simulation-net:
-    name: simulation-net
+  docker-simulate-net:
+    name: docker-simulate-net
     driver: bridge
     ipam:
       driver: default
       config:
-        - subnet: 172.30.0.0/16
-          gateway: 172.30.0.1
+        - subnet: 10.201.0.0/16
+          gateway: 10.201.0.1
 
 # Named volumes for data persistence (avoids permission issues with external volumes)
 volumes:
+  scylla-data:
   xrpld-data:
   clio-data:
-  scylla-data:

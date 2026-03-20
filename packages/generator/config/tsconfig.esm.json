@@ -1,0 +1,14 @@
+{
+  "extends": "@honeycluster/configs/tsconfig/esm.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "baseUrl": "..",
+    "outDir": "../dist/esm",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "paths": {
+      "~/*": ["src/*"]
+    }
+  },
+  "include": ["../src"]
+}

@@ -49,8 +49,11 @@ yarn-error.log*
 .nx/cache/**/*
 .history
 .continue
+.worktrees
+tasks
 
 tmp
+examples
+.pnpm*
 
-src/xrpld/build-rc.sh
-src/clio/build-rc.sh
+scripts/ralph

@@ -1,0 +1,43 @@
+services:
+  clio:
+    platform: linux/amd64
+    build:
+      context: ../../packages/docker/clio
+      dockerfile: ./images/base.dockerfile
+    container_name: clio
+    restart: unless-stopped
+    env_file:
+      - ../credentials.env
+    labels:
+      - "com.docker.compose.project=simulate"
+      - "com.docker.compose.service=clio"
+      - "description=Clio XRPL API Server (deb)"
+    volumes:
+      - ./config.json:/opt/clio/etc/config.json:ro
+    ports:
+      - "51233:51233"
+    networks:
+      docker-simulate-net:
+        ipv4_address: 10.201.0.4
+
+  clio-build:
+    platform: linux/amd64
+    build:
+      context: ../../packages/docker/clio
+      dockerfile: ./images/build.dockerfile
+      target: base
+    container_name: clio-build
+    restart: unless-stopped
+    env_file:
+      - ../credentials.env
+    labels:
+      - "com.docker.compose.project=simulate"
+      - "com.docker.compose.service=clio-build"
+      - "description=Clio XRPL API Server (source build)"
+    volumes:
+      - ./config.json:/opt/clio/etc/config.json:ro
+    ports:
+      - "61233:51233"
+    networks:
+      docker-simulate-net:
+        ipv4_address: 10.201.0.6

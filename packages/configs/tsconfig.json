@@ -1,0 +1,29 @@
+{
+  "extends": "./tsconfig/base.json",
+  "exclude": ["tests"],
+  "include": ["src"],
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "baseUrl": ".",
+    "outDir": "./dist",
+    "declaration": true,
+    "sourceMap": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "noEmit": false,
+    "isolatedModules": false,
+    "preserveSymlinks": true,
+    "noUnusedLocals": false,
+    "strictPropertyInitialization": false,
+    "composite": true
+  }
+}

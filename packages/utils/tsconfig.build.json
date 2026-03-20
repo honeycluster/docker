@@ -1,0 +1,12 @@
+{
+  "extends": "@honeycluster/configs/tsconfig/lib-build.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "baseUrl": ".",
+    "outDir": "./dist",
+    "paths": {
+      "~/*": ["src/*"]
+    }
+  },
+  "include": ["src"]
+}

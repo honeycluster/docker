@@ -1,5 +1,5 @@
 name: Build and Publish Docker Images for Clio (Nightly)
-description: Build and publish the Clio build Docker images (base, envt, and slim) with nightly tag
+description: Build and publish the Clio base Docker image with nightly tag
 
 on:
   schedule:
@@ -16,14 +16,8 @@ env:
   # Base image (built from source)
   DOCKER_IMAGE_BASE: ${{ secrets.DOCKER_ORG }}/clio
   GHCR_IMAGE_BASE: clio
-  # Slim image (built from source)
-  DOCKER_IMAGE_SLIM: ${{ secrets.DOCKER_ORG }}/clio-slim
-  GHCR_IMAGE_SLIM: clio-slim
-  # Envt image (built from source with envsubst templates)
-  DOCKER_IMAGE_ENVT: ${{ secrets.DOCKER_ORG }}/clio-envt
-  GHCR_IMAGE_ENVT: clio-envt
 
-  BUILD_CONTEXT: ./src/clio
+  BUILD_CONTEXT: ./packages/docker/clio
 
 jobs:
   fetch-clio-develop:
@@ -60,7 +54,6 @@ jobs:
       packages: write
 
     steps:
-      # --- Shared setup ---
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -75,7 +68,6 @@ jobs:
           echo "clio_commit=${{ needs.fetch-clio-develop.outputs.develop_commit }}" >> $GITHUB_OUTPUT
           echo "Building binary from branch: develop (Clio develop commit: ${{ needs.fetch-clio-develop.outputs.develop_commit }})"
 
-      # --- Build binary stage (shared by base and slim) ---
       - name: Build binary stage
         uses: docker/build-push-action@v5
         with:
@@ -98,7 +90,6 @@ jobs:
       packages: write
 
     steps:
-      # --- Shared setup ---
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -128,7 +119,6 @@ jobs:
           echo "clio_commit=${{ needs.fetch-clio-develop.outputs.develop_commit }}" >> $GITHUB_OUTPUT
           echo "Building base image from branch: develop with tag: nightly (Clio develop commit: ${{ needs.fetch-clio-develop.outputs.develop_commit }})"
 
-      # --- Publish base image (built from source) ---
       - name: Extract metadata for base (Docker Hub)
         id: meta-docker-base
         uses: docker/metadata-action@v5
@@ -164,150 +154,6 @@ jobs:
           cache-to: |
             type=gha,mode=max,scope=build,key=clio-build-${{ needs.fetch-clio-develop.outputs.develop_commit }}
 
-  build-and-push-envt:
-    runs-on: ubuntu-latest
-    needs: [fetch-clio-develop, build-binary]
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      # --- Shared setup ---
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PAT }}
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.GHCR_REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set branch and tag
-        id: branch
-        run: |
-          echo "branch=develop" >> $GITHUB_OUTPUT
-          echo "tag=nightly" >> $GITHUB_OUTPUT
-          echo "clio_commit=${{ needs.fetch-clio-develop.outputs.develop_commit }}" >> $GITHUB_OUTPUT
-          echo "Building envt image from branch: develop with tag: nightly (Clio develop commit: ${{ needs.fetch-clio-develop.outputs.develop_commit }})"
-
-      # --- Publish envt image (built from source with envsubst templates) ---
-      - name: Extract metadata for envt (Docker Hub)
-        id: meta-docker-envt
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.DOCKER_IMAGE_ENVT }}
-          tags: |
-            type=raw,value=nightly
-
-      - name: Extract metadata for envt (GHCR)
-        id: meta-ghcr-envt
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_ENVT }}
-          tags: |
-            type=raw,value=nightly
-
-      - name: Build and push envt image
-        id: build-envt
-        uses: docker/build-push-action@v5
-        with:
-          context: ${{ env.BUILD_CONTEXT }}
-          file: ${{ env.BUILD_CONTEXT }}/images/build.dockerfile
-          target: envt
-          push: true
-          tags: |
-            ${{ steps.meta-docker-envt.outputs.tags }}
-            ${{ steps.meta-ghcr-envt.outputs.tags }}
-          labels: ${{ steps.meta-docker-envt.outputs.labels }}
-          build-args: |
-            BRANCH=${{ steps.branch.outputs.branch }}
-          cache-from: |
-            type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-develop.outputs.develop_commit }}
-          cache-to: |
-            type=gha,mode=max,scope=build,key=clio-build-${{ needs.fetch-clio-develop.outputs.develop_commit }}
-
-  build-and-push-slim:
-    runs-on: ubuntu-latest
-    needs: [fetch-clio-develop, build-binary]
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      # --- Shared setup ---
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PAT }}
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.GHCR_REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set branch and tag
-        id: branch
-        run: |
-          echo "branch=develop" >> $GITHUB_OUTPUT
-          echo "tag=nightly" >> $GITHUB_OUTPUT
-          echo "clio_commit=${{ needs.fetch-clio-develop.outputs.develop_commit }}" >> $GITHUB_OUTPUT
-          echo "Building slim image from branch: develop with tag: nightly (Clio develop commit: ${{ needs.fetch-clio-develop.outputs.develop_commit }})"
-
-      # --- Publish slim image (built from source) ---
-      - name: Extract metadata for slim (Docker Hub)
-        id: meta-docker-slim
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.DOCKER_IMAGE_SLIM }}
-          tags: |
-            type=raw,value=nightly
-
-      - name: Extract metadata for slim (GHCR)
-        id: meta-ghcr-slim
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_SLIM }}
-          tags: |
-            type=raw,value=nightly
-
-      - name: Build and push slim image
-        id: build-slim
-        uses: docker/build-push-action@v5
-        with:
-          context: ${{ env.BUILD_CONTEXT }}
-          file: ${{ env.BUILD_CONTEXT }}/images/build.dockerfile
-          target: slim
-          push: true
-          tags: |
-            ${{ steps.meta-docker-slim.outputs.tags }}
-            ${{ steps.meta-ghcr-slim.outputs.tags }}
-          labels: ${{ steps.meta-docker-slim.outputs.labels }}
-          build-args: |
-            BRANCH=${{ steps.branch.outputs.branch }}
-          cache-from: |
-            type=gha,scope=build,key=clio-build-${{ needs.fetch-clio-develop.outputs.develop_commit }}
-          cache-to: |
-            type=gha,mode=max,scope=build,key=clio-build-${{ needs.fetch-clio-develop.outputs.develop_commit }}
-
   summary:
     runs-on: ubuntu-latest
     needs:
@@ -315,8 +161,6 @@ jobs:
         fetch-clio-develop,
         build-binary,
         build-and-push-base,
-        build-and-push-envt,
-        build-and-push-slim,
       ]
     if: always()
 
@@ -334,17 +178,3 @@ jobs:
           echo "| Docker Hub | \`${{ env.DOCKER_IMAGE_BASE }}:nightly\`<br>\`${{ env.DOCKER_IMAGE_BASE }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| GHCR | \`${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_BASE }}:nightly\`<br>\`${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_BASE }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "**Status:** ${{ needs.build-and-push-base.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Envt (clio-envt)" >> $GITHUB_STEP_SUMMARY
-          echo "| Registry | Image |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Docker Hub | \`${{ env.DOCKER_IMAGE_ENVT }}:nightly\`<br>\`${{ env.DOCKER_IMAGE_ENVT }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| GHCR | \`${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_ENVT }}:nightly\`<br>\`${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_ENVT }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "**Status:** ${{ needs.build-and-push-envt.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Slim (clio-slim)" >> $GITHUB_STEP_SUMMARY
-          echo "| Registry | Image |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Docker Hub | \`${{ env.DOCKER_IMAGE_SLIM }}:nightly\`<br>\`${{ env.DOCKER_IMAGE_SLIM }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| GHCR | \`${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_SLIM }}:nightly\`<br>\`${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/${{ env.GHCR_IMAGE_SLIM }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "**Status:** ${{ needs.build-and-push-slim.result }}" >> $GITHUB_STEP_SUMMARY

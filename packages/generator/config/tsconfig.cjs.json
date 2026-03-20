@@ -1,0 +1,14 @@
+{
+  "extends": "@honeycluster/configs/tsconfig/base.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "baseUrl": "..",
+    "outDir": "../dist/cjs",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "paths": {
+      "~/*": ["src/*"]
+    }
+  },
+  "include": ["../src"]
+}

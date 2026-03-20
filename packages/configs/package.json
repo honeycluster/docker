@@ -1,0 +1,44 @@
+{
+  "name": "@honeycluster/configs",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "tsconfig/base.json",
+    "tsconfig/jest.json",
+    "tsconfig/react.json",
+    "postcss/config.js",
+    "prettier/base.cjs",
+    "prettier/tw.cjs",
+    "dist/src/tailwind/config.js",
+    "dist/src/jest/config.js",
+    "dist"
+  ],
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "prebuild": "echo 'running prebuild...' && rm -rf ./dist",
+    "postbuild": "echo 'running postbuild...'",
+    "c": "node ./config/esbuild.config.js",
+    "-------": "",
+    "dev": "pnpm build",
+    "build": "pnpm prebuild && pnpm run c && pnpm postbuild",
+    "build:watch": "node ./config/esbuild-dev.config.js"
+  },
+  "dependencies": {
+    "@tailwindcss/container-queries": "^0.1.1",
+    "autoprefixer": "catalog:",
+    "jest-localstorage-mock": "^2.4.26",
+    "precss": "^4.0.0",
+    "tailwindcss": "catalog:",
+    "tailwindcss-3d": "^1.1.0",
+    "ts-jest": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "esbuild": "catalog:",
+    "fs-extra": "catalog:",
+    "lodash": "catalog:",
+    "path": "catalog:",
+    "typescript": "catalog:"
+  }
+}

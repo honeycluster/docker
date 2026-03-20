@@ -1,0 +1,48 @@
+# Root compose file for worker environment
+# Spins up Claude Code worker containers on their own subnet
+#
+# Usage (from project root):
+#   WORKSPACE_DIR="$(pwd)" docker-compose -f simulate/claude/compose.yml up --build
+#   docker-compose -f simulate/claude/compose.yml down
+
+name: docker-simulate-claude
+
+x-claude-worker: &claude-worker
+  build:
+    context: .
+    args:
+      TZ: ${TZ:-UTC}
+  labels:
+    - 'com.docker.compose.project=docker-simulate-claude'
+    - 'description=Claude Code devcontainer worker'
+  volumes:
+    - ${WORKSPACE_DIR:-.}:/workspace
+    - docker-commandhistory:/commandhistory
+  command: ["sleep", "infinity"]
+  stdin_open: true
+  tty: true
+
+services:
+  docker-claude-1:
+    <<: *claude-worker
+    container_name: docker-claude-1
+    volumes:
+      - ${WORKSPACE_DIR:-.}:/workspace
+      - docker-commandhistory:/commandhistory
+      - docker-claude-1-config:/home/vscode/.claude
+    networks:
+      docker-simulate-net:
+        ipv4_address: 10.200.0.11
+
+networks:
+  docker-simulate-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.200.0.0/16
+          gateway: 10.200.0.1
+
+# Named volumes for data persistence
+volumes:
+  docker-commandhistory:
+  docker-claude-1-config:

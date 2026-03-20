@@ -1,0 +1,14 @@
+{
+  "extends": "@honeycluster/configs/tsconfig/base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./dist",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "~/*": ["src/*"],
+      "~/tests/*": ["tests/*"]
+    }
+  },
+  "include": ["src", "tests"]
+}

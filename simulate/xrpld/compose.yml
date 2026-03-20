@@ -1,0 +1,55 @@
+services:
+  xrpld:
+    platform: linux/amd64
+    build:
+      context: ../../packages/docker/xrpld
+      dockerfile: ./images/base.dockerfile
+    container_name: xrpld
+    restart: unless-stopped
+    labels:
+      - "com.docker.compose.project=simulate"
+      - "com.docker.compose.service=xrpld"
+      - "description=XRP Ledger Node (deb)"
+    healthcheck:
+      test: [ "CMD", "xrpld", "server_info" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ./xrpld.cfg:/opt/xrpl/etc/xrpld.cfg:ro
+      - ./validators.txt:/opt/xrpl/etc/validators.txt:ro
+    ports:
+      - "51234:51234"
+      - "6005:6005"
+    networks:
+      docker-simulate-net:
+        ipv4_address: 10.201.0.3
+
+  xrpld-build:
+    platform: linux/amd64
+    build:
+      context: ../../packages/docker/xrpld
+      dockerfile: ./images/build.dockerfile
+      target: base
+    container_name: xrpld-build
+    restart: unless-stopped
+    labels:
+      - "com.docker.compose.project=simulate"
+      - "com.docker.compose.service=xrpld-build"
+      - "description=XRP Ledger Node (source build)"
+    healthcheck:
+      test: [ "CMD", "xrpld", "server_info" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ./xrpld.cfg:/opt/xrpl/etc/xrpld.cfg:ro
+      - ./validators.txt:/opt/xrpl/etc/validators.txt:ro
+    ports:
+      - "61234:51234"
+      - "7005:6005"
+    networks:
+      docker-simulate-net:
+        ipv4_address: 10.201.0.5
