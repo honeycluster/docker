@@ -1,3 +1,9 @@
+## 0.0.1-a.5 (2026-03-20)
+
+### Chores
+
+- add log separation if not output is specified ([b2d7738](https://github.com/honeycluster/docker/commit/b2d7738))
+
 ## 0.0.1-a.4 (2026-03-20)
 
 This was a version bump only, there were no code changes.
