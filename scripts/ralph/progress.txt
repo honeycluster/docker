@@ -67,3 +67,15 @@ Started: Fri Mar 20 03:24:12 PM UTC 2026
   - Validator role removes gRPC port entirely (3 ports instead of 4)
   - Clio role sets gRPC ip and secure_gateway both to 0.0.0.0
 ---
+
+## 2026-03-20 - US-014
+- Created `packages/generator/src/defaults/verbosity.ts` with `getVerbosityDefaults()` and `VALID_LOG_LEVELS`
+- 7 log levels (silent, fatal, error, warning, info, debug, trace) each setting rpc_startup log_level command
+- silent and fatal both map to severity 'fatal'
+- Created `packages/generator/tests/defaults/verbosity.test.ts` with 11 tests covering all levels
+- Files changed: src/defaults/verbosity.ts, tests/defaults/verbosity.test.ts
+- **Learnings for future iterations:**
+  - Verbosity presets only set rpc_startup — no other fields
+  - silent and fatal produce identical output (both map to 'fatal' severity)
+  - Follow same pattern: VALID_* set + *_MAP record + get*Defaults() function
+---

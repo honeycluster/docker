@@ -85,7 +85,7 @@
       ],
       "priority": 2,
       "dependsOn": ["US-011"],
-      "passes": false,
+      "passes": true,
       "notes": "Future versions could add per-partition log levels. V1 only controls the global rpc_startup log_level."
     },
     {
