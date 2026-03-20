@@ -5,7 +5,7 @@
 #   WORKSPACE_DIR="$(pwd)" docker-compose -f simulate/claude/compose.yml up --build
 #   docker-compose -f simulate/claude/compose.yml down
 
-name: docker-simulate-claude
+name: nodekit-simulate-claude
 
 x-claude-worker: &claude-worker
   build:
@@ -13,29 +13,29 @@ x-claude-worker: &claude-worker
     args:
       TZ: ${TZ:-UTC}
   labels:
-    - 'com.docker.compose.project=docker-simulate-claude'
+    - 'com.docker.compose.project=nodekit-simulate-claude'
     - 'description=Claude Code devcontainer worker'
   volumes:
     - ${WORKSPACE_DIR:-.}:/workspace
-    - docker-commandhistory:/commandhistory
+    - nodekit-commandhistory:/commandhistory
   command: ["sleep", "infinity"]
   stdin_open: true
   tty: true
 
 services:
-  docker-claude-1:
+  nodekit-claude-1:
     <<: *claude-worker
-    container_name: docker-claude-1
+    container_name: nodekit-claude-1
     volumes:
       - ${WORKSPACE_DIR:-.}:/workspace
-      - docker-commandhistory:/commandhistory
-      - docker-claude-1-config:/home/vscode/.claude
+      - nodekit-commandhistory:/commandhistory
+      - nodekit-claude-1-config:/home/vscode/.claude
     networks:
-      docker-simulate-net:
+      nodekit-simulate-net:
         ipv4_address: 10.200.0.11
 
 networks:
-  docker-simulate-net:
+  nodekit-simulate-net:
     driver: bridge
     ipam:
       config:
@@ -44,5 +44,5 @@ networks:
 
 # Named volumes for data persistence
 volumes:
-  docker-commandhistory:
-  docker-claude-1-config:
+  nodekit-commandhistory:
+  nodekit-claude-1-config:

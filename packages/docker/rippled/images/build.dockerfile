@@ -1,6 +1,6 @@
 # =============================================================================
 # STAGE: build
-# DESC:  Compiles xrpld binary from source using conan
+# DESC:  Compiles rippled binary from source using conan
 # =============================================================================
 FROM ubuntu:24.04 AS build
 
@@ -37,51 +37,49 @@ RUN apt-get update \
     cron \
     logrotate
 
-# Copy the xrpld binary from build stage
-COPY --from=build /opt/xrpl/bin/xrpld /opt/xrpl/bin/xrpld
+# Copy the rippled binary from build stage
+COPY --from=build /opt/ripple/bin/rippled /opt/ripple/bin/rippled
 
-ENV PATH="/opt/xrpl/bin:${PATH}"
+ENV PATH="/opt/ripple/bin:${PATH}"
 
 # Create symlinks so the binary finds config at its default search paths
-RUN mkdir -p /etc/opt/xrpld /etc/opt/ripple && \
-    ln -sf /opt/xrpl/bin/xrpld /usr/bin/rippled && \
-    ln -sf /opt/xrpl/bin/xrpld /usr/local/bin/rippled && \
-    ln -sf /opt/xrpl/etc/xrpld.cfg /etc/opt/xrpld/rippled.cfg && \
-    ln -sf /opt/xrpl/etc/validators.txt /etc/opt/xrpld/validators.txt && \
-    ln -sf /opt/xrpl/etc/xrpld.cfg /etc/opt/ripple/rippled.cfg && \
-    ln -sf /opt/xrpl/etc/validators.txt /etc/opt/ripple/validators.txt
+RUN mkdir -p /etc/opt/ripple /etc/opt/xrpld && \
+    ln -sf /opt/ripple/etc/rippled.cfg /etc/opt/ripple/rippled.cfg && \
+    ln -sf /opt/ripple/etc/validators.txt /etc/opt/ripple/validators.txt && \
+    ln -sf /opt/ripple/etc/rippled.cfg /etc/opt/xrpld/rippled.cfg && \
+    ln -sf /opt/ripple/etc/validators.txt /etc/opt/xrpld/validators.txt
 
-WORKDIR /opt/xrpl
+WORKDIR /opt/ripple
 
 # Create directory structure
 RUN mkdir -p db log etc
 
 # Copy static configuration files
 COPY etc/validators-exmple.txt ./etc/validators.txt
-COPY etc/xrpld-example.cfg ./etc/xrpld.cfg
+COPY etc/rippled-example.cfg ./etc/rippled.cfg
 
-# Logrotate for xrpld logs (default LOGS_DIR)
-COPY logrotate/xrpld /etc/logrotate.d/xrpld
+# Logrotate for rippled logs (default LOGS_DIR)
+COPY logrotate/rippled /etc/logrotate.d/rippled
 
 # Copy and prepare scripts
 COPY scripts ./scripts
-RUN find /opt/xrpl/scripts -name '*.sh' -exec chmod +x {} \;
+RUN find /opt/ripple/scripts -name '*.sh' -exec chmod +x {} \;
 
 # =============================================================================
 # STAGE: base
-# DESC:  Standard xrpld runtime image (Ubuntu-based)
-# DOCS:  docs/xrpld/build.md
+# DESC:  Standard rippled runtime image (Ubuntu-based)
+# DOCS:  docs/rippled/build.md
 # =============================================================================
 FROM common AS base
 
 LABEL maintainer="honeycluster <r@honeycluster.io>"
-LABEL org.opencontainers.image.title="xrpld"
+LABEL org.opencontainers.image.title="rippled"
 LABEL org.opencontainers.image.description="XRPL node (standard image from source build)"
 LABEL org.opencontainers.image.authors="honeycluster <r@honeycluster.io>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="honeycluster"
 LABEL org.opencontainers.image.url="https://github.com/honeycluster/docker"
-LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/packages/docker/xrpld/images/build.dockerfile"
-LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/docs/xrpld/base.md"
+LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/packages/docker/rippled/images/build.dockerfile"
+LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/docs/rippled/base.md"
 
 ENTRYPOINT ["./scripts/entrypoint.sh"]

@@ -17,7 +17,7 @@ function hasWarning(config: XrpldInput, field: string): boolean {
   return result.warnings.some((w) => w.field === field);
 }
 
-// #region Port Validation
+// #region -- Port Validation --------------------------
 
 describe('port validation', () => {
   it('returns no errors for valid default config', () => {
@@ -150,9 +150,9 @@ describe('port validation', () => {
   });
 });
 
-// #endregion
+// #endregion -- Port Validation -----------------------
 
-// #region Network Validation
+// #region -- Network Validation -----------------------
 
 describe('network validation', () => {
   it('accepts valid network_id numbers', () => {
@@ -183,9 +183,9 @@ describe('network validation', () => {
   });
 });
 
-// #endregion
+// #endregion -- Network Validation --------------------
 
-// #region Database Validation
+// #region -- Database Validation ----------------------
 
 describe('database validation', () => {
   it('errors on invalid node_db.type', () => {
@@ -290,9 +290,9 @@ describe('database validation', () => {
   });
 });
 
-// #endregion
+// #endregion -- Database Validation -------------------
 
-// #region Protocol Validation
+// #region -- Protocol Validation ----------------------
 
 describe('protocol validation', () => {
   it('errors on invalid ssl_verify', () => {
@@ -425,9 +425,9 @@ describe('protocol validation', () => {
   });
 });
 
-// #endregion
+// #endregion -- Protocol Validation -------------------
 
-// #region Overlay Validation
+// #region -- Overlay Validation -----------------------
 
 describe('overlay validation', () => {
   it('errors on negative overlay values', () => {
@@ -443,9 +443,9 @@ describe('overlay validation', () => {
   });
 });
 
-// #endregion
+// #endregion -- Overlay Validation --------------------
 
-// #region Reduce Relay Validation
+// #region -- Reduce Relay Validation ------------------
 
 describe('reduce_relay validation', () => {
   it('errors on invalid vp_enable', () => {
@@ -471,9 +471,9 @@ describe('reduce_relay validation', () => {
   });
 });
 
-// #endregion
+// #endregion -- Reduce Relay Validation ---------------
 
-// #region Voting Validation
+// #region -- Voting Validation ------------------------
 
 describe('voting validation', () => {
   it('errors on non-positive reference_fee', () => {
@@ -496,9 +496,9 @@ describe('voting validation', () => {
   });
 });
 
-// #endregion
+// #endregion -- Voting Validation ---------------------
 
-// #region Crawl Validation
+// #region -- Crawl Validation -------------------------
 
 describe('crawl validation', () => {
   it('errors on invalid crawl values', () => {
@@ -515,9 +515,9 @@ describe('crawl validation', () => {
   });
 });
 
-// #endregion
+// #endregion -- Crawl Validation ----------------------
 
-// #region Peer Warnings
+// #region -- Peer Warnings ----------------------------
 
 describe('peer warnings', () => {
   it('warns when peer_private=1 but no ips_fixed', () => {
@@ -531,9 +531,9 @@ describe('peer warnings', () => {
   });
 });
 
-// #endregion
+// #endregion -- Peer Warnings -------------------------
 
-// #region Preset Validation
+// #region -- Preset Validation ------------------------
 
 describe('preset validation', () => {
   it('returns no errors for valid presets', () => {
@@ -643,9 +643,9 @@ describe('preset validation', () => {
   });
 });
 
-// #endregion
+// #endregion -- Preset Validation ---------------------
 
-// #region ValidationEntry structure
+// #region -- ValidationEntry structure ----------------
 
 describe('ValidationEntry structure', () => {
   it('each entry has section, field, value, message, severity', () => {
@@ -662,4 +662,4 @@ describe('ValidationEntry structure', () => {
   });
 });
 
-// #endregion
+// #endregion -- ValidationEntry structure -------------

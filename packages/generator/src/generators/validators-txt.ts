@@ -1,6 +1,6 @@
 import type { XrpldInput } from '../types/xrpld-input.js';
 
-// #region Validators.txt Generator
+// #region -- Validators.txt Generator -----------------
 
 /**
  * Generate validators.txt content from a resolved xrpld configuration.
@@ -32,4 +32,4 @@ export function generateValidatorsTxt(config: XrpldInput): string {
   return sections.join('\n\n') + '\n';
 }
 
-// #endregion
+// #endregion -- Validators.txt Generator --------------

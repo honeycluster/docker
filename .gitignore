@@ -46,7 +46,7 @@ yarn-error.log*
 
 # Workspaces
 .turbo
-.nx/cache/**/*
+.nx
 .history
 .continue
 .worktrees

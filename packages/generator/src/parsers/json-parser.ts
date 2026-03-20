@@ -1,6 +1,6 @@
 import type { XrpldInput } from '../types/xrpld-input.js';
 
-// #region Parser
+// #region -- Parser -----------------------------------
 
 /**
  * Parse a JSON string into a Partial<XrpldInput>.
@@ -25,9 +25,9 @@ export function parseJsonFile(content: string): Partial<XrpldInput> {
   return parsed as Partial<XrpldInput>;
 }
 
-// #endregion
+// #endregion -- Parser --------------------------------
 
-// #region Errors
+// #region -- Errors -----------------------------------
 
 export class JsonParseException extends Error {
   public readonly path?: string;
@@ -40,4 +40,4 @@ export class JsonParseException extends Error {
   }
 }
 
-// #endregion
+// #endregion -- Errors --------------------------------

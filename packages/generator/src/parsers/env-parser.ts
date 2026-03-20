@@ -1,6 +1,6 @@
 import type { XrpldInput, XrpldPortConfig } from '../types/xrpld-input.js';
 
-// #region Key Map
+// #region -- Key Map ----------------------------------
 
 /**
  * Maps SCREAMING_SNAKE_CASE keys to nested XrpldInput paths.
@@ -220,9 +220,9 @@ const NUMERIC_KEYS = new Set([
   'import_db.advisory_delete',
 ]);
 
-// #endregion
+// #endregion -- Key Map -------------------------------
 
-// #region Port Parsing
+// #region -- Port Parsing -----------------------------
 
 const PORT_KEY_RE = /^PORT_(\d+)_(.+)$/;
 
@@ -262,9 +262,9 @@ function parsePortEntries(entries: Map<number, Record<string, string>>): Readonl
   return ports;
 }
 
-// #endregion
+// #endregion -- Port Parsing --------------------------
 
-// #region Nested Path Assignment
+// #region -- Nested Path Assignment -------------------
 
 function setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
   const parts = path.split('.');
@@ -281,9 +281,9 @@ function setNestedValue(obj: Record<string, unknown>, path: string, value: unkno
   current[parts[parts.length - 1]] = value;
 }
 
-// #endregion
+// #endregion -- Nested Path Assignment ----------------
 
-// #region Parser
+// #region -- Parser -----------------------------------
 
 /**
  * Parse a text file with SCREAMING_SNAKE_CASE keys into a Partial<XrpldInput>.
@@ -382,9 +382,9 @@ export function parseTextFile(content: string): Partial<XrpldInput> {
   return result as Partial<XrpldInput>;
 }
 
-// #endregion
+// #endregion -- Parser --------------------------------
 
-// #region Errors
+// #region -- Errors -----------------------------------
 
 export class TextParseException extends Error {
   public readonly line: number;
@@ -396,4 +396,4 @@ export class TextParseException extends Error {
   }
 }
 
-// #endregion
+// #endregion -- Errors --------------------------------

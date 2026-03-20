@@ -17,7 +17,7 @@ services:
     ports:
       - "51233:51233"
     networks:
-      docker-simulate-net:
+      nodekit-simulate-net:
         ipv4_address: 10.201.0.4
 
   clio-build:
@@ -39,5 +39,5 @@ services:
     ports:
       - "61233:51233"
     networks:
-      docker-simulate-net:
+      nodekit-simulate-net:
         ipv4_address: 10.201.0.6

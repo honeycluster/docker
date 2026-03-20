@@ -14,7 +14,7 @@ XRPL node image **built from source** with **static** `xrpld.cfg` and `validator
 - `nightly` — Nightly build from develop branch
 - `${version}` — Specific version tag (e.g., `3.1.0`)
 
-> **Note:** The base image on Docker Hub is built from source using `build.dockerfile` with the `base` target. For build instructions, see [Build image](https://github.com/honeycluster/docker/blob/develop/src/xrpld/docs/build.md).
+> **Note:** The base image on Docker Hub is built from source using `build.dockerfile` with the `base` target. For build instructions, see [Build image](https://github.com/honeycluster/nodekit/blob/develop/src/xrpld/docs/build.md).
 
 ## Runtime
 
@@ -78,7 +78,7 @@ volumes:
 
 ## See also
 
-- [Build image](https://github.com/honeycluster/docker/blob/develop/src/xrpld/docs/build.md) — build instructions for base image
-- [Configuration options](https://github.com/honeycluster/docker/blob/develop/src/xrpld/docs/configuration.md) (for reference; base does not use envsubst)
-- [Envt image](https://github.com/honeycluster/docker/blob/develop/src/xrpld/docs/envt.md) — template injection and env-based config
-- [Slim image](https://github.com/honeycluster/docker/blob/develop/src/xrpld/docs/slim.md) — Debian slim, minimal footprint
+- [Build image](https://github.com/honeycluster/nodekit/blob/develop/src/xrpld/docs/build.md) — build instructions for base image
+- [Configuration options](https://github.com/honeycluster/nodekit/blob/develop/src/xrpld/docs/configuration.md) (for reference; base does not use envsubst)
+- [Envt image](https://github.com/honeycluster/nodekit/blob/develop/src/xrpld/docs/envt.md) — template injection and env-based config
+- [Slim image](https://github.com/honeycluster/nodekit/blob/develop/src/xrpld/docs/slim.md) — Debian slim, minimal footprint

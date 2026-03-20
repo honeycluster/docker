@@ -21,7 +21,7 @@ function readFixture(filename: string): string {
   return readFileSync(join(FIXTURES_DIR, filename), 'utf-8');
 }
 
-// #region Network Config Generation
+// #region -- Network Config Generation ----------------
 
 describe('network config generation', () => {
   it('generates mainnet config matching expected output', () => {
@@ -65,9 +65,9 @@ describe('network config generation', () => {
   });
 });
 
-// #endregion
+// #endregion -- Network Config Generation -------------
 
-// #region Custom Ports
+// #region -- Custom Ports -----------------------------
 
 describe('custom ports config', () => {
   it('generates config with custom ports matching expected output', () => {
@@ -92,9 +92,9 @@ describe('custom ports config', () => {
   });
 });
 
-// #endregion
+// #endregion -- Custom Ports --------------------------
 
-// #region Advanced Sections
+// #region -- Advanced Sections ------------------------
 
 describe('advanced sections config', () => {
   it('generates config with advanced sections matching expected output', () => {
@@ -161,9 +161,9 @@ describe('advanced sections config', () => {
   });
 });
 
-// #endregion
+// #endregion -- Advanced Sections ---------------------
 
-// #region Validators.txt
+// #region -- Validators.txt ---------------------------
 
 describe('validators.txt generation', () => {
   it('mainnet validators.txt matches expected output', () => {
@@ -217,9 +217,9 @@ describe('validators.txt generation', () => {
   });
 });
 
-// #endregion
+// #endregion -- Validators.txt ------------------------
 
-// #region Round-trip CFG Parse
+// #region -- Round-trip CFG Parse ---------------------
 
 describe('round-trip cfg parsing', () => {
   it('parses xrpld-example.cfg — key sections parse correctly', () => {
@@ -298,9 +298,9 @@ describe('round-trip cfg parsing', () => {
   });
 });
 
-// #endregion
+// #endregion -- Round-trip CFG Parse ------------------
 
-// #region Text File / JSON Equivalence
+// #region -- Text File / JSON Equivalence -------------
 
 describe('text file and JSON input equivalence', () => {
   it('text file input produces same cfg as equivalent JSON input', () => {
@@ -332,9 +332,9 @@ describe('text file and JSON input equivalence', () => {
   });
 });
 
-// #endregion
+// #endregion -- Text File / JSON Equivalence ----------
 
-// #region Validation Error Cases
+// #region -- Validation Error Cases -------------------
 
 describe('validation catches intentionally bad configs', () => {
   it('rejects invalid port number', () => {
@@ -431,9 +431,9 @@ describe('validation catches intentionally bad configs', () => {
   });
 });
 
-// #endregion
+// #endregion -- Validation Error Cases ----------------
 
-// #region Warnings Pass-through
+// #region -- Warnings Pass-through --------------------
 
 describe('warnings pass through in generator result', () => {
   it('default config generates validator warning', () => {
@@ -460,4 +460,4 @@ describe('warnings pass through in generator result', () => {
   });
 });
 
-// #endregion
+// #endregion -- Warnings Pass-through -----------------

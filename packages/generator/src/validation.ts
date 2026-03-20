@@ -8,7 +8,7 @@ import { VALID_ROLES } from './defaults/roles.js';
 import { VALID_SIZES } from './defaults/sizes.js';
 import { VALID_LOG_LEVELS } from './defaults/verbosity.js';
 
-// #region Helpers
+// #region -- Helpers ----------------------------------
 
 function entry(
   section: string,
@@ -28,9 +28,9 @@ function isPowerOf2(n: number): boolean {
   return n > 0 && (n & (n - 1)) === 0;
 }
 
-// #endregion
+// #endregion -- Helpers -------------------------------
 
-// #region Port Validation
+// #region -- Port Validation --------------------------
 
 function validatePorts(config: XrpldInput, errors: ValidationEntry[], warnings: ValidationEntry[]): void {
   const ports = config.server?.ports;
@@ -87,9 +87,9 @@ function validatePorts(config: XrpldInput, errors: ValidationEntry[], warnings: 
   }
 }
 
-// #endregion
+// #endregion -- Port Validation -----------------------
 
-// #region Network Validation
+// #region -- Network Validation -----------------------
 
 function validateNetwork(config: XrpldInput, errors: ValidationEntry[]): void {
   if (config.network_id !== undefined) {
@@ -110,9 +110,9 @@ function validateNetwork(config: XrpldInput, errors: ValidationEntry[]): void {
   }
 }
 
-// #endregion
+// #endregion -- Network Validation --------------------
 
-// #region Database Validation
+// #region -- Database Validation ----------------------
 
 function validateDatabase(config: XrpldInput, errors: ValidationEntry[], warnings: ValidationEntry[]): void {
   if (config.node_db) {
@@ -194,9 +194,9 @@ function validateDatabase(config: XrpldInput, errors: ValidationEntry[], warning
   }
 }
 
-// #endregion
+// #endregion -- Database Validation -------------------
 
-// #region Protocol Validation
+// #region -- Protocol Validation ----------------------
 
 function validateProtocol(config: XrpldInput, errors: ValidationEntry[], warnings: ValidationEntry[]): void {
   // ssl_verify 0/1
@@ -298,9 +298,9 @@ function validateProtocol(config: XrpldInput, errors: ValidationEntry[], warning
   }
 }
 
-// #endregion
+// #endregion -- Protocol Validation -------------------
 
-// #region Overlay Validation
+// #region -- Overlay Validation -----------------------
 
 function validateOverlay(config: XrpldInput, errors: ValidationEntry[]): void {
   if (!config.overlay) return;
@@ -323,9 +323,9 @@ function validateOverlay(config: XrpldInput, errors: ValidationEntry[]): void {
   }
 }
 
-// #endregion
+// #endregion -- Overlay Validation --------------------
 
-// #region Reduce Relay Validation
+// #region -- Reduce Relay Validation ------------------
 
 function validateReduceRelay(config: XrpldInput, errors: ValidationEntry[]): void {
   if (!config.reduce_relay) return;
@@ -345,9 +345,9 @@ function validateReduceRelay(config: XrpldInput, errors: ValidationEntry[]): voi
   }
 }
 
-// #endregion
+// #endregion -- Reduce Relay Validation ---------------
 
-// #region Voting Validation
+// #region -- Voting Validation ------------------------
 
 function validateVoting(config: XrpldInput, errors: ValidationEntry[]): void {
   if (!config.voting) return;
@@ -364,9 +364,9 @@ function validateVoting(config: XrpldInput, errors: ValidationEntry[]): void {
   }
 }
 
-// #endregion
+// #endregion -- Voting Validation ---------------------
 
-// #region Crawl Validation
+// #region -- Crawl Validation -------------------------
 
 function validateCrawl(config: XrpldInput, errors: ValidationEntry[]): void {
   if (!config.crawl) return;
@@ -380,9 +380,9 @@ function validateCrawl(config: XrpldInput, errors: ValidationEntry[]): void {
   }
 }
 
-// #endregion
+// #endregion -- Crawl Validation ----------------------
 
-// #region Peer Warnings
+// #region -- Peer Warnings ----------------------------
 
 function validatePeers(config: XrpldInput, warnings: ValidationEntry[]): void {
   if (config.peer_private === '1' && (!config.ips_fixed || config.ips_fixed.length === 0)) {
@@ -390,9 +390,9 @@ function validatePeers(config: XrpldInput, warnings: ValidationEntry[]): void {
   }
 }
 
-// #endregion
+// #endregion -- Peer Warnings -------------------------
 
-// #region Preset Validation
+// #region -- Preset Validation ------------------------
 
 const VALID_NETWORKS: ReadonlySet<string> = new Set(['mainnet', 'testnet', 'devnet']);
 
@@ -434,9 +434,9 @@ function validatePresets(config: XrpldInput, errors: ValidationEntry[], warnings
   }
 }
 
-// #endregion
+// #endregion -- Preset Validation ---------------------
 
-// #region Main Export
+// #region -- Main Export ------------------------------
 
 /**
  * Validate a resolved xrpld configuration against all rules.
@@ -472,4 +472,4 @@ export function validateXrpldConfig(config: XrpldInput): ValidationResult {
   return { errors, warnings: filteredWarnings };
 }
 
-// #endregion
+// #endregion -- Main Export ---------------------------

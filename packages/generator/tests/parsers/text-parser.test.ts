@@ -3,7 +3,7 @@ import { parseTextFile, TextParseException } from '../../src/parsers/env-parser.
 import { parseJsonFile } from '../../src/parsers/json-parser.js';
 
 describe('parseTextFile', () => {
-  // #region Single-value keys
+  // #region -- Single-value keys -----------------------
 
   describe('single-value keys', () => {
     it('parses NETWORK meta-field', () => {
@@ -80,9 +80,9 @@ describe('parseTextFile', () => {
     });
   });
 
-  // #endregion
+  // #endregion -- Single-value keys --------------------
 
-  // #region Nested key-value keys
+  // #region -- Nested key-value keys ------------------
 
   describe('nested key-value mapping', () => {
     it('parses NODE_DB_* to node_db nested object', () => {
@@ -202,9 +202,9 @@ describe('parseTextFile', () => {
     });
   });
 
-  // #endregion
+  // #endregion -- Nested key-value keys ---------------
 
-  // #region List keys
+  // #region -- List keys ------------------------------
 
   describe('comma-separated lists', () => {
     it('parses SNTP_SERVERS as list', () => {
@@ -258,9 +258,9 @@ describe('parseTextFile', () => {
     });
   });
 
-  // #endregion
+  // #endregion -- List keys ---------------------------
 
-  // #region Port parsing
+  // #region -- Port parsing ---------------------------
 
   describe('indexed port entries', () => {
     it('parses PORT_0_* as port config', () => {
@@ -322,9 +322,9 @@ describe('parseTextFile', () => {
     });
   });
 
-  // #endregion
+  // #endregion -- Port parsing ------------------------
 
-  // #region Comments and whitespace
+  // #region -- Comments and whitespace ----------------
 
   describe('comments and whitespace', () => {
     it('skips comment lines', () => {
@@ -358,9 +358,9 @@ describe('parseTextFile', () => {
     });
   });
 
-  // #endregion
+  // #endregion -- Comments and whitespace -------------
 
-  // #region Error handling
+  // #region -- Error handling -------------------------
 
   describe('error handling', () => {
     it('throws on missing equals sign', () => {
@@ -393,9 +393,9 @@ describe('parseTextFile', () => {
     });
   });
 
-  // #endregion
+  // #endregion -- Error handling ----------------------
 
-  // #region Equivalence with JSON
+  // #region -- Equivalence with JSON ------------------
 
   describe('text file produces identical XrpldInput as equivalent JSON', () => {
     it('matches for a comprehensive config', () => {
@@ -436,9 +436,9 @@ describe('parseTextFile', () => {
     });
   });
 
-  // #endregion
+  // #endregion -- Equivalence with JSON ---------------
 
-  // #region Complete file
+  // #region -- Complete file --------------------------
 
   describe('complete text file', () => {
     it('parses a full configuration file', () => {
@@ -505,5 +505,5 @@ describe('parseTextFile', () => {
     });
   });
 
-  // #endregion
+  // #endregion -- Complete file -----------------------
 });

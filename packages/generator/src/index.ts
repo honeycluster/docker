@@ -1,4 +1,4 @@
-// #region Public API
+// #region -- Public API --------------------------------
 
 export { generateXrpldConfig } from './generators/xrpld.js';
 export { generateValidatorsTxt } from './generators/validators-txt.js';
@@ -43,4 +43,4 @@ export type {
   XrpldPresets,
 } from './types/xrpld-input.js';
 
-// #endregion
+// #endregion -- Public API ----------------------------

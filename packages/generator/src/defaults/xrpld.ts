@@ -3,7 +3,7 @@ import { getSizeDefaults } from './sizes.js';
 import { getRoleDefaults } from './roles.js';
 import { getVerbosityDefaults } from './verbosity.js';
 
-// #region Network Defaults
+// #region -- Network Defaults -------------------------
 
 type NetworkName = 'mainnet' | 'testnet' | 'devnet';
 
@@ -56,9 +56,9 @@ export function getNetworkDefaults(
   return NETWORK_MAP[network];
 }
 
-// #endregion
+// #endregion -- Network Defaults ----------------------
 
-// #region Common Defaults
+// #region -- Common Defaults --------------------------
 
 const DEFAULT_PORTS: ReadonlyArray<XrpldPortConfig> = [
   { name: 'port_peer', port: 51235, ip: '0.0.0.0', protocol: 'peer' },
@@ -95,9 +95,9 @@ const COMMON_DEFAULTS: Partial<XrpldInput> = {
   fetch_depth: 'full',
 };
 
-// #endregion
+// #endregion -- Common Defaults -----------------------
 
-// #region Deep Merge
+// #region -- Deep Merge -------------------------------
 
 function isPlainObject(val: unknown): val is Record<string, unknown> {
   return typeof val === 'object' && val !== null && !Array.isArray(val);
@@ -124,9 +124,9 @@ function deepMerge<T extends Record<string, unknown>>(
   return result as T;
 }
 
-// #endregion
+// #endregion -- Deep Merge ----------------------------
 
-// #region Resolve Config
+// #region -- Resolve Config ---------------------------
 
 /**
  * Resolve a partial xrpld configuration by deep-merging preset layers and user overrides.
@@ -162,6 +162,4 @@ export function resolveXrpldConfig(
   return { ...merged, presets: { network, role, size, verbosity } };
 }
 
-// #endregion
-
-// #endregion
+// #endregion -- Resolve Config ------------------------

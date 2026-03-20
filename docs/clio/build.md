@@ -109,8 +109,8 @@ These are provided for reference but are not used for the images published on Do
 
 ## See also
 
-- [Base image](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/base.md) — runtime usage, static config
-- [Slim image](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/slim.md) — Debian slim, minimal footprint
-- [Envt image](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/envt.md) — template injection, env-based config
-- [Configuration](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/configuration.md) — all configuration options
-- [BUILD.md](https://github.com/honeycluster/docker/blob/develop/src/clio/docs/BUILD.md) — upstream Clio build (CMake/Conan) for building Clio outside Docker
+- [Base image](https://github.com/honeycluster/nodekit/blob/develop/src/clio/docs/base.md) — runtime usage, static config
+- [Slim image](https://github.com/honeycluster/nodekit/blob/develop/src/clio/docs/slim.md) — Debian slim, minimal footprint
+- [Envt image](https://github.com/honeycluster/nodekit/blob/develop/src/clio/docs/envt.md) — template injection, env-based config
+- [Configuration](https://github.com/honeycluster/nodekit/blob/develop/src/clio/docs/configuration.md) — all configuration options
+- [BUILD.md](https://github.com/honeycluster/nodekit/blob/develop/src/clio/docs/BUILD.md) — upstream Clio build (CMake/Conan) for building Clio outside Docker

@@ -3,7 +3,7 @@ description: Build and publish the Clio base Docker image
 
 on:
   schedule:
-    - cron: '0 8 * * *'
+    - cron: '30 6 * * *'
   workflow_dispatch:
     inputs:
       version:

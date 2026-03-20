@@ -1,6 +1,6 @@
 import type { XrpldInput, XrpldPortConfig } from '../types/xrpld-input.js';
 
-// #region Section Type Mappings
+// #region -- Section Type Mappings --------------------
 
 type SectionType = 'single-value' | 'key-value' | 'list' | 'server' | 'port';
 
@@ -81,9 +81,9 @@ function getSectionType(name: string, portNames: ReadonlyArray<string>): Section
   return 'key-value';
 }
 
-// #endregion
+// #endregion -- Section Type Mappings -----------------
 
-// #region Line Parsing Helpers
+// #region -- Line Parsing Helpers ---------------------
 
 function isComment(line: string): boolean {
   return line.trimStart().startsWith('#');
@@ -108,9 +108,9 @@ function parseKeyValue(line: string): { key: string; value: string } | null {
   return { key, value };
 }
 
-// #endregion
+// #endregion -- Line Parsing Helpers ------------------
 
-// #region Section Collectors
+// #region -- Section Collectors -----------------------
 
 interface RawSection {
   readonly name: string;
@@ -145,18 +145,18 @@ function collectSections(content: string): ReadonlyArray<RawSection> {
   return sections;
 }
 
-// #endregion
+// #endregion -- Section Collectors --------------------
 
-// #region Value Coercion
+// #region -- Value Coercion ---------------------------
 
 function tryParseNumber(value: string): number | string {
   if (/^-?\d+$/.test(value)) return parseInt(value, 10);
   return value;
 }
 
-// #endregion
+// #endregion -- Value Coercion ------------------------
 
-// #region Port Parsing
+// #region -- Port Parsing -----------------------------
 
 function parsePortSection(name: string, lines: ReadonlyArray<string>): XrpldPortConfig {
   const port: Record<string, unknown> = { name };
@@ -172,9 +172,9 @@ function parsePortSection(name: string, lines: ReadonlyArray<string>): XrpldPort
   return port as unknown as XrpldPortConfig;
 }
 
-// #endregion
+// #endregion -- Port Parsing --------------------------
 
-// #region Main Parser
+// #region -- Main Parser ------------------------------
 
 /**
  * Parse an xrpld.cfg file string into an XrpldInput object.
@@ -265,4 +265,4 @@ export function parseCfgFile(content: string): XrpldInput {
   return result as unknown as XrpldInput;
 }
 
-// #endregion
+// #endregion -- Main Parser ---------------------------

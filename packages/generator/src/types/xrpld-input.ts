@@ -1,4 +1,4 @@
-// #region Port Config
+// #region -- Port Config ------------------------------
 
 export interface XrpldPortConfig {
   readonly name: string;
@@ -26,9 +26,9 @@ export interface XrpldPortConfig {
   readonly memory_level?: number;
 }
 
-// #endregion
+// #endregion -- Port Config ---------------------------
 
-// #region Database Configs
+// #region -- Database Configs -------------------------
 
 export interface XrpldNodeDbConfig {
   readonly type: string;
@@ -57,9 +57,9 @@ export interface XrpldSqliteConfig {
   readonly account_page_size?: number;
 }
 
-// #endregion
+// #endregion -- Database Configs ----------------------
 
-// #region Network Configs
+// #region -- Network Configs --------------------------
 
 export interface XrpldOverlayConfig {
   readonly ip_limit?: number;
@@ -116,18 +116,18 @@ export interface XrpldPerfConfig {
   readonly peer_signal_interval?: number;
 }
 
-// #endregion
+// #endregion -- Network Configs -----------------------
 
-// #region Validator List Config
+// #region -- Validator List Config --------------------
 
 export interface XrpldVlConfig {
   readonly validator_list_sites?: ReadonlyArray<string>;
   readonly validator_list_keys?: ReadonlyArray<string>;
 }
 
-// #endregion
+// #endregion -- Validator List Config -----------------
 
-// #region Preset Types
+// #region -- Preset Types -----------------------------
 
 export type NodeRole = 'stock' | 'validator' | 'ephemeral' | 'sentry' | 'clio' | 'feature' | 'hub';
 
@@ -142,9 +142,9 @@ export interface XrpldPresets {
   readonly verbosity?: LogLevel;
 }
 
-// #endregion
+// #endregion -- Preset Types --------------------------
 
-// #region Main Input
+// #region -- Main Input -------------------------------
 
 export interface XrpldInput {
   readonly presets?: XrpldPresets;
@@ -252,9 +252,9 @@ export interface XrpldInput {
   readonly perf?: XrpldPerfConfig;
 }
 
-// #endregion
+// #endregion -- Main Input ----------------------------
 
-// #region Result Types
+// #region -- Result Types -----------------------------
 
 export interface XrpldGeneratorResult {
   readonly config: string;
@@ -275,4 +275,4 @@ export interface ValidationResult {
   readonly warnings: ReadonlyArray<ValidationEntry>;
 }
 
-// #endregion
+// #endregion -- Result Types --------------------------

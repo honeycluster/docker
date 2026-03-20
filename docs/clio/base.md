@@ -14,7 +14,7 @@ Clio image with **static** `config.json`. No envsubst or template injection — 
 - `nightly` — Nightly build from develop branch
 - `${version}` — Specific version tag (e.g., `2.3.0`)
 
-> **Note:** The base image on Docker Hub is built from source using `build.dockerfile` with the `base` target. A standalone `base.dockerfile` is also available for installing from pre-built GitHub release binaries. For build instructions, see [Build image](https://github.com/honeycluster/docker/blob/develop/docs/clio/build.md).
+> **Note:** The base image on Docker Hub is built from source using `build.dockerfile` with the `base` target. A standalone `base.dockerfile` is also available for installing from pre-built GitHub release binaries. For build instructions, see [Build image](https://github.com/honeycluster/nodekit/blob/develop/docs/clio/build.md).
 
 ## Runtime
 
@@ -66,5 +66,5 @@ services:
 
 ## See also
 
-- [Build image](https://github.com/honeycluster/docker/blob/develop/docs/clio/build.md) — build instructions for base image
-- [Configuration options](https://github.com/honeycluster/docker/blob/develop/docs/clio/configuration.md) (for reference; base does not use envsubst)
+- [Build image](https://github.com/honeycluster/nodekit/blob/develop/docs/clio/build.md) — build instructions for base image
+- [Configuration options](https://github.com/honeycluster/nodekit/blob/develop/docs/clio/configuration.md) (for reference; base does not use envsubst)

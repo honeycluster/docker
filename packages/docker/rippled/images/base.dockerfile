@@ -3,16 +3,16 @@ FROM --platform=$PLATFORM ubuntu:24.04
 
 # Image Labels
 LABEL maintainer="honeycluster <r@honeycluster.io>"
-LABEL org.opencontainers.image.title="xrpld"
+LABEL org.opencontainers.image.title="rippled"
 LABEL org.opencontainers.image.description="XRPL node (standard image from rippled deb)"
 LABEL org.opencontainers.image.authors="honeycluster <r@honeycluster.io>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="honeycluster"
 LABEL org.opencontainers.image.url="https://github.com/honeycluster/docker"
-LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/packages/docker/xrpld/images/base.dockerfile"
-LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/docs/xrpld/base.md"
+LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/packages/docker/rippled/images/base.dockerfile"
+LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/docs/rippled/base.md"
 
-# xrpld deb version to install (apt-cache madison rippled)
+# rippled deb version to install (apt-cache madison rippled)
 # https://github.com/ripple/rippled/releases
 ARG VERSION=${VERSION:-3.1.2-1}
 
@@ -38,38 +38,29 @@ RUN wget -qO- "https://repos.ripple.com/repos/api/gpg/key/public" | gpg --dearmo
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
-# Move /opt/ripple to /opt/xrpl (rippled deb installs to /opt/ripple)
-RUN mkdir -p /opt/xrpl/bin /opt/xrpl/etc && \
-    mv /opt/ripple/bin/rippled /opt/xrpl/bin/xrpld && \
-    mv /opt/ripple/etc/rippled.cfg /opt/xrpl/etc/xrpld.cfg && \
-    mv /opt/ripple/etc/validators.txt /opt/xrpl/etc/validators.txt && \
-    rm -rf /opt/ripple
-
-# Set PATH to include /opt/xrpl/bin for runtime
-ENV PATH="/opt/xrpl/bin:${PATH}"
+# Set PATH to include /opt/ripple/bin for runtime
+ENV PATH="/opt/ripple/bin:${PATH}"
 
 # Create symlinks so the binary finds config at its default search paths
-RUN mkdir -p /etc/opt/xrpld /etc/opt/ripple && \
-    ln -sf /opt/xrpl/bin/xrpld /usr/bin/rippled && \
-    ln -sf /opt/xrpl/bin/xrpld /usr/local/bin/rippled && \
-    ln -sf /opt/xrpl/etc/xrpld.cfg /etc/opt/xrpld/rippled.cfg && \
-    ln -sf /opt/xrpl/etc/validators.txt /etc/opt/xrpld/validators.txt && \
-    ln -sf /opt/xrpl/etc/xrpld.cfg /etc/opt/ripple/rippled.cfg && \
-    ln -sf /opt/xrpl/etc/validators.txt /etc/opt/ripple/validators.txt
+RUN mkdir -p /etc/opt/ripple /etc/opt/xrpld && \
+    ln -sf /opt/ripple/etc/rippled.cfg /etc/opt/ripple/rippled.cfg && \
+    ln -sf /opt/ripple/etc/validators.txt /etc/opt/ripple/validators.txt && \
+    ln -sf /opt/ripple/etc/rippled.cfg /etc/opt/xrpld/rippled.cfg && \
+    ln -sf /opt/ripple/etc/validators.txt /etc/opt/xrpld/validators.txt
 
 # Set the working directory
-WORKDIR /opt/xrpl
+WORKDIR /opt/ripple
 
 # Create directory structure
 RUN mkdir -p db log etc
 
-# Replace deb's rippled logrotate with our xrpld config
+# Replace deb's rippled logrotate with our config
 RUN rm -f /etc/logrotate.d/rippled
-COPY logrotate/xrpld /etc/logrotate.d/xrpld
+COPY logrotate/rippled /etc/logrotate.d/rippled
 
 # Copy all entrypoint/configure scripts and make executable
 COPY scripts ./scripts
-RUN find /opt/xrpl/scripts -name '*.sh' -exec chmod +x {} \;
+RUN find /opt/ripple/scripts -name '*.sh' -exec chmod +x {} \;
 
 # Set the entrypoint to the entrypoint.sh script
 ENTRYPOINT ["./scripts/entrypoint.sh"]

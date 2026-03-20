@@ -6,7 +6,7 @@
 #   ./up.sh down            # Stop services
 #   ./up.sh ps              # List services
 
-name: docker-simulate
+name: nodekit-simulate
 
 include:
   # Simulate ScyllaDB cluster
@@ -18,8 +18,8 @@ include:
 
 # Shared network for all stack services (same subnet, static IPs).
 networks:
-  docker-simulate-net:
-    name: docker-simulate-net
+  nodekit-simulate-net:
+    name: nodekit-simulate-net
     driver: bridge
     ipam:
       driver: default

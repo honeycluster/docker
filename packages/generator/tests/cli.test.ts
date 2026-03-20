@@ -16,7 +16,7 @@ describe('CLI', () => {
     rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  // #region parseArgs
+  // #region -- parseArgs -------------------------------
 
   describe('parseArgs', () => {
     it('returns showUsage when no arguments', () => {
@@ -199,9 +199,9 @@ describe('CLI', () => {
     });
   });
 
-  // #endregion
+  // #endregion -- parseArgs ----------------------------
 
-  // #region run - generate mode
+  // #region -- run - generate mode --------------------
 
   describe('run - generate mode', () => {
     it('generates default mainnet config to stdout', () => {
@@ -270,9 +270,9 @@ describe('CLI', () => {
     });
   });
 
-  // #endregion
+  // #endregion -- run - generate mode -----------------
 
-  // #region run - parse mode
+  // #region -- run - parse mode -----------------------
 
   describe('run - parse mode', () => {
     it('parses cfg file to JSON on stdout', () => {
@@ -298,9 +298,9 @@ describe('CLI', () => {
     });
   });
 
-  // #endregion
+  // #endregion -- run - parse mode --------------------
 
-  // #region run - validate-only mode
+  // #region -- run - validate-only mode ---------------
 
   describe('run - validate-only mode', () => {
     it('reports validation passed for valid config', () => {
@@ -326,9 +326,9 @@ describe('CLI', () => {
     });
   });
 
-  // #endregion
+  // #endregion -- run - validate-only mode ------------
 
-  // #region run - error handling
+  // #region -- run - error handling -------------------
 
   describe('run - error handling', () => {
     it('returns exit 1 when input file does not exist', () => {
@@ -350,5 +350,5 @@ describe('CLI', () => {
     });
   });
 
-  // #endregion
+  // #endregion -- run - error handling ----------------
 });

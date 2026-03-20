@@ -1,13 +1,38 @@
 {
   "name": "@honeycluster/xrpld-cfg-gen",
   "version": "0.0.0",
-  "private": true,
+  "description": "TypeScript config generator for xrpld.cfg — presets, validation, multi-format input",
   "type": "module",
+  "license": "MIT",
+  "author": "honeycluster <r@honeycluster.io>",
+  "homepage": "https://github.com/honeycluster/nodekit/tree/main/packages/generator",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/honeycluster/nodekit.git",
+    "directory": "packages/generator"
+  },
+  "bugs": {
+    "url": "https://github.com/honeycluster/nodekit/issues"
+  },
+  "keywords": [
+    "xrpl",
+    "xrpld",
+    "rippled",
+    "xrp-ledger",
+    "config-generator",
+    "docker",
+    "blockchain",
+    "node-config"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "main": "./dist/cjs/src/index.js",
   "types": "./dist/cjs/src/index.d.ts",
   "files": [
     "dist",
-    "src"
+    "README.md",
+    "examples"
   ],
   "bin": {
     "xrpld-cfg-gen": "./dist/cjs/src/cli.js"

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { getNetworkDefaults, resolveXrpldConfig } from '../src/defaults/xrpld.js';
 
-// #region getNetworkDefaults
+// #region -- getNetworkDefaults -----------------------
 
 describe('getNetworkDefaults', () => {
   it('returns mainnet defaults', () => {
@@ -41,9 +41,9 @@ describe('getNetworkDefaults', () => {
   });
 });
 
-// #endregion
+// #endregion -- getNetworkDefaults --------------------
 
-// #region resolveXrpldConfig — common defaults
+// #region -- resolveXrpldConfig — common defaults -----
 
 describe('resolveXrpldConfig', () => {
   it('returns defaults with medium size + warning verbosity when no input', () => {
@@ -103,9 +103,9 @@ describe('resolveXrpldConfig', () => {
     });
   });
 
-  // #endregion
+  // #endregion -- resolveXrpldConfig — common defaults -
 
-  // #region resolveXrpldConfig — network defaults
+  // #region -- resolveXrpldConfig — network defaults ---
 
   it('applies mainnet network defaults', () => {
     const config = resolveXrpldConfig({ presets: { network: 'mainnet' } });
@@ -139,9 +139,9 @@ describe('resolveXrpldConfig', () => {
     expect(config.network_id).toBe('0');
   });
 
-  // #endregion
+  // #endregion -- resolveXrpldConfig — network defaults
 
-  // #region resolveXrpldConfig — user overrides
+  // #region -- resolveXrpldConfig — user overrides -----
 
   it('user overrides win over network defaults', () => {
     const config = resolveXrpldConfig({
@@ -217,9 +217,9 @@ describe('resolveXrpldConfig', () => {
     expect(config.workers).toBe(8);
   });
 
-  // #endregion
+  // #endregion -- resolveXrpldConfig — user overrides --
 
-  // #region resolveXrpldConfig — preset merge pipeline
+  // #region -- resolveXrpldConfig — preset merge pipeline
 
   it('huge size preset sets node_size, online_delete, peers_max', () => {
     const config = resolveXrpldConfig({ presets: { size: 'huge' } });
@@ -307,5 +307,5 @@ describe('resolveXrpldConfig', () => {
     expect(config.ledger_history).toBe('full');
   });
 
-  // #endregion
+  // #endregion -- resolveXrpldConfig — preset merge pipeline
 });

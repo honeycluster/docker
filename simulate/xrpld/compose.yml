@@ -23,7 +23,7 @@ services:
       - "51234:51234"
       - "6005:6005"
     networks:
-      docker-simulate-net:
+      nodekit-simulate-net:
         ipv4_address: 10.201.0.3
 
   xrpld-build:
@@ -51,5 +51,31 @@ services:
       - "61234:51234"
       - "7005:6005"
     networks:
-      docker-simulate-net:
+      nodekit-simulate-net:
         ipv4_address: 10.201.0.5
+
+
+  xrpld-nightly:
+    platform: linux/amd64
+    image: honeycluster/xrpld:nightly
+    container_name: xrpld-nightly
+    restart: unless-stopped
+    labels:
+      - "com.docker.compose.project=simulate"
+      - "com.docker.compose.service=xrpld-nightly"
+      - "description=XRP Ledger Node (source build)"
+    healthcheck:
+      test: [ "CMD", "xrpld", "server_info" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ./xrpld.cfg:/opt/xrpl/etc/xrpld.cfg:ro
+      - ./validators.txt:/opt/xrpl/etc/validators.txt:ro
+    ports:
+      - "61235:51234"
+      - "7006:6005"
+    networks:
+      nodekit-simulate-net:
+        ipv4_address: 10.201.0.6

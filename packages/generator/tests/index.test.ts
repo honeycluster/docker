@@ -9,7 +9,7 @@ import {
   resolveXrpldConfig,
 } from '../src/index.js';
 
-// #region Export verification
+// #region -- Export verification ----------------------
 
 describe('config-gen index exports', () => {
   it('exports generateXrpldConfig', () => {
@@ -41,9 +41,9 @@ describe('config-gen index exports', () => {
   });
 });
 
-// #endregion
+// #endregion -- Export verification -------------------
 
-// #region generateXrpldConfig smoke test
+// #region -- generateXrpldConfig smoke test -----------
 
 describe('generateXrpldConfig smoke test', () => {
   it('generates default config', () => {
@@ -63,4 +63,4 @@ describe('generateXrpldConfig smoke test', () => {
   });
 });
 
-// #endregion
+// #endregion -- generateXrpldConfig smoke test --------

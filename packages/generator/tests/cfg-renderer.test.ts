@@ -10,7 +10,7 @@ import {
 import { resolveXrpldConfig } from '../src/defaults/xrpld.js';
 import type { XrpldPortConfig, XrpldInput } from '../src/types/xrpld-input.js';
 
-// #region renderSingleValueSection
+// #region -- renderSingleValueSection -----------------
 
 describe('renderSingleValueSection', () => {
   it('renders a string value', () => {
@@ -38,9 +38,9 @@ describe('renderSingleValueSection', () => {
   });
 });
 
-// #endregion
+// #endregion -- renderSingleValueSection --------------
 
-// #region renderKeyValueSection
+// #region -- renderKeyValueSection --------------------
 
 describe('renderKeyValueSection', () => {
   it('renders key=value pairs', () => {
@@ -82,9 +82,9 @@ describe('renderKeyValueSection', () => {
   });
 });
 
-// #endregion
+// #endregion -- renderKeyValueSection -----------------
 
-// #region renderListSection
+// #region -- renderListSection ------------------------
 
 describe('renderListSection', () => {
   it('renders string items', () => {
@@ -115,9 +115,9 @@ describe('renderListSection', () => {
   });
 });
 
-// #endregion
+// #endregion -- renderListSection ---------------------
 
-// #region renderPortSection
+// #region -- renderPortSection ------------------------
 
 describe('renderPortSection', () => {
   it('renders all port fields as key = value', () => {
@@ -173,9 +173,9 @@ describe('renderPortSection', () => {
   });
 });
 
-// #endregion
+// #endregion -- renderPortSection ---------------------
 
-// #region renderServerSection
+// #region -- renderServerSection ----------------------
 
 describe('renderServerSection', () => {
   it('renders server section with port names', () => {
@@ -196,9 +196,9 @@ describe('renderServerSection', () => {
   });
 });
 
-// #endregion
+// #endregion -- renderServerSection -------------------
 
-// #region renderXrpldCfg
+// #region -- renderXrpldCfg ---------------------------
 
 describe('renderXrpldCfg', () => {
   it('renders mainnet resolved config with all expected sections', () => {
@@ -316,4 +316,4 @@ describe('renderXrpldCfg', () => {
   });
 });
 
-// #endregion
+// #endregion -- renderXrpldCfg ------------------------
