@@ -119,6 +119,54 @@ describe('CLI', () => {
       expect((result as { error: string }).error).toContain('Invalid network');
     });
 
+    // --role flag
+    it('parses --role validator', () => {
+      const result = parseArgs(['node', 'cli.ts', 'xrpld', '--role', 'validator']) as CliArgs;
+      expect(result.role).toBe('validator');
+    });
+
+    it('rejects --role without value', () => {
+      const result = parseArgs(['node', 'cli.ts', 'xrpld', '--role']);
+      expect((result as { error: string }).error).toContain('--role requires a value');
+    });
+
+    it('rejects invalid role', () => {
+      const result = parseArgs(['node', 'cli.ts', 'xrpld', '--role', 'invalid']);
+      expect((result as { error: string }).error).toContain('Invalid role');
+    });
+
+    // --size flag
+    it('parses --size large', () => {
+      const result = parseArgs(['node', 'cli.ts', 'xrpld', '--size', 'large']) as CliArgs;
+      expect(result.size).toBe('large');
+    });
+
+    it('rejects --size without value', () => {
+      const result = parseArgs(['node', 'cli.ts', 'xrpld', '--size']);
+      expect((result as { error: string }).error).toContain('--size requires a value');
+    });
+
+    it('rejects invalid size', () => {
+      const result = parseArgs(['node', 'cli.ts', 'xrpld', '--size', 'gigantic']);
+      expect((result as { error: string }).error).toContain('Invalid size');
+    });
+
+    // --verbose flag
+    it('parses --verbose debug', () => {
+      const result = parseArgs(['node', 'cli.ts', 'xrpld', '--verbose', 'debug']) as CliArgs;
+      expect(result.verbosity).toBe('debug');
+    });
+
+    it('rejects --verbose without value', () => {
+      const result = parseArgs(['node', 'cli.ts', 'xrpld', '--verbose']);
+      expect((result as { error: string }).error).toContain('--verbose requires a value');
+    });
+
+    it('rejects invalid verbosity', () => {
+      const result = parseArgs(['node', 'cli.ts', 'xrpld', '--verbose', 'loud']);
+      expect((result as { error: string }).error).toContain('Invalid verbosity');
+    });
+
     // --validate-only flag
     it('parses --validate-only flag', () => {
       const result = parseArgs(['node', 'cli.ts', 'xrpld', '--validate-only']) as CliArgs;
@@ -141,6 +189,20 @@ describe('CLI', () => {
       expect(result.outputPath).toBe('/opt/xrpl/etc');
       expect(result.network).toBe('testnet');
       expect(result.validateOnly).toBe(true);
+    });
+
+    it('parses combined --network --role --size --verbose', () => {
+      const result = parseArgs([
+        'node', 'cli.ts', 'xrpld',
+        '--network', 'testnet',
+        '--role', 'validator',
+        '--size', 'large',
+        '--verbose', 'info',
+      ]) as CliArgs;
+      expect(result.network).toBe('testnet');
+      expect(result.role).toBe('validator');
+      expect(result.size).toBe('large');
+      expect(result.verbosity).toBe('info');
     });
 
     // --env is removed
