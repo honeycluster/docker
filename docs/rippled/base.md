@@ -93,4 +93,3 @@ On startup, the entrypoint parses `[debug_logfile]` from `rippled.cfg` and updat
 ## See also
 
 - [Build image (source)](build.md) — build from source using Conan
-- [Configuration](configuration.md) — all configuration options

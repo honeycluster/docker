@@ -38,14 +38,14 @@ docker build -f images/build.dockerfile --target base \
 
 ### Build args
 
-| Arg              | Default   | Description                            |
-| ---------------- | --------- | -------------------------------------- |
-| `VERSION`        | —         | Clio version/tag to build from source  |
-| `BRANCH`         | `develop` | Git branch to build from               |
-| `GCC_RELEASE`    | `14`      | GCC version for build                  |
-| `CONAN_VERSION`  | `2.24`    | Conan version for build                |
-| `CMAKE_VERSION`  | —         | CMake version (optional)               |
-| `PYTHON_VERSION` | —         | Python version (optional)              |
+| Arg              | Default   | Description                           |
+| ---------------- | --------- | ------------------------------------- |
+| `VERSION`        | —         | Clio version/tag to build from source |
+| `BRANCH`         | `develop` | Git branch to build from              |
+| `GCC_RELEASE`    | `14`      | GCC version for build                 |
+| `CONAN_VERSION`  | `2.24`    | Conan version for build               |
+| `CMAKE_VERSION`  | —         | CMake version (optional)              |
+| `PYTHON_VERSION` | —         | Python version (optional)             |
 
 ## Stages
 
@@ -63,10 +63,10 @@ docker build -f images/build.dockerfile --target base \
 
 ### Mounts
 
-| Path            | Purpose                                                                 |
-| --------------- | ----------------------------------------------------------------------- |
-| `/opt/clio/etc` | Config directory. Mount `config.json`. Not overwritten at startup.      |
-| `/opt/clio/log` | Log output.                                                             |
+| Path            | Purpose                                                            |
+| --------------- | ------------------------------------------------------------------ |
+| `/opt/clio/etc` | Config directory. Mount `config.json`. Not overwritten at startup. |
+| `/opt/clio/log` | Log output.                                                        |
 
 ### Example: docker run
 
@@ -121,12 +121,12 @@ volumes:
 
 ### Key config.json fields
 
-| Field | Description |
-| ----- | ----------- |
-| `etl_sources` | Array of `rippled` gRPC endpoints Clio connects to for ledger data |
-| `database` | Cassandra/ScyllaDB connection settings (`contact_points`, `port`, `keyspace`) |
-| `server.ip` | Bind address for the Clio API server |
-| `server.port` | Port for the Clio API server (default `51233`) |
+| Field         | Description                                                                   |
+| ------------- | ----------------------------------------------------------------------------- |
+| `etl_sources` | Array of `rippled` gRPC endpoints Clio connects to for ledger data            |
+| `database`    | Cassandra/ScyllaDB connection settings (`contact_points`, `port`, `keyspace`) |
+| `server.ip`   | Bind address for the Clio API server                                          |
+| `server.port` | Port for the Clio API server (default `51233`)                                |
 
 ## When to use
 
@@ -137,4 +137,3 @@ volumes:
 ## See also
 
 - [Base image](base.md) — pre-built from GitHub releases
-- [Configuration](configuration.md) — all configuration options

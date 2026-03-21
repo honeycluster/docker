@@ -14,11 +14,11 @@ Multi-stage image that **builds rippled from source** (Conan) and produces a run
 
 This image uses the **upstream naming**: the binary is `rippled` and lives at `/opt/ripple`. The `xrpld` image is a renamed variant of the same binary. Both images build from the same XRPLF/rippled source — the only difference is the install path and binary name.
 
-| | rippled image | xrpld image |
-|---|---|---|
-| Binary | `/opt/ripple/bin/rippled` | `/opt/xrpl/bin/xrpld` |
-| Config | `/opt/ripple/etc/rippled.cfg` | `/opt/xrpl/etc/xrpld.cfg` |
-| Docker Hub | `honeycluster/rippled` | `honeycluster/xrpld` |
+|            | rippled image                 | xrpld image               |
+| ---------- | ----------------------------- | ------------------------- |
+| Binary     | `/opt/ripple/bin/rippled`     | `/opt/xrpl/bin/xrpld`     |
+| Config     | `/opt/ripple/etc/rippled.cfg` | `/opt/xrpl/etc/xrpld.cfg` |
+| Docker Hub | `honeycluster/rippled`        | `honeycluster/xrpld`      |
 
 Config symlinks cover both default search paths the binary uses at startup:
 
@@ -150,4 +150,3 @@ volumes:
 ## See also
 
 - [Base image (deb)](base.md) — pre-built from the Ripple apt repository
-- [Configuration](configuration.md) — all configuration options

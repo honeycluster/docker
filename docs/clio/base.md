@@ -83,12 +83,12 @@ volumes:
 
 ### Key config.json fields
 
-| Field | Description |
-| ----- | ----------- |
-| `etl_sources` | Array of `rippled` gRPC endpoints Clio connects to for ledger data |
-| `database` | Cassandra/ScyllaDB connection settings (`contact_points`, `port`, `keyspace`) |
-| `server.ip` | Bind address for the Clio API server |
-| `server.port` | Port for the Clio API server (default `51233`) |
+| Field         | Description                                                                   |
+| ------------- | ----------------------------------------------------------------------------- |
+| `etl_sources` | Array of `rippled` gRPC endpoints Clio connects to for ledger data            |
+| `database`    | Cassandra/ScyllaDB connection settings (`contact_points`, `port`, `keyspace`) |
+| `server.ip`   | Bind address for the Clio API server                                          |
+| `server.port` | Port for the Clio API server (default `51233`)                                |
 
 ## When to use
 
@@ -98,4 +98,3 @@ volumes:
 ## See also
 
 - [Build image (source)](build.md) — build from source using Conan
-- [Configuration](configuration.md) — all configuration options
