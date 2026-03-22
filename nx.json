@@ -103,7 +103,7 @@
   },
   "release": {
     "projects": ["packages/generator"],
-    "releaseTagPattern": "{version}",
+     "releaseTagPattern": "{version}",
     "conventionalCommits": {
       "types": {
         "feat": {

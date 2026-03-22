@@ -10,6 +10,8 @@
     "typescript": "^5.9.3"
   },
   "scripts": {
+    "env": "source .env",
+    "-----------------------------": "",
     "build": "pnpm nx:prepack && pnpm nx:build",
     "build:deps": "node ./bin/build-deps.js",
     "--------------------------": "",
@@ -27,11 +29,11 @@
     "nx:lint": "nx run-many -t lint",
     "nx:format": "nx run-many -t format",
     "--------------------------------": "",
-    "release": "nx release --yes",
-    "release:first": "nx release --first-release --yes",
-    "release:alpha": "nx release --specifier prerelease --preid a --yes",
-    "release:beta": "nx release --specifier prerelease --preid b --yes",
-    "release:rc": "nx release --specifier prerelease --preid rc --yes",
-    "release:dry": "nx release --first-release --dry-run"
+    "release": "pnpm run env -- nx release --yes",
+    "release:first": "pnpm run env -- nx release --first-release --yes",
+    "release:alpha": "pnpm run env -- nx release --specifier prerelease --preid a --skip-publish && nx release publish --tag alpha",
+    "release:beta": "pnpm run env -- nx release --specifier prerelease --preid b --skip-publish && nx release publish --tag beta",
+    "release:rc": "pnpm run env -- nx release --specifier prerelease --preid rc --skip-publish && nx release publish --tag rc",
+    "release:dry": "pnpm run env -- nx release --first-release --dry-run"
   }
 }
