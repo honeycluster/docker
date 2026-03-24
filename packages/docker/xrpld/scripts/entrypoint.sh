@@ -1,5 +1,5 @@
 #!/bin/bash
-# Start up for xrpld/rippled with minimal configuration
+# Entrypoint for xrpld/rippled container
 
 set -e
 
@@ -9,18 +9,23 @@ SCRIPTS_DIR="${SCRIPT_DIR}"
 
 # Source utility scripts
 source "${SCRIPTS_DIR}/utils/logging.sh"
-
-# Source remaining scripts
 source "${SCRIPTS_DIR}/startup.sh"
 source "${SCRIPTS_DIR}/shutdown.sh"
 source "${SCRIPTS_DIR}/logrotate.sh"
 
-# Update logrotate with the log directory from the mounted xrpld.cfg
+# If arguments are passed, exec the binary directly with those args.
+# This supports one-off commands like:
+#   docker run ... xrpld validation_create
+#   docker run ... xrpld --conf /opt/xrpl/etc/xrpld.cfg validation_create
+if [ $# -gt 0 ]; then
+    exec "$BIN" "$@"
+fi
+
+# Daemon mode (no args): configure logrotate and start the node
 configure_logrotate
 
-# If rippled is running, reload the configuration, otherwise start it
 if is_running; then
     reload
 else
-    start "$@"
+    start
 fi
