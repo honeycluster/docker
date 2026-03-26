@@ -155,6 +155,7 @@ export interface XrpldInput {
     readonly ports: ReadonlyArray<XrpldPortConfig>;
   };
   readonly server_comment?: string;
+  readonly port_overrides?: Readonly<Record<string, Partial<Omit<XrpldPortConfig, 'name'>>>>;
 
   // Database
   readonly node_db?: XrpldNodeDbConfig;

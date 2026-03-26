@@ -173,7 +173,23 @@ export function resolveXrpldConfig(
 
   const merged = layers.reduce((acc, layer) => deepMerge(acc, layer)) as XrpldInput;
 
-  return { ...merged, presets: { network, role, size, verbosity } };
+  // Apply port_overrides: merge partial port configs by name into resolved ports
+  const withOverrides = applyPortOverrides(merged);
+
+  return { ...withOverrides, presets: { network, role, size, verbosity } };
+}
+
+function applyPortOverrides(config: XrpldInput): XrpldInput {
+  const overrides = config.port_overrides;
+  if (!overrides || !config.server?.ports) return config;
+
+  const updatedPorts = config.server.ports.map((port) => {
+    const override = overrides[port.name];
+    if (!override) return port;
+    return { ...port, ...override };
+  });
+
+  return { ...config, server: { ...config.server, ports: updatedPorts } };
 }
 
 // #endregion -- Resolve Config ------------------------
