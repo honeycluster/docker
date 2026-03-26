@@ -43,6 +43,30 @@ describe('getRoleDefaults', () => {
     const result = getRoleDefaults('validator');
     expect(result.server_comment).toContain('WARNING');
     expect(result.server_comment).toContain('admin-local');
+    expect(result.server_comment).toBe(
+      '# WARNING: Exposing RPC/WS ports publicly on a validator can compromise network security. Only admin-local ports are enabled by default.',
+    );
+  });
+
+  it('validator safe ports use localhost IP and admin bindings', () => {
+    const result = getRoleDefaults('validator');
+    const ports = result.server?.ports ?? [];
+
+    const peer = ports.find((p) => p.name === 'port_peer')!;
+    expect(peer.port).toBe(51235);
+    expect(peer.ip).toBe('0.0.0.0');
+
+    const rpcAdmin = ports.find((p) => p.name === 'port_rpc_admin_local')!;
+    expect(rpcAdmin.port).toBe(5006);
+    expect(rpcAdmin.ip).toBe('127.0.0.1');
+    expect(rpcAdmin.admin).toBe('127.0.0.1');
+    expect(rpcAdmin.protocol).toBe('http');
+
+    const wsAdmin = ports.find((p) => p.name === 'port_ws_admin_local')!;
+    expect(wsAdmin.port).toBe(6006);
+    expect(wsAdmin.ip).toBe('127.0.0.1');
+    expect(wsAdmin.admin).toBe('127.0.0.1');
+    expect(wsAdmin.protocol).toBe('ws');
   });
 
   it('returns empty object for ephemeral (resource tuning handled by size)', () => {

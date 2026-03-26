@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { needsSslCerts, injectSslPaths } from '../../src/generators/ssl-cert.js';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { needsSslCerts, injectSslPaths, generateSslCerts } from '../../src/generators/ssl-cert.js';
 import type { XrpldInput, XrpldPortConfig } from '../../src/types/xrpld-input.js';
 
 // #region -- Helper -----------------------------------
@@ -142,3 +142,99 @@ describe('injectSslPaths', () => {
 });
 
 // #endregion -- injectSslPaths ------------------------
+
+// #region -- generateSslCerts -------------------------
+
+vi.mock('node:child_process', () => ({
+  execFileSync: vi.fn(() => Buffer.from('MOCK_PEM_DATA')),
+}));
+
+vi.mock('node:fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:fs')>();
+  return {
+    ...actual,
+    mkdirSync: vi.fn(),
+    writeFileSync: vi.fn(),
+    chmodSync: vi.fn(),
+  };
+});
+
+describe('generateSslCerts', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('creates certs directory and returns key/cert paths', async () => {
+    const { mkdirSync } = await import('node:fs');
+    const result = generateSslCerts('/output/dir');
+
+    expect(mkdirSync).toHaveBeenCalledWith('/output/dir/certs', { recursive: true });
+    expect(result.keyPath).toBe('/output/dir/certs/server.key');
+    expect(result.certPath).toBe('/output/dir/certs/server.crt');
+  });
+
+  it('calls openssl genrsa for key generation', async () => {
+    const { execFileSync } = await import('node:child_process');
+    generateSslCerts('/output/dir');
+
+    expect(execFileSync).toHaveBeenCalledWith('openssl', ['genrsa', '2048']);
+  });
+
+  it('writes private key and sets restrictive permissions (0600)', async () => {
+    const { writeFileSync, chmodSync } = await import('node:fs');
+    generateSslCerts('/output/dir');
+
+    expect(writeFileSync).toHaveBeenCalledWith(
+      '/output/dir/certs/server.key',
+      expect.any(Buffer),
+    );
+    expect(chmodSync).toHaveBeenCalledWith('/output/dir/certs/server.key', 0o600);
+  });
+
+  it('calls openssl req with default validity of 365 days', async () => {
+    const { execFileSync } = await import('node:child_process');
+    generateSslCerts('/output/dir');
+
+    expect(execFileSync).toHaveBeenCalledWith(
+      'openssl',
+      expect.arrayContaining([
+        'req', '-new', '-x509', '-days', '365', '-batch',
+      ]),
+    );
+  });
+
+  it('uses custom validity days when provided', async () => {
+    const { execFileSync } = await import('node:child_process');
+    generateSslCerts('/output/dir', { validityDays: 730 });
+
+    expect(execFileSync).toHaveBeenCalledWith(
+      'openssl',
+      expect.arrayContaining(['-days', '730']),
+    );
+  });
+
+  it('includes email in subject when provided', async () => {
+    const { execFileSync } = await import('node:child_process');
+    generateSslCerts('/output/dir', { email: 'admin@example.com' });
+
+    expect(execFileSync).toHaveBeenCalledWith(
+      'openssl',
+      expect.arrayContaining([
+        '-subj',
+        expect.stringContaining('/emailAddress=admin@example.com'),
+      ]),
+    );
+  });
+
+  it('uses custom common name when provided', async () => {
+    const { execFileSync } = await import('node:child_process');
+    generateSslCerts('/output/dir', { commonName: 'my-xrpld' });
+
+    expect(execFileSync).toHaveBeenCalledWith(
+      'openssl',
+      expect.arrayContaining(['-subj', expect.stringContaining('/CN=my-xrpld')]),
+    );
+  });
+});
+
+// #endregion -- generateSslCerts ----------------------

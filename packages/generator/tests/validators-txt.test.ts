@@ -75,4 +75,62 @@ describe('generateValidatorsTxt', () => {
     expect(result).toContain('KEY1');
     expect(result).toContain('KEY2');
   });
+
+  it('mainnet includes both vl.ripple.com and unl.xrplf.org VL sites', () => {
+    const config = resolveXrpldConfig({ presets: { network: 'mainnet' } });
+    const result = generateValidatorsTxt(config);
+
+    expect(result).toContain('https://vl.ripple.com');
+    expect(result).toContain('https://unl.xrplf.org');
+  });
+
+  it('mainnet includes both validator list keys with source comments', () => {
+    const config = resolveXrpldConfig({ presets: { network: 'mainnet' } });
+    const result = generateValidatorsTxt(config);
+
+    expect(result).toContain('#vl.ripple.com');
+    expect(result).toContain('ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734');
+    expect(result).toContain('#unl.xrplf.org');
+    expect(result).toContain('ED42AEC58B701EEBB77356FFFEC26F83C1F0407263530F068C7C73D392C7E06FD1');
+  });
+
+  it('renders source comment directly before its associated key', () => {
+    const config = resolveXrpldConfig({ presets: { network: 'mainnet' } });
+    const result = generateValidatorsTxt(config);
+
+    const lines = result.split('\n');
+    const rippleCommentIdx = lines.indexOf('#vl.ripple.com');
+    const xrplfCommentIdx = lines.indexOf('#unl.xrplf.org');
+
+    expect(rippleCommentIdx).toBeGreaterThan(-1);
+    expect(lines[rippleCommentIdx + 1]).toBe(
+      'ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734',
+    );
+    expect(xrplfCommentIdx).toBeGreaterThan(-1);
+    expect(lines[xrplfCommentIdx + 1]).toBe(
+      'ED42AEC58B701EEBB77356FFFEC26F83C1F0407263530F068C7C73D392C7E06FD1',
+    );
+  });
+
+  it('renders keys without comments when validator_list_key_sources is absent', () => {
+    const config: XrpldInput = {
+      vl: {
+        validator_list_sites: ['https://example.com'],
+        validator_list_keys: ['KEYABC'],
+      },
+    } as XrpldInput;
+    const result = generateValidatorsTxt(config);
+
+    expect(result).toContain('KEYABC');
+    expect(result).not.toContain('#');
+  });
+
+  it('sections are separated by blank lines', () => {
+    const config = resolveXrpldConfig({ presets: { network: 'mainnet' } });
+    const result = generateValidatorsTxt(config);
+
+    expect(result).toContain('[validator_list_sites]');
+    expect(result).toContain('[validator_list_keys]');
+    expect(result).toMatch(/\[validator_list_sites\][\s\S]+?\n\n\[validator_list_keys\]/);
+  });
 });

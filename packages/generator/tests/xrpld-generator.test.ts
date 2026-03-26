@@ -155,6 +155,28 @@ describe('generateXrpldConfig', () => {
     });
     expect(result.config).toContain('[port_rpc]\nport = 8080');
   });
+
+  it('validator role generates server_comment warning above [server]', () => {
+    const result = generateXrpldConfig({ presets: { role: 'validator' } });
+    expect(result.config).toContain('WARNING');
+    expect(result.config).toContain('admin-local');
+    // Warning must appear before the [server] section
+    const warningIdx = result.config.indexOf('WARNING');
+    const serverIdx = result.config.indexOf('[server]');
+    expect(warningIdx).toBeLessThan(serverIdx);
+  });
+
+  it('mainnet validatorsTxt includes both VL sources', () => {
+    const result = generateXrpldConfig({ presets: { network: 'mainnet' } });
+    expect(result.validatorsTxt).toContain('https://vl.ripple.com');
+    expect(result.validatorsTxt).toContain('https://unl.xrplf.org');
+  });
+
+  it('mainnet validatorsTxt includes source comments before keys', () => {
+    const result = generateXrpldConfig({ presets: { network: 'mainnet' } });
+    expect(result.validatorsTxt).toContain('#vl.ripple.com');
+    expect(result.validatorsTxt).toContain('#unl.xrplf.org');
+  });
 });
 
 describe('validateXrpldConfig', () => {
