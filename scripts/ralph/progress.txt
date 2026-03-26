@@ -146,3 +146,27 @@ Started: Thu Mar 26 09:33:22 PM UTC 2026
   - JSON parser doesn't need changes for new flat fields — it casts the parsed object directly to Partial<XrpldInput>
   - Env parser needs both KEY_MAP entry and NUMERIC_KEYS entry for numeric fields
 ---
+
+## 2026-03-26 - US-006: Generate self-signed SSL certificates
+- Created `packages/generator/src/generators/ssl-cert.ts` with:
+  - `needsSslCerts(config)` — checks if any port has https/wss without user-provided ssl paths
+  - `injectSslPaths(config)` — immutably adds ssl_key/ssl_cert to dual-protocol ports
+  - `generateSslCerts(outputDir, options)` — shells out to openssl to create RSA 2048 key + self-signed X.509 cert
+- Updated `generateXrpldConfig` to inject ssl paths into dual-protocol ports automatically
+- Added `sslCertRequired` boolean to `XrpldGeneratorResult`
+- Updated CLI to call `generateSslCerts` when writing to output dir and ssl certs are needed
+- Updated 5 expected .cfg fixtures to include ssl_key/ssl_cert on port_rpc and port_wss
+- Exported new functions and types from index.ts
+- Files changed:
+  - `packages/generator/src/generators/ssl-cert.ts` (new)
+  - `packages/generator/src/generators/xrpld.ts`
+  - `packages/generator/src/types/xrpld-input.ts`
+  - `packages/generator/src/cli.ts`
+  - `packages/generator/src/index.ts`
+  - `packages/generator/tests/integration/expected/xrpld-{default,mainnet,testnet,devnet,advanced}.cfg`
+- **Learnings for future iterations:**
+  - openssl genrsa writes to stdout by default — capture with execFileSync and writeFileSync for permission control
+  - Dual-protocol detection: check for 'https' or 'wss' in protocol string after splitting on comma
+  - Custom-ports fixture has only single-protocol ports (http, ws) — no ssl injection needed there
+  - `sslCertRequired` flag lets the CLI decide when to generate certs vs skip
+---

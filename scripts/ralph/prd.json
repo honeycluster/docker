@@ -107,7 +107,7 @@
       ],
       "priority": 3,
       "dependsOn": ["US-005"],
-      "passes": false,
+      "passes": true,
       "notes": "Prefer Node.js built-in crypto to avoid new dependencies. If X.509 self-signing is not feasible with built-in crypto alone, shelling out to openssl is acceptable. Cert paths in the config should use relative paths (./certs/) so configs are portable."
     },
     {
