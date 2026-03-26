@@ -309,6 +309,29 @@ describe('protocol validation', () => {
     expect(hasWarning(makeConfig({ ssl_verify: '0' }), 'ssl_verify')).toBe(true);
   });
 
+  it('errors on invalid ssl_cert_email format', () => {
+    expect(hasError(makeConfig({ ssl_cert_email: 'not-an-email' }), 'ssl_cert_email')).toBe(true);
+    expect(hasError(makeConfig({ ssl_cert_email: '@missing.com' }), 'ssl_cert_email')).toBe(true);
+    expect(hasError(makeConfig({ ssl_cert_email: 'foo@' }), 'ssl_cert_email')).toBe(true);
+  });
+
+  it('accepts valid ssl_cert_email', () => {
+    expect(hasError(makeConfig({ ssl_cert_email: 'admin@example.com' }), 'ssl_cert_email')).toBe(false);
+    expect(hasError(makeConfig({ ssl_cert_email: 'user@sub.domain.org' }), 'ssl_cert_email')).toBe(false);
+  });
+
+  it('errors on invalid ssl_cert_validity_days', () => {
+    expect(hasError(makeConfig({ ssl_cert_validity_days: 0 }), 'ssl_cert_validity_days')).toBe(true);
+    expect(hasError(makeConfig({ ssl_cert_validity_days: -1 }), 'ssl_cert_validity_days')).toBe(true);
+    expect(hasError(makeConfig({ ssl_cert_validity_days: 1.5 }), 'ssl_cert_validity_days')).toBe(true);
+  });
+
+  it('accepts valid ssl_cert_validity_days', () => {
+    expect(hasError(makeConfig({ ssl_cert_validity_days: 1 }), 'ssl_cert_validity_days')).toBe(false);
+    expect(hasError(makeConfig({ ssl_cert_validity_days: 365 }), 'ssl_cert_validity_days')).toBe(false);
+    expect(hasError(makeConfig({ ssl_cert_validity_days: 3650 }), 'ssl_cert_validity_days')).toBe(false);
+  });
+
   it('errors on mutually exclusive validation_seed and validator_token', () => {
     const config = makeConfig({ validation_seed: 'seed', validator_token: 'token' });
     const result = validateXrpldConfig(config);

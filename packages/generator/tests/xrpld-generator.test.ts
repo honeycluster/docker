@@ -86,6 +86,75 @@ describe('generateXrpldConfig', () => {
     const result = generateXrpldConfig({ presets: { network: 'mainnet' } });
     expect(Array.isArray(result.warnings)).toBe(true);
   });
+
+  it('sets sslCertRequired=true for default config with dual-protocol ports', () => {
+    const result = generateXrpldConfig({ presets: { network: 'mainnet' } });
+    expect(result.sslCertRequired).toBe(true);
+  });
+
+  it('sets sslCertRequired=false when all ssl ports have user-provided certs', () => {
+    const result = generateXrpldConfig({
+      presets: { network: 'mainnet' },
+      server: {
+        ports: [
+          { name: 'port_peer', port: 51235, ip: '0.0.0.0', protocol: 'peer' },
+          {
+            name: 'port_rpc',
+            port: 5005,
+            ip: '0.0.0.0',
+            protocol: 'http,https',
+            ssl_key: '/my/key.pem',
+            ssl_cert: '/my/cert.pem',
+          },
+          {
+            name: 'port_wss',
+            port: 6005,
+            ip: '0.0.0.0',
+            protocol: 'ws,wss',
+            ssl_key: '/my/key.pem',
+            ssl_cert: '/my/cert.pem',
+          },
+        ],
+      },
+    });
+    expect(result.sslCertRequired).toBe(false);
+    expect(result.config).toContain('ssl_key = /my/key.pem');
+    expect(result.config).toContain('ssl_cert = /my/cert.pem');
+  });
+
+  it('sets sslCertRequired=false for single-protocol ports only', () => {
+    const result = generateXrpldConfig({
+      presets: { network: 'mainnet' },
+      server: {
+        ports: [
+          { name: 'port_peer', port: 51235, ip: '0.0.0.0', protocol: 'peer' },
+          { name: 'port_rpc', port: 5005, ip: '0.0.0.0', protocol: 'http' },
+        ],
+      },
+    });
+    expect(result.sslCertRequired).toBe(false);
+  });
+
+  it('injects ssl paths into generated config for dual-protocol ports', () => {
+    const result = generateXrpldConfig({ presets: { network: 'mainnet' } });
+    expect(result.config).toContain('ssl_key = ./certs/server.key');
+    expect(result.config).toContain('ssl_cert = ./certs/server.crt');
+  });
+
+  it('sets sslCertRequired=false for validator role (no dual-protocol ports)', () => {
+    const result = generateXrpldConfig({ presets: { role: 'validator' } });
+    expect(result.sslCertRequired).toBe(false);
+    expect(result.config).not.toContain('ssl_key');
+    expect(result.config).not.toContain('ssl_cert');
+  });
+
+  it('applies port_overrides in generated config', () => {
+    const result = generateXrpldConfig({
+      presets: { network: 'mainnet' },
+      port_overrides: { port_rpc: { port: 8080 } },
+    });
+    expect(result.config).toContain('[port_rpc]\nport = 8080');
+  });
 });
 
 describe('validateXrpldConfig', () => {

@@ -331,4 +331,52 @@ describe('resolveXrpldConfig', () => {
   });
 
   // #endregion -- resolveXrpldConfig — preset merge pipeline
+
+  // #region -- port_overrides ---------------------------
+
+  it('port_overrides changes a single port property without replacing array', () => {
+    const config = resolveXrpldConfig({
+      port_overrides: { port_rpc: { port: 8080 } },
+    });
+    // All 6 default ports remain
+    expect(config.server?.ports).toHaveLength(6);
+    // port_rpc has updated port
+    const rpc = config.server?.ports.find((p) => p.name === 'port_rpc');
+    expect(rpc?.port).toBe(8080);
+    // Other properties unchanged
+    expect(rpc?.ip).toBe('0.0.0.0');
+    expect(rpc?.protocol).toBe('http,https');
+  });
+
+  it('port_overrides can change multiple ports', () => {
+    const config = resolveXrpldConfig({
+      port_overrides: {
+        port_rpc: { port: 8080 },
+        port_wss: { port: 8443, ip: '10.0.0.1' },
+      },
+    });
+    const rpc = config.server?.ports.find((p) => p.name === 'port_rpc');
+    expect(rpc?.port).toBe(8080);
+    const wss = config.server?.ports.find((p) => p.name === 'port_wss');
+    expect(wss?.port).toBe(8443);
+    expect(wss?.ip).toBe('10.0.0.1');
+  });
+
+  it('port_overrides for non-existent port name is ignored', () => {
+    const config = resolveXrpldConfig({
+      port_overrides: { port_nonexistent: { port: 9999 } },
+    });
+    expect(config.server?.ports).toHaveLength(6);
+    expect(config.server?.ports.every((p) => p.port !== 9999)).toBe(true);
+  });
+
+  it('port_overrides does not add new properties to ports', () => {
+    const config = resolveXrpldConfig({
+      port_overrides: { port_peer: { admin: '127.0.0.1' } },
+    });
+    const peer = config.server?.ports.find((p) => p.name === 'port_peer');
+    expect(peer?.admin).toBe('127.0.0.1');
+  });
+
+  // #endregion -- port_overrides -------------------------
 });

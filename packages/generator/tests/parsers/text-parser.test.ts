@@ -200,6 +200,15 @@ describe('parseTextFile', () => {
         peer_signal_interval: 30,
       });
     });
+
+    it('parses SSL_CERT_EMAIL and SSL_CERT_VALIDITY_DAYS', () => {
+      const result = parseTextFile([
+        'SSL_CERT_EMAIL=admin@example.com',
+        'SSL_CERT_VALIDITY_DAYS=730',
+      ].join('\n'));
+      expect(result.ssl_cert_email).toBe('admin@example.com');
+      expect(result.ssl_cert_validity_days).toBe(730);
+    });
   });
 
   // #endregion -- Nested key-value keys ---------------
