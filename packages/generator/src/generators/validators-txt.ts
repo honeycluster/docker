@@ -20,7 +20,12 @@ export function generateValidatorsTxt(config: XrpldInput): string {
   // [validator_list_keys]
   const keys = config.vl?.validator_list_keys;
   if (keys && keys.length > 0) {
-    sections.push(`[validator_list_keys]\n${keys.join('\n')}`);
+    const sources = config.vl?.validator_list_key_sources;
+    const keyLines = keys.map((key, i) => {
+      const source = sources?.[i];
+      return source ? `#${source}\n${key}` : key;
+    });
+    sections.push(`[validator_list_keys]\n${keyLines.join('\n')}`);
   }
 
   // [validators]

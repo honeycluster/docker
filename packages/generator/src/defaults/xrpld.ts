@@ -10,10 +10,12 @@ type NetworkName = 'mainnet' | 'testnet' | 'devnet';
 const MAINNET_DEFAULTS: Partial<XrpldInput> = {
   network_id: '0',
   vl: {
-    validator_list_sites: ['https://vl.ripple.com'],
+    validator_list_sites: ['https://vl.ripple.com', 'https://unl.xrplf.org'],
     validator_list_keys: [
       'ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734',
+      'ED42AEC58B701EEBB77356FFFEC26F83C1F0407263530F068C7C73D392C7E06FD1',
     ],
+    validator_list_key_sources: ['vl.ripple.com', 'unl.xrplf.org'],
   },
 };
 

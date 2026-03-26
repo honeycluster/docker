@@ -9,9 +9,15 @@ describe('getNetworkDefaults', () => {
     expect(defaults.network_id).toBe('0');
     expect(defaults.vl?.validator_list_sites).toEqual([
       'https://vl.ripple.com',
+      'https://unl.xrplf.org',
     ]);
     expect(defaults.vl?.validator_list_keys).toEqual([
       'ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734',
+      'ED42AEC58B701EEBB77356FFFEC26F83C1F0407263530F068C7C73D392C7E06FD1',
+    ]);
+    expect(defaults.vl?.validator_list_key_sources).toEqual([
+      'vl.ripple.com',
+      'unl.xrplf.org',
     ]);
     expect(defaults.ips).toBeUndefined();
   });
@@ -112,6 +118,7 @@ describe('resolveXrpldConfig', () => {
     expect(config.network_id).toBe('0');
     expect(config.vl?.validator_list_sites).toEqual([
       'https://vl.ripple.com',
+      'https://unl.xrplf.org',
     ]);
   });
 

@@ -123,6 +123,7 @@ export interface XrpldPerfConfig {
 export interface XrpldVlConfig {
   readonly validator_list_sites?: ReadonlyArray<string>;
   readonly validator_list_keys?: ReadonlyArray<string>;
+  readonly validator_list_key_sources?: ReadonlyArray<string>;
 }
 
 // #endregion -- Validator List Config -----------------
