@@ -128,6 +128,10 @@ const KEY_MAP: Record<string, string> = {
   IMPORT_DB_ONLINE_DELETE: 'import_db.online_delete',
   IMPORT_DB_ADVISORY_DELETE: 'import_db.advisory_delete',
 
+  // SSL cert generation
+  SSL_CERT_EMAIL: 'ssl_cert_email',
+  SSL_CERT_VALIDITY_DAYS: 'ssl_cert_validity_days',
+
   // vl nested
   VL_VALIDATOR_LIST_SITES: 'vl.validator_list_sites',
   VL_VALIDATOR_LIST_KEYS: 'vl.validator_list_keys',
@@ -218,6 +222,7 @@ const NUMERIC_KEYS = new Set([
   'sqlite.account_page_size',
   'import_db.online_delete',
   'import_db.advisory_delete',
+  'ssl_cert_validity_days',
 ]);
 
 // #endregion -- Key Map -------------------------------

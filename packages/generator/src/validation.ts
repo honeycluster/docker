@@ -209,6 +209,20 @@ function validateProtocol(config: XrpldInput, errors: ValidationEntry[], warning
     warnings.push(entry('ssl', 'ssl_verify', '0', 'ssl_verify=0 disables SSL verification', 'warning'));
   }
 
+  // ssl_cert_email format
+  if (config.ssl_cert_email !== undefined) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(config.ssl_cert_email)) {
+      errors.push(entry('ssl', 'ssl_cert_email', config.ssl_cert_email, 'ssl_cert_email must be a valid email address', 'error'));
+    }
+  }
+
+  // ssl_cert_validity_days must be a positive integer
+  if (config.ssl_cert_validity_days !== undefined) {
+    if (!Number.isInteger(config.ssl_cert_validity_days) || config.ssl_cert_validity_days < 1) {
+      errors.push(entry('ssl', 'ssl_cert_validity_days', config.ssl_cert_validity_days, 'ssl_cert_validity_days must be a positive integer', 'error'));
+    }
+  }
+
   // validation_seed + validator_token mutually exclusive
   if (config.validation_seed && config.validator_token) {
     errors.push(entry('validators', 'validation_seed', config.validation_seed, 'validation_seed and validator_token are mutually exclusive', 'error'));

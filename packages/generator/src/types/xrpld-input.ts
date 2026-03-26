@@ -169,6 +169,8 @@ export interface XrpldInput {
   readonly ssl_verify?: string;
   readonly ssl_verify_file?: string;
   readonly ssl_verify_dir?: string;
+  readonly ssl_cert_email?: string;
+  readonly ssl_cert_validity_days?: number;
 
   // Time
   readonly sntp_servers?: ReadonlyArray<string>;
