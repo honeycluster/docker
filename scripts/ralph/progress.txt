@@ -16,6 +16,9 @@
 - Default presets: network=mainnet, role=stock, size=medium, verbosity=warning
 - The `examples` directory is gitignored at repo root — don't create example files there
 - Always test presets through `generateXrpldConfig` (not just unit tests) to catch validation violations
+- Pre-existing test failures: cli.test.ts, presets.test.ts (process.exit), and 2 tests on missing example .cfg (gitignored) — ignore these
+- Must run `pnpm install` (or `CI=true pnpm install`) before typecheck to resolve monorepo deps
+- `validator_list_key_sources` parallel array in VL config associates keys with domain comments in validators.txt
 
 ---
 
@@ -28,126 +31,62 @@ All user stories (US-001 through US-018) completed on 2026-03-19 to 2026-03-20.
 
 ---
 
+
 # Ralph Progress Log
-Started: Fri Mar 20 03:24:12 PM UTC 2026
+Started: Thu Mar 26 09:33:22 PM UTC 2026
 ---
 
-## 2026-03-20 - US-011
-- Added NodeRole, NodeSize, LogLevel types and XrpldPresets interface to xrpld-input.ts
-- Added `presets?: XrpldPresets` to XrpldInput, removed top-level `network` field
-- Updated resolveXrpldConfig to read from `input.presets?.network`
-- Updated CLI run() to map `--network` flag to `presets.network`
-- Updated env-parser KEY_MAP: NETWORK now maps to `presets.network`
-- Exported NodeRole, NodeSize, LogLevel, XrpldPresets from index.ts
-- Updated all tests and fixtures to use `{ presets: { network: '...' } }` instead of `{ network: '...' }`
-- Regenerated expected .cfg files
-- Files changed: src/types/xrpld-input.ts, src/defaults/xrpld.ts, src/cli.ts, src/parsers/env-parser.ts, src/index.ts, all test files, JSON fixtures
+## 2026-03-26 - Planning Phase
+- Implementation plan created at scripts/ralph/plan.md
+- 5 phases identified: VL removal → Ports & validator role → SSL certs → User overrides → Tests
+- 8 user stories analyzed with dependency ordering and risk assessment
+- Key architectural decisions:
+  - Remove 'vl' from KEY_VALUE_KEYS to stop cfg rendering (data stays for validators-txt)
+  - Add validator_list_key_sources parallel array for comment generation
+  - Expand DEFAULT_PORTS from 4 to 6 with dual-protocol (http,https / ws,wss)
+  - Add server_comment field to XrpldInput for validator warning
+  - Use openssl via execFileSync for cert generation (Node.js crypto can't create X.509)
+  - Update protocol validation to allow same-family dual protocols
 - **Learnings for future iterations:**
-  - `npx tsc --noEmit` must be run from repo root (not package dir) due to workspace base config resolution
-  - 2 pre-existing test failures: missing `examples/rippled/cfg/xrpld-example.cfg` file — not related to preset work
-  - The cfg-renderer is safe — it only renders keys listed in its explicit SINGLE_VALUE_KEYS/LIST_KEYS/KEY_VALUE_KEYS arrays, so `presets` won't leak into rendered config
+  - deepMerge replaces arrays entirely — role overrides with ports must specify full port set
+  - Node.js crypto.X509Certificate is read-only — cannot create certs, must use openssl
+  - examples/ directory is gitignored — skip example file creation ACs
+  - VL validation in validateProtocol() is cfg-specific — remove when removing VL from cfg
 ---
 
-## 2026-03-20 - US-012
-- Created `packages/generator/src/defaults/sizes.ts` with `getSizeDefaults()` and `VALID_SIZES`
-- 5 size presets (tiny, small, medium, large, huge) with node_size, node_db, ledger_history, peers_max, and optional workers/io_workers
-- All sizes use NuDB at /var/lib/xrpld/db/nudb with advisory_delete=0
-- Created `packages/generator/tests/defaults/sizes.test.ts` with 9 tests covering all sizes
-- Files changed: src/defaults/sizes.ts, tests/defaults/sizes.test.ts
+## 2026-03-26 - US-001: Remove VL stanzas from cfg output
+- Removed `'vl'` from `KEY_VALUE_KEYS` array in `cfg-renderer.ts` — stops [vl] section from appearing in .cfg output
+- Removed VL HTTPS validation warning from `validateProtocol()` in `validation.ts`
+- VL data remains in network defaults (consumed by validators-txt.ts, not cfg renderer)
+- Updated tests: cfg-renderer.test.ts, validation.test.ts, integration.test.ts
+- Updated 6 .cfg fixture files to remove [vl] sections
+- Files changed:
+  - `packages/generator/src/renderers/cfg-renderer.ts`
+  - `packages/generator/src/validation.ts`
+  - `packages/generator/tests/cfg-renderer.test.ts`
+  - `packages/generator/tests/validation.test.ts`
+  - `packages/generator/tests/integration/integration.test.ts`
+  - `packages/generator/tests/integration/expected/xrpld-{mainnet,testnet,devnet,default,custom-ports,advanced}.cfg`
 - **Learnings for future iterations:**
-  - Follow the existing pattern in xrpld.ts: `*_MAP` record + `get*Defaults()` function + `VALID_*` set
-  - Size presets set: node_size, node_db, ledger_history, peers_max, and optionally workers/io_workers
-  - Large and huge are the only sizes that set workers/io_workers
+  - Pre-existing test failures: cli.test.ts and presets.test.ts fail due to process.exit side effect; 2 tests fail on missing example .cfg file (gitignored). These are unrelated to this PRD.
+  - Must run `pnpm install` before typecheck (monorepo deps needed for base tsconfig)
 ---
 
-## 2026-03-20 - US-013
-- Created `packages/generator/src/defaults/roles.ts` with `getRoleDefaults()` and `VALID_ROLES`
-- 7 role presets (stock, validator, ephemeral, sentry, clio, feature, hub)
-- stock/ephemeral return empty objects; validator has 3 ports (no gRPC) + peer_private=1; clio has 4 ports with gRPC on 0.0.0.0 + ledger_history=full; sentry/hub set peer_private=0; feature sets amendment_majority_time
-- Created `packages/generator/tests/defaults/roles.test.ts` with 11 tests covering all roles
-- Files changed: src/defaults/roles.ts, tests/defaults/roles.test.ts
+## 2026-03-26 - US-002: Update validators.txt with current VL sources
+- Added `validator_list_key_sources` optional field to `XrpldVlConfig` type for comment generation
+- Updated MAINNET_DEFAULTS: added `https://unl.xrplf.org` to sites, added XRPLF key, added key sources
+- Updated `generateValidatorsTxt` to render `#domain` comment lines before each key when sources are provided
+- Updated mainnet expected validators.txt fixture with both VL sources and commented keys
+- Updated defaults.test.ts to expect both mainnet VL sites, keys, and key sources
+- Testnet and devnet VL sources unchanged
+- Files changed:
+  - `packages/generator/src/types/xrpld-input.ts`
+  - `packages/generator/src/defaults/xrpld.ts`
+  - `packages/generator/src/generators/validators-txt.ts`
+  - `packages/generator/tests/defaults.test.ts`
+  - `packages/generator/tests/integration/expected/xrpld-mainnet-validators.txt`
 - **Learnings for future iterations:**
-  - Role presets must NOT set node_size, node_db, workers, io_workers — that is size's job
-  - Validator role removes gRPC port entirely (3 ports instead of 4)
-  - Clio role sets gRPC ip and secure_gateway both to 0.0.0.0
----
-
-## 2026-03-20 - US-014
-- Created `packages/generator/src/defaults/verbosity.ts` with `getVerbosityDefaults()` and `VALID_LOG_LEVELS`
-- 7 log levels (silent, fatal, error, warning, info, debug, trace) each setting rpc_startup log_level command
-- silent and fatal both map to severity 'fatal'
-- Created `packages/generator/tests/defaults/verbosity.test.ts` with 11 tests covering all levels
-- Files changed: src/defaults/verbosity.ts, tests/defaults/verbosity.test.ts
-- **Learnings for future iterations:**
-  - Verbosity presets only set rpc_startup — no other fields
-  - silent and fatal produce identical output (both map to 'fatal' severity)
-  - Follow same pattern: VALID_* set + *_MAP record + get*Defaults() function
----
-
-## 2026-03-20 - US-015
-- Updated `resolveXrpldConfig` to apply full merge pipeline: common < size < role < verbosity < network < user
-- Imported getSizeDefaults, getRoleDefaults, getVerbosityDefaults into defaults/xrpld.ts
-- Removed node_db, ledger_history, rpc_startup from COMMON_DEFAULTS (now driven by size/verbosity presets)
-- Default presets: network=mainnet, role=stock, size=medium, verbosity=warning
-- Resolved config includes presets object with all 4 resolved values
-- Fixed medium size preset: ledger_history changed from '1024' to '512' to satisfy validation (ledger_history <= online_delete)
-- Regenerated all expected .cfg fixture files (now include node_size and peers_max sections)
-- Updated defaults.test.ts with comprehensive merge pipeline tests (size, role, verbosity, combinations, user overrides)
-- Updated cfg-renderer.test.ts and integration.test.ts assertions for new default values
-- Files changed: src/defaults/xrpld.ts, src/defaults/sizes.ts, tests/defaults.test.ts, tests/defaults/sizes.test.ts, tests/cfg-renderer.test.ts, tests/integration/integration.test.ts, 6 expected .cfg files
-- **Learnings for future iterations:**
-  - Validation enforces ledger_history <= online_delete — size presets must respect this constraint
-  - When changing defaults, always regenerate expected .cfg fixture files using tsx
-  - The cfg renderer will output any field in SINGLE_VALUE_KEYS that has a value, so new preset defaults (node_size, peers_max) automatically appear in cfg output
-  - 2 pre-existing test failures remain: missing examples/rippled/cfg/xrpld-example.cfg file (not related to preset work)
----
-
-## 2026-03-20 - US-016
-- Added --role, --size, --verbose flags to CLI parseArgs with validation against VALID_ROLES, VALID_SIZES, VALID_LOG_LEVELS
-- Added role, size, verbosity fields to CliArgs interface
-- Updated run() to build presets object from all CLI args (network, role, size, verbosity) merged over input source presets
-- Updated USAGE string with new flags, defaults, and preset combination examples
-- Added PRESET_NETWORK, PRESET_ROLE, PRESET_SIZE, PRESET_VERBOSITY to env-parser KEY_MAP
-- Kept NETWORK as backwards-compat alias for PRESET_NETWORK
-- Added 10 new CLI tests (3 per flag: parse/missing/invalid + combined flags test)
-- Added 7 new text-parser tests for PRESET_* keys
-- Files changed: src/cli.ts, src/parsers/env-parser.ts, tests/cli.test.ts, tests/parsers/text-parser.test.ts
-- **Learnings for future iterations:**
-  - CLI flag is --verbose but CliArgs field is verbosity (per PRD notes)
-  - CLI presets merge over input source presets — CLI flags win
-  - PRESET_NETWORK and NETWORK both map to presets.network in the env-parser
----
-
-## 2026-03-20 - US-017
-- Added `validatePresets()` function to validation.ts
-- Validates preset values: network, role, size, verbosity against VALID_* sets
-- Role-specific warnings: validator without token, sentry without ips_fixed, clio with non-0.0.0.0 gRPC
-- Suppresses generic "no validator_token" warning when role-specific validator warning fires
-- Added 13 new tests covering all acceptance criteria
-- Files changed: src/validation.ts, tests/validation.test.ts
-- **Learnings for future iterations:**
-  - Invalid preset values must be tested by constructing config with spread (not makeConfig), since resolveXrpldConfig crashes on invalid presets
-  - Warning deduplication: filter warnings array after all validators run rather than adding conditionals inside each validator
-  - The 2 pre-existing test failures (missing xrpld-example.cfg) remain unrelated to preset work
----
-
-## 2026-03-20 - US-018
-- Exported getSizeDefaults, getRoleDefaults, getVerbosityDefaults, VALID_SIZES, VALID_ROLES, VALID_LOG_LEVELS from index.ts
-- Types NodeRole, NodeSize, LogLevel, XrpldPresets were already exported from index.ts (done in US-011)
-- Created packages/generator/tests/integration/presets.test.ts with 28 integration tests:
-  - Each role x mainnet produces valid cfg (7 roles + 2 specific port assertions)
-  - Each size produces correct node_size + online_delete (5 sizes)
-  - Each verbosity level produces correct log_level in rpc_startup (7 levels)
-  - Combined presets (testnet + validator + large + info)
-  - Backwards compatibility: {} produces same output as stock + medium + warning + mainnet
-  - Presets object does NOT appear in rendered cfg output
-  - Text file with PRESET_* keys produces correct cfg
-  - CLI run() with preset args produces correct cfg
-- Fixed size presets: small ledger_history 512→256, large ledger_history 4096→2048 (validation constraint: ledger_history <= online_delete)
-- Examples directory is gitignored — example files cannot be committed
-- Files changed: src/index.ts, src/defaults/sizes.ts, tests/defaults/sizes.test.ts, tests/integration/presets.test.ts
-- **Learnings for future iterations:**
-  - The `examples` directory is gitignored at root level — cannot commit example files there
-  - Size presets from US-012 had ledger_history > online_delete for small and large — always validate presets through generateXrpldConfig, not just unit tests
-  - @vitest/coverage-v8 4.x is incompatible with vitest 3.x — coverage cannot be verified locally without matching versions
+  - `validator_list_key_sources` is a parallel array to `validator_list_keys` — indices must match
+  - Comment format in validators.txt is `#domain` (no space after #)
+  - Keys without a corresponding source entry render without a comment (backwards compatible)
 ---
