@@ -114,3 +114,21 @@ Started: Thu Mar 26 09:33:22 PM UTC 2026
   - deepMerge replaces arrays entirely — roles that override ports must specify the full port array
   - Validator role port_rpc_admin_local is now at port 5006 (not 5005) to avoid conflict with public port_rpc
 ---
+
+## 2026-03-26 - US-004: Restrict validator role to safe ports with warning
+- Added `server_comment` field to `XrpldInput` type for optional comments above [server] section
+- Updated `renderXrpldCfg` to emit server_comment before [server] when provided
+- Added warning comment to validator role defaults: warns about exposing RPC/WS ports publicly
+- Validator role confirmed restricted to 3 safe ports: port_peer, port_rpc_admin_local, port_ws_admin_local
+- Updated tests: roles.test.ts (server_comment check), cfg-renderer.test.ts (comment rendering), presets.test.ts (validator warning)
+- Files changed:
+  - `packages/generator/src/types/xrpld-input.ts`
+  - `packages/generator/src/renderers/cfg-renderer.ts`
+  - `packages/generator/src/defaults/roles.ts`
+  - `packages/generator/tests/defaults/roles.test.ts`
+  - `packages/generator/tests/cfg-renderer.test.ts`
+  - `packages/generator/tests/integration/presets.test.ts`
+- **Learnings for future iterations:**
+  - `server_comment` is a simple string field on XrpldInput — renderXrpldCfg prepends it before [server] section
+  - The comment is role-specific (only validator sets it) — other roles get no comment by default
+---

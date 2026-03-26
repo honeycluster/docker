@@ -69,7 +69,7 @@
       ],
       "priority": 2,
       "dependsOn": ["US-003"],
-      "passes": false,
+      "passes": true,
       "notes": "The validator role currently restricts to peer + admin RPC/WS on localhost only. This story ensures it stays restricted with the new 6-port default set and adds an explicit warning comment in the generated config."
     },
     {
