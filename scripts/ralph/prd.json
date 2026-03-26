@@ -87,7 +87,7 @@
       ],
       "priority": 3,
       "dependsOn": ["US-003"],
-      "passes": false,
+      "passes": true,
       "notes": "These fields are consumed by the cert generator in US-006. This story only adds the schema, parsing, and validation — not the actual cert generation."
     },
     {

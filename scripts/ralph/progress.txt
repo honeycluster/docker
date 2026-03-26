@@ -132,3 +132,17 @@ Started: Thu Mar 26 09:33:22 PM UTC 2026
   - `server_comment` is a simple string field on XrpldInput — renderXrpldCfg prepends it before [server] section
   - The comment is role-specific (only validator sets it) — other roles get no comment by default
 ---
+
+## 2026-03-26 - US-005: Add SSL cert input fields and parsing
+- Added `ssl_cert_email` (string) and `ssl_cert_validity_days` (number) fields to `XrpldInput` type
+- Added `SSL_CERT_EMAIL` and `SSL_CERT_VALIDITY_DAYS` to env parser KEY_MAP, with `ssl_cert_validity_days` in NUMERIC_KEYS
+- JSON parser works automatically (pass-through of XrpldInput fields)
+- Added validation: email format regex check, positive integer check for validity days
+- Files changed:
+  - `packages/generator/src/types/xrpld-input.ts`
+  - `packages/generator/src/parsers/env-parser.ts`
+  - `packages/generator/src/validation.ts`
+- **Learnings for future iterations:**
+  - JSON parser doesn't need changes for new flat fields — it casts the parsed object directly to Partial<XrpldInput>
+  - Env parser needs both KEY_MAP entry and NUMERIC_KEYS entry for numeric fields
+---
