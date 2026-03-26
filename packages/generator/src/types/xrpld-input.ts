@@ -154,6 +154,7 @@ export interface XrpldInput {
   readonly server?: {
     readonly ports: ReadonlyArray<XrpldPortConfig>;
   };
+  readonly server_comment?: string;
 
   // Database
   readonly node_db?: XrpldNodeDbConfig;

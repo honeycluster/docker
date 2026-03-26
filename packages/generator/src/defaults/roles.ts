@@ -16,6 +16,8 @@ const ROLE_MAP: Record<NodeRole, Partial<XrpldInput>> = {
   stock: {},
   validator: {
     peer_private: '1',
+    server_comment:
+      '# WARNING: Exposing RPC/WS ports publicly on a validator can compromise network security. Only admin-local ports are enabled by default.',
     server: {
       ports: [
         { name: 'port_peer', port: 51235, ip: '0.0.0.0', protocol: 'peer' },

@@ -153,7 +153,11 @@ export function renderXrpldCfg(config: XrpldInput): string {
 
   // Server + ports
   if (config.server?.ports && config.server.ports.length > 0) {
-    sections.push(renderServerSection(config.server.ports));
+    if (config.server_comment) {
+      sections.push(`${config.server_comment}\n${renderServerSection(config.server.ports)}`);
+    } else {
+      sections.push(renderServerSection(config.server.ports));
+    }
     for (const port of config.server.ports) {
       sections.push(renderPortSection(port));
     }

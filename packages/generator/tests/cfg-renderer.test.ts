@@ -308,6 +308,28 @@ describe('renderXrpldCfg', () => {
     expect(cfg).toContain('[reduce_relay]');
   });
 
+  it('renders server_comment above server section when provided', () => {
+    const config: XrpldInput = {
+      server_comment: '# WARNING: test comment',
+      server: {
+        ports: [
+          { name: 'port_peer', port: 51235, ip: '0.0.0.0', protocol: 'peer' },
+        ],
+      },
+    };
+    const cfg = renderXrpldCfg(config);
+    expect(cfg).toContain('# WARNING: test comment');
+    const commentIndex = cfg.indexOf('# WARNING: test comment');
+    const serverIndex = cfg.indexOf('[server]');
+    expect(commentIndex).toBeLessThan(serverIndex);
+  });
+
+  it('does not render server_comment when not provided', () => {
+    const config = resolveXrpldConfig({ presets: { network: 'mainnet' } });
+    const cfg = renderXrpldCfg(config);
+    expect(cfg).not.toContain('# WARNING');
+  });
+
   it('sections are separated by blank lines', () => {
     const config = resolveXrpldConfig({ presets: { network: 'mainnet' } });
     const cfg = renderXrpldCfg(config);

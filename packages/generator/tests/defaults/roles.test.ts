@@ -35,6 +35,14 @@ describe('getRoleDefaults', () => {
     expect(portNames).toContain('port_rpc_admin_local');
     expect(portNames).toContain('port_ws_admin_local');
     expect(portNames).not.toContain('port_grpc');
+    expect(portNames).not.toContain('port_rpc');
+    expect(portNames).not.toContain('port_wss');
+  });
+
+  it('returns validator defaults with server_comment warning', () => {
+    const result = getRoleDefaults('validator');
+    expect(result.server_comment).toContain('WARNING');
+    expect(result.server_comment).toContain('admin-local');
   });
 
   it('returns empty object for ephemeral (resource tuning handled by size)', () => {

@@ -27,12 +27,15 @@ describe('each role x mainnet produces valid cfg', () => {
     });
   }
 
-  it('validator role has 3 ports (no gRPC)', () => {
+  it('validator role has 3 ports (no gRPC) and warning comment', () => {
     const result = generateXrpldConfig({ presets: { network: 'mainnet', role: 'validator' } });
     expect(result.config).toContain('port_peer');
     expect(result.config).toContain('port_rpc_admin_local');
     expect(result.config).toContain('port_ws_admin_local');
     expect(result.config).not.toContain('port_grpc');
+    expect(result.config).not.toContain('[port_rpc]');
+    expect(result.config).not.toContain('[port_wss]');
+    expect(result.config).toContain('# WARNING: Exposing RPC/WS ports publicly on a validator can compromise network security.');
   });
 
   it('clio role has gRPC on 0.0.0.0', () => {
