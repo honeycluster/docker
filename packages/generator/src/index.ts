@@ -2,6 +2,8 @@
 
 export { generateXrpldConfig } from './generators/xrpld.js';
 export { generateValidatorsTxt } from './generators/validators-txt.js';
+export { generateSslCerts, needsSslCerts, injectSslPaths } from './generators/ssl-cert.js';
+export type { SslCertOptions, SslCertResult } from './generators/ssl-cert.js';
 export { parseCfgFile } from './parsers/cfg-parser.js';
 export { parseTextFile, TextParseException } from './parsers/env-parser.js';
 export { parseJsonFile, JsonParseException } from './parsers/json-parser.js';

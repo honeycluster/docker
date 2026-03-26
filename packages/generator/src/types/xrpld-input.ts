@@ -264,6 +264,7 @@ export interface XrpldGeneratorResult {
   readonly config: string;
   readonly validatorsTxt: string;
   readonly warnings: ReadonlyArray<string>;
+  readonly sslCertRequired: boolean;
 }
 
 export interface ValidationEntry {

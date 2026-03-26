@@ -11,6 +11,7 @@ import {
   resolveXrpldConfig,
   validateXrpldConfig,
 } from './index.js';
+import { generateSslCerts } from './generators/ssl-cert.js';
 import { VALID_ROLES } from './defaults/roles.js';
 import { VALID_SIZES } from './defaults/sizes.js';
 import { VALID_LOG_LEVELS } from './defaults/verbosity.js';
@@ -253,6 +254,15 @@ export function run(args: CliArgs): CliResult {
       writeFileSync(valPath, result.validatorsTxt, 'utf-8');
       stderr.push(`Config written to ${cfgPath}`);
       stderr.push(`Validators written to ${valPath}`);
+
+      if (result.sslCertRequired) {
+        const certResult = generateSslCerts(args.outputPath, {
+          email: input.ssl_cert_email,
+          validityDays: input.ssl_cert_validity_days,
+        });
+        stderr.push(`SSL key written to ${certResult.keyPath}`);
+        stderr.push(`SSL cert written to ${certResult.certPath}`);
+      }
     } else {
       stdout = `# ── xrpld.cfg ────────────────────────────────────────\n\n${result.config}\n# ── validators.txt ───────────────────────────────────\n\n${result.validatorsTxt}`;
     }
