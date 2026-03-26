@@ -122,7 +122,7 @@
       ],
       "priority": 4,
       "dependsOn": ["US-003"],
-      "passes": false,
+      "passes": true,
       "notes": "The existing port override mechanism should work — this story ensures it is tested and examples are updated for the new 6-port default set."
     },
     {

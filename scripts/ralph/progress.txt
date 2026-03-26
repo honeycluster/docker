@@ -170,3 +170,17 @@ Started: Thu Mar 26 09:33:22 PM UTC 2026
   - Custom-ports fixture has only single-protocol ports (http, ws) — no ssl injection needed there
   - `sslCertRequired` flag lets the CLI decide when to generate certs vs skip
 ---
+
+## 2026-03-26 - US-007: Update user-override config schema for new ports
+- Added `port_overrides` field to `XrpldInput` type: `Record<string, Partial<Omit<XrpldPortConfig, 'name'>>>`
+- Added `applyPortOverrides()` in `resolveXrpldConfig` — merges partial port configs by name into resolved ports
+- Partial overrides now work: e.g., `port_overrides: { port_rpc: { port: 8080 } }` changes only the port number
+- JSON parser supports port_overrides automatically (pass-through)
+- Examples directory is gitignored — skipped example file updates per codebase patterns
+- Files changed:
+  - `packages/generator/src/types/xrpld-input.ts`
+  - `packages/generator/src/defaults/xrpld.ts`
+- **Learnings for future iterations:**
+  - port_overrides uses port name as key, not index — more intuitive for JSON input
+  - deepMerge replaces arrays entirely, so port_overrides is a separate field processed after merge
+---
