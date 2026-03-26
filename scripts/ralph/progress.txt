@@ -184,3 +184,18 @@ Started: Thu Mar 26 09:33:22 PM UTC 2026
   - port_overrides uses port name as key, not index — more intuitive for JSON input
   - deepMerge replaces arrays entirely, so port_overrides is a separate field processed after merge
 ---
+
+## 2026-03-26 - US-008: Update all tests
+- Created `tests/generators/ssl-cert.test.ts` — 13 tests for needsSslCerts() and injectSslPaths()
+- Added SSL cert validation tests in `tests/validation.test.ts` — email format, validity days range
+- Added port_overrides tests in `tests/defaults.test.ts` — partial overrides, multiple ports, non-existent port name
+- Added env parser test for SSL_CERT_EMAIL and SSL_CERT_VALIDITY_DAYS in `tests/parsers/text-parser.test.ts`
+- Added generator result tests in `tests/xrpld-generator.test.ts` — sslCertRequired flag, user-provided certs skip, validator role, port_overrides
+- Total: 351 tests passing (up from 324), 2 pre-existing failures (gitignored example file)
+- Files changed:
+  - `packages/generator/tests/generators/ssl-cert.test.ts` (new)
+  - `packages/generator/tests/validation.test.ts`
+  - `packages/generator/tests/defaults.test.ts`
+  - `packages/generator/tests/parsers/text-parser.test.ts`
+  - `packages/generator/tests/xrpld-generator.test.ts`
+---
