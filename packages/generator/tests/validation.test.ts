@@ -414,15 +414,6 @@ describe('protocol validation', () => {
     expect(hasError(makeConfig({ path_search: 7 }), 'path_search')).toBe(false);
   });
 
-  it('warns on non-https validator_list_sites', () => {
-    const config = makeConfig({
-      vl: {
-        validator_list_sites: ['http://insecure.example.com'],
-        validator_list_keys: ['ABC123'],
-      },
-    });
-    expect(hasWarning(config, 'validator_list_sites')).toBe(true);
-  });
 });
 
 // #endregion -- Protocol Validation -------------------

@@ -288,14 +288,6 @@ function validateProtocol(config: XrpldInput, errors: ValidationEntry[], warning
     }
   }
 
-  // validator_list_sites not https warning
-  if (config.vl?.validator_list_sites) {
-    for (const site of config.vl.validator_list_sites) {
-      if (!site.startsWith('https://')) {
-        warnings.push(entry('vl', 'validator_list_sites', site, `validator_list_site "${site}" does not use https`, 'warning'));
-      }
-    }
-  }
 }
 
 // #endregion -- Protocol Validation -------------------

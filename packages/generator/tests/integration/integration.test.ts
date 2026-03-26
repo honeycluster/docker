@@ -46,10 +46,12 @@ describe('network config generation', () => {
     expect(defaultResult.config).toBe(readExpected('xrpld-default.cfg'));
   });
 
-  it('mainnet cfg contains correct network_id and VL sections', () => {
+  it('mainnet cfg contains correct network_id and no VL sections', () => {
     const result = generateXrpldConfig({ presets: { network: 'mainnet' } });
     expect(result.config).toContain('[network_id]\n0');
     expect(result.config).not.toContain('[ips]');
+    expect(result.config).not.toContain('[vl]');
+    expect(result.config).not.toContain('validator_list_sites');
   });
 
   it('testnet cfg contains correct network_id and ips', () => {

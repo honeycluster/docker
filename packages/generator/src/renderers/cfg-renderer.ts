@@ -137,7 +137,6 @@ const KEY_VALUE_KEYS: ReadonlyArray<keyof XrpldInput> = [
   'transaction_queue',
   'voting',
   'crawl',
-  'vl',
   'reduce_relay',
   'insight',
   'perf',

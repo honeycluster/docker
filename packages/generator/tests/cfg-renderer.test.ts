@@ -237,9 +237,9 @@ describe('renderXrpldCfg', () => {
     expect(cfg).toContain('[sntp_servers]\npool.ntp.org');
     expect(cfg).toContain('[rpc_startup]');
 
-    // VL config
-    expect(cfg).toContain('[vl]');
-    expect(cfg).toContain('validator_list_sites=https://vl.ripple.com');
+    // VL config should NOT appear in .cfg output (lives in validators.txt only)
+    expect(cfg).not.toContain('[vl]');
+    expect(cfg).not.toContain('validator_list_sites');
   });
 
   it('renders testnet config with testnet-specific values', () => {
@@ -248,7 +248,7 @@ describe('renderXrpldCfg', () => {
 
     expect(cfg).toContain('[network_id]\n1');
     expect(cfg).toContain('[ips]\ns.altnet.rippletest.net 51235');
-    expect(cfg).toContain('validator_list_sites=https://vl.altnet.rippletest.net');
+    expect(cfg).not.toContain('[vl]');
   });
 
   it('renders devnet config with devnet-specific values', () => {
@@ -257,7 +257,7 @@ describe('renderXrpldCfg', () => {
 
     expect(cfg).toContain('[network_id]\n2');
     expect(cfg).toContain('[ips]\ns.devnet.rippletest.net 51235');
-    expect(cfg).toContain('validator_list_sites=https://vl.devnet.rippletest.net');
+    expect(cfg).not.toContain('[vl]');
   });
 
   it('omits empty sections', () => {
