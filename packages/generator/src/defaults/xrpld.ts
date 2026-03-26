@@ -65,11 +65,23 @@ export function getNetworkDefaults(
 const DEFAULT_PORTS: ReadonlyArray<XrpldPortConfig> = [
   { name: 'port_peer', port: 51235, ip: '0.0.0.0', protocol: 'peer' },
   {
-    name: 'port_rpc_admin_local',
+    name: 'port_rpc',
     port: 5005,
+    ip: '0.0.0.0',
+    protocol: 'http,https',
+  },
+  {
+    name: 'port_rpc_admin_local',
+    port: 5006,
     ip: '127.0.0.1',
     admin: '127.0.0.1',
     protocol: 'http',
+  },
+  {
+    name: 'port_wss',
+    port: 6005,
+    ip: '0.0.0.0',
+    protocol: 'ws,wss',
   },
   {
     name: 'port_ws_admin_local',
@@ -81,7 +93,7 @@ const DEFAULT_PORTS: ReadonlyArray<XrpldPortConfig> = [
   {
     name: 'port_grpc',
     port: 50051,
-    ip: '127.0.0.1',
+    ip: '0.0.0.0',
     protocol: 'grpc',
     secure_gateway: '127.0.0.1',
   },

@@ -21,7 +21,7 @@ const ROLE_MAP: Record<NodeRole, Partial<XrpldInput>> = {
         { name: 'port_peer', port: 51235, ip: '0.0.0.0', protocol: 'peer' },
         {
           name: 'port_rpc_admin_local',
-          port: 5005,
+          port: 5006,
           ip: '127.0.0.1',
           admin: '127.0.0.1',
           protocol: 'http',
@@ -46,11 +46,23 @@ const ROLE_MAP: Record<NodeRole, Partial<XrpldInput>> = {
       ports: [
         { name: 'port_peer', port: 51235, ip: '0.0.0.0', protocol: 'peer' },
         {
-          name: 'port_rpc_admin_local',
+          name: 'port_rpc',
           port: 5005,
+          ip: '0.0.0.0',
+          protocol: 'http,https',
+        },
+        {
+          name: 'port_rpc_admin_local',
+          port: 5006,
           ip: '127.0.0.1',
           admin: '127.0.0.1',
           protocol: 'http',
+        },
+        {
+          name: 'port_wss',
+          port: 6005,
+          ip: '0.0.0.0',
+          protocol: 'ws,wss',
         },
         {
           name: 'port_ws_admin_local',

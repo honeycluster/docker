@@ -84,27 +84,43 @@ describe('resolveXrpldConfig', () => {
   it('includes default ports from common defaults', () => {
     const config = resolveXrpldConfig();
     const ports = config.server?.ports;
-    expect(ports).toHaveLength(4);
+    expect(ports).toHaveLength(6);
     expect(ports?.[0]).toMatchObject({
       name: 'port_peer',
       port: 51235,
+      ip: '0.0.0.0',
       protocol: 'peer',
     });
     expect(ports?.[1]).toMatchObject({
-      name: 'port_rpc_admin_local',
+      name: 'port_rpc',
       port: 5005,
+      ip: '0.0.0.0',
+      protocol: 'http,https',
+    });
+    expect(ports?.[2]).toMatchObject({
+      name: 'port_rpc_admin_local',
+      port: 5006,
+      ip: '127.0.0.1',
       admin: '127.0.0.1',
       protocol: 'http',
     });
-    expect(ports?.[2]).toMatchObject({
+    expect(ports?.[3]).toMatchObject({
+      name: 'port_wss',
+      port: 6005,
+      ip: '0.0.0.0',
+      protocol: 'ws,wss',
+    });
+    expect(ports?.[4]).toMatchObject({
       name: 'port_ws_admin_local',
       port: 6006,
+      ip: '127.0.0.1',
       admin: '127.0.0.1',
       protocol: 'ws',
     });
-    expect(ports?.[3]).toMatchObject({
+    expect(ports?.[5]).toMatchObject({
       name: 'port_grpc',
       port: 50051,
+      ip: '0.0.0.0',
       secure_gateway: '127.0.0.1',
     });
   });
@@ -269,7 +285,7 @@ describe('resolveXrpldConfig', () => {
       'ED264807102805220DA0F312E71FC2C69E1552C9C5790F6C25E3729DEB573D5860',
     ]);
     // From clio role
-    expect(config.server?.ports).toHaveLength(4);
+    expect(config.server?.ports).toHaveLength(6);
     const grpcPort = config.server?.ports.find(p => p.protocol === 'grpc');
     expect(grpcPort?.ip).toBe('0.0.0.0');
     expect(grpcPort?.secure_gateway).toBe('0.0.0.0');

@@ -286,7 +286,7 @@ describe('round-trip cfg parsing', () => {
     expect(parsed.node_db?.online_delete).toBe(512);
 
     // Ports
-    expect(parsed.server?.ports).toHaveLength(4);
+    expect(parsed.server?.ports).toHaveLength(6);
     const peerPort = parsed.server?.ports.find((p) => p.name === 'port_peer');
     expect(peerPort?.port).toBe(51235);
     expect(peerPort?.protocol).toBe('peer');

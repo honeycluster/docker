@@ -47,10 +47,10 @@ describe('getRoleDefaults', () => {
     expect(result.peer_private).toBe('0');
   });
 
-  it('returns clio defaults with ledger_history=full and 4 ports with gRPC on 0.0.0.0', () => {
+  it('returns clio defaults with ledger_history=full and 6 ports with gRPC on 0.0.0.0', () => {
     const result = getRoleDefaults('clio');
     expect(result.ledger_history).toBe('full');
-    expect(result.server?.ports).toHaveLength(4);
+    expect(result.server?.ports).toHaveLength(6);
     const grpcPort = result.server?.ports.find((p) => p.name === 'port_grpc');
     expect(grpcPort).toBeDefined();
     expect(grpcPort?.ip).toBe('0.0.0.0');
