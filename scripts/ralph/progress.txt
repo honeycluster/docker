@@ -90,3 +90,27 @@ Started: Thu Mar 26 09:33:22 PM UTC 2026
   - Comment format in validators.txt is `#domain` (no space after #)
   - Keys without a corresponding source entry render without a comment (backwards compatible)
 ---
+
+## 2026-03-26 - US-003: Update default port configuration
+- Updated DEFAULT_PORTS from 4 to 6 ports with dual-protocol support:
+  - port_peer (51235, 0.0.0.0, peer)
+  - port_rpc (5005, 0.0.0.0, http,https) — NEW public RPC
+  - port_rpc_admin_local (5006, 127.0.0.1, http) — port number changed from 5005 to 5006
+  - port_wss (6005, 0.0.0.0, ws,wss) — NEW public WS
+  - port_ws_admin_local (6006, 127.0.0.1, ws) — unchanged
+  - port_grpc (50051, 0.0.0.0, grpc) — ip changed from 127.0.0.1 to 0.0.0.0
+- Updated role overrides: validator (3 safe ports with updated port_rpc_admin_local at 5006), clio (6 ports with gRPC on 0.0.0.0)
+- Updated all 5 expected .cfg fixture files with new 6-port layout
+- Updated defaults.test.ts, roles.test.ts, integration.test.ts
+- Files changed:
+  - `packages/generator/src/defaults/xrpld.ts`
+  - `packages/generator/src/defaults/roles.ts`
+  - `packages/generator/tests/defaults.test.ts`
+  - `packages/generator/tests/defaults/roles.test.ts`
+  - `packages/generator/tests/integration/integration.test.ts`
+  - `packages/generator/tests/integration/expected/xrpld-{default,mainnet,testnet,devnet,advanced}.cfg`
+- **Learnings for future iterations:**
+  - Existing protocol validation already allows same-family dual protocols (http,https and ws,wss) — no validation changes needed
+  - deepMerge replaces arrays entirely — roles that override ports must specify the full port array
+  - Validator role port_rpc_admin_local is now at port 5006 (not 5005) to avoid conflict with public port_rpc
+---

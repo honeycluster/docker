@@ -53,7 +53,7 @@
       ],
       "priority": 2,
       "dependsOn": ["US-001"],
-      "passes": false,
+      "passes": true,
       "notes": "The deepMerge logic in xrpld.ts replaces arrays entirely, so port arrays in role overrides must include the full set or rely on common defaults. Dual-protocol ports (http,https and ws,wss) may require changes to protocol validation logic that currently restricts mixing."
     },
     {
