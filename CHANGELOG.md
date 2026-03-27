@@ -1,3 +1,35 @@
+## 1.1.0 (2026-03-27)
+
+### Features
+
+- entrypoint update to support inline commands ([03939d7](https://github.com/honeycluster/docker/commit/03939d7))
+- [US-001] - Remove VL stanzas from cfg output ([a683f27](https://github.com/honeycluster/docker/commit/a683f27))
+- [US-002] - Update validators.txt with current VL sources ([5d32362](https://github.com/honeycluster/docker/commit/5d32362))
+- [US-003] - Update default port configuration ([2471afa](https://github.com/honeycluster/docker/commit/2471afa))
+- [US-004] - Restrict validator role to safe ports with warning ([8e1fc99](https://github.com/honeycluster/docker/commit/8e1fc99))
+- [US-005] - Add SSL cert input fields and parsing ([9a90fdb](https://github.com/honeycluster/docker/commit/9a90fdb))
+- [US-006] - Generate self-signed SSL certificates ([a7fbecc](https://github.com/honeycluster/docker/commit/a7fbecc))
+- [US-007] - Update user-override config schema for new ports ([527e594](https://github.com/honeycluster/docker/commit/527e594))
+- [US-008] - Update all tests ([d89e51f](https://github.com/honeycluster/docker/commit/d89e51f))
+
+### Fixes
+
+- clean up scripts ([7ce97f8](https://github.com/honeycluster/docker/commit/7ce97f8))
+- generator ssl support, remove vl block, modify default generated servers and ports, add config docs, update readme with corrected example ([c9e9b91](https://github.com/honeycluster/docker/commit/c9e9b91))
+
+### Chores
+
+- remove information from image docs, generate features etc ([628a6ed](https://github.com/honeycluster/docker/commit/628a6ed))
+- update to docs ([eca8108](https://github.com/honeycluster/docker/commit/eca8108))
+- revmoe jest config, clean publishing with tagging. etc ([7bfb9a9](https://github.com/honeycluster/docker/commit/7bfb9a9))
+- update PRD and progress for US-002 ([1c46caa](https://github.com/honeycluster/docker/commit/1c46caa))
+- update PRD and progress for US-003 ([71800e6](https://github.com/honeycluster/docker/commit/71800e6))
+- update PRD and progress for US-004 ([955b7c3](https://github.com/honeycluster/docker/commit/955b7c3))
+- update PRD and progress for US-005 ([5ea0641](https://github.com/honeycluster/docker/commit/5ea0641))
+- update PRD and progress for US-006 ([588108b](https://github.com/honeycluster/docker/commit/588108b))
+- update PRD and progress for US-007 ([42b69d4](https://github.com/honeycluster/docker/commit/42b69d4))
+- update PRD and progress for US-008 ([e251c15](https://github.com/honeycluster/docker/commit/e251c15))
+
 # 1.0.0 (2026-03-20)
 
 ### Features
