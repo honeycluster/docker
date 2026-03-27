@@ -125,10 +125,15 @@ export function parseArgs(argv: string[]): CliArgs | { error: string; showUsage?
       case '--role': {
         const val = args[++i];
         if (!val) {
-          return { error: '--role requires a value (stock, validator, ephemeral, sentry, clio, feature, hub).' };
+          return {
+            error:
+              '--role requires a value (stock, validator, ephemeral, sentry, clio, feature, hub).',
+          };
         }
         if (!VALID_ROLES.has(val)) {
-          return { error: `Invalid role "${val}". Must be one of: ${[...VALID_ROLES].join(', ')}.` };
+          return {
+            error: `Invalid role "${val}". Must be one of: ${[...VALID_ROLES].join(', ')}.`,
+          };
         }
         role = val as NodeRole;
         break;
@@ -139,7 +144,9 @@ export function parseArgs(argv: string[]): CliArgs | { error: string; showUsage?
           return { error: '--size requires a value (tiny, small, medium, large, huge).' };
         }
         if (!VALID_SIZES.has(val)) {
-          return { error: `Invalid size "${val}". Must be one of: ${[...VALID_SIZES].join(', ')}.` };
+          return {
+            error: `Invalid size "${val}". Must be one of: ${[...VALID_SIZES].join(', ')}.`,
+          };
         }
         size = val as NodeSize;
         break;
@@ -147,10 +154,15 @@ export function parseArgs(argv: string[]): CliArgs | { error: string; showUsage?
       case '--verbose': {
         const val = args[++i];
         if (!val) {
-          return { error: '--verbose requires a value (silent, fatal, error, warning, info, debug, trace).' };
+          return {
+            error:
+              '--verbose requires a value (silent, fatal, error, warning, info, debug, trace).',
+          };
         }
         if (!VALID_LOG_LEVELS.has(val)) {
-          return { error: `Invalid verbosity "${val}". Must be one of: ${[...VALID_LOG_LEVELS].join(', ')}.` };
+          return {
+            error: `Invalid verbosity "${val}". Must be one of: ${[...VALID_LOG_LEVELS].join(', ')}.`,
+          };
         }
         verbosity = val as LogLevel;
         break;
@@ -163,7 +175,17 @@ export function parseArgs(argv: string[]): CliArgs | { error: string; showUsage?
     }
   }
 
-  return { inputPath, jsonPath, parsePath, outputPath, network, role, size, verbosity, validateOnly };
+  return {
+    inputPath,
+    jsonPath,
+    parsePath,
+    outputPath,
+    network,
+    role,
+    size,
+    verbosity,
+    validateOnly,
+  };
 }
 
 // #endregion -- Argument Parsing ----------------------
@@ -255,7 +277,7 @@ export function run(args: CliArgs): CliResult {
       stderr.push(`Config written to ${cfgPath}`);
       stderr.push(`Validators written to ${valPath}`);
 
-      if (result.sslCertRequired) {
+      if (result.sslEnabled) {
         const certResult = generateSslCerts(args.outputPath, {
           email: input.ssl_cert_email,
           validityDays: input.ssl_cert_validity_days,
@@ -283,7 +305,7 @@ export function run(args: CliArgs): CliResult {
 // #region -- Main -------------------------------------
 
 function isParseError(
-  result: CliArgs | { error: string; showUsage?: boolean },
+  result: CliArgs | { error: string; showUsage?: boolean }
 ): result is { error: string; showUsage?: boolean } {
   return 'error' in result;
 }

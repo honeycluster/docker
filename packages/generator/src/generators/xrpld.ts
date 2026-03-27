@@ -1,12 +1,9 @@
-import type {
-  XrpldInput,
-  XrpldGeneratorResult,
-} from '../types/xrpld-input.js';
+import type { XrpldInput, XrpldGeneratorResult } from '../types/xrpld-input.js';
 import { resolveXrpldConfig } from '../defaults/xrpld.js';
 import { renderXrpldCfg } from '../renderers/cfg-renderer.js';
 import { generateValidatorsTxt } from './validators-txt.js';
 import { validateXrpldConfig } from '../validation.js';
-import { needsSslCerts, injectSslPaths } from './ssl-cert.js';
+import { needsSslCerts, hasSslPorts, injectSslPaths } from './ssl-cert.js';
 
 /**
  * Generate xrpld.cfg and validators.txt from partial input.
@@ -16,9 +13,7 @@ import { needsSslCerts, injectSslPaths } from './ssl-cert.js';
  * @returns Generated config string, validators.txt string, warnings, and SSL cert requirement flag
  * @throws Error if validation fails with error-severity issues
  */
-export function generateXrpldConfig(
-  input: Partial<XrpldInput> = {},
-): XrpldGeneratorResult {
+export function generateXrpldConfig(input: Partial<XrpldInput> = {}): XrpldGeneratorResult {
   const resolved = resolveXrpldConfig(input);
   const validation = validateXrpldConfig(resolved);
 
@@ -28,11 +23,12 @@ export function generateXrpldConfig(
   }
 
   const sslCertRequired = needsSslCerts(resolved);
+  const sslEnabled = hasSslPorts(resolved);
   const withSsl = sslCertRequired ? injectSslPaths(resolved) : resolved;
 
   const config = renderXrpldCfg(withSsl);
   const validatorsTxt = generateValidatorsTxt(resolved);
   const warnings = validation.warnings.map((w) => `${w.section}.${w.field}: ${w.message}`);
 
-  return { config, validatorsTxt, warnings, sslCertRequired };
+  return { config, validatorsTxt, warnings, sslCertRequired, sslEnabled };
 }

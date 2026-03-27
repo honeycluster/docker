@@ -19,7 +19,9 @@ export function parseJsonFile(content: string): Partial<XrpldInput> {
   }
 
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    throw new JsonParseException(`Expected a JSON object at root, got ${Array.isArray(parsed) ? 'array' : typeof parsed}`);
+    throw new JsonParseException(
+      `Expected a JSON object at root, got ${Array.isArray(parsed) ? 'array' : typeof parsed}`
+    );
   }
 
   return parsed as Partial<XrpldInput>;

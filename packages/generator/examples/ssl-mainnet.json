@@ -1,0 +1,52 @@
+{
+  "presets": {
+    "network": "mainnet",
+    "role": "stock",
+    "size": "large",
+    "verbosity": "warning"
+  },
+  "ssl_key": "/opt/xrpl/certs/xrpld.pem",
+  "ssl_cert": "/opt/xrpl/certs/xrpld.crt",
+  "ssl_cert_email": "admin@example.com",
+  "ssl_cert_validity_days": 365,
+  "server": {
+    "ports": [
+      { "name": "port_peer", "port": 51235, "ip": "0.0.0.0", "protocol": "peer" },
+      {
+        "name": "port_rpc",
+        "port": 51234,
+        "ip": "0.0.0.0",
+        "protocol": "http,https"
+      },
+      {
+        "name": "port_wss",
+        "port": 6006,
+        "ip": "0.0.0.0",
+        "protocol": "ws,wss",
+        "send_queue_limit": 500
+      },
+      {
+        "name": "port_grpc",
+        "port": 50051,
+        "ip": "0.0.0.0",
+        "protocol": "grpc",
+        "secure_gateway": "127.0.0.1",
+        "admin": "127.0.0.1"
+      },
+      {
+        "name": "port_rpc_admin_local",
+        "port": 5005,
+        "ip": "127.0.0.1",
+        "protocol": "http",
+        "admin": "127.0.0.1"
+      },
+      {
+        "name": "port_ws_admin_local",
+        "port": 6005,
+        "ip": "127.0.0.1",
+        "protocol": "ws",
+        "admin": "127.0.0.1"
+      }
+    ]
+  }
+}

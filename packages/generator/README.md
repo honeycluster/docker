@@ -29,31 +29,31 @@ pnpm build
 
 ```bash
 # Generate mainnet defaults to stdout
-npx xrpld-cfg-gen --network mainnet
+npx @honeycluster/xrpld-cfg-gen --network mainnet
 
 # Write config files to a directory
-npx xrpld-cfg-gen --network mainnet --output /opt/xrpl/etc
+npx @honeycluster/xrpld-cfg-gen --network mainnet --output /opt/xrpl/etc
 
 # Use presets for a validator node
-npx xrpld-cfg-gen --network mainnet --role validator --size large --verbose warning --output /opt/xrpl/etc
+npx @honeycluster/xrpld-cfg-gen --network mainnet --role validator --size large --verbose warning --output /opt/xrpl/etc
 
 # Use presets for a lightweight devnet node
-npx xrpld-cfg-gen --network devnet --role ephemeral --size tiny --verbose trace
+npx @honeycluster/xrpld-cfg-gen --network devnet --role ephemeral --size tiny --verbose trace
 
 # Use presets for a Clio-backend node
-npx xrpld-cfg-gen --network testnet --role clio --size medium --verbose info
+npx @honeycluster/xrpld-cfg-gen --network testnet --role clio --size medium --verbose info
 
 # Generate from a JSON overrides file
-npx xrpld-cfg-gen --json overrides.json --output /opt/xrpl/etc
+npx @honeycluster/xrpld-cfg-gen --json overrides.json --output /opt/xrpl/etc
 
 # Generate from a text file + CLI flags
-npx xrpld-cfg-gen --input config.txt --network testnet --role sentry
+npx @honeycluster/xrpld-cfg-gen --input config.txt --network testnet --role sentry
 
 # Validate without generating output
-npx xrpld-cfg-gen --json overrides.json --validate-only
+npx @honeycluster/xrpld-cfg-gen --json overrides.json --validate-only
 
 # Parse an existing xrpld.cfg to JSON
-npx xrpld-cfg-gen --parse /var/lib/xrpld/etc/xrpld.cfg
+npx @honeycluster/xrpld-cfg-gen --parse /var/lib/xrpld/etc/xrpld.cfg
 ```
 
 ### CLI Flags
@@ -261,7 +261,7 @@ The generator validates all resolved configuration and reports errors and warnin
 
 ```bash
 # Check config validity without generating files
-npx xrpld-cfg-gen --json my-config.json --validate-only
+npx @honeycluster/xrpld-cfg-gen --json my-config.json --validate-only
 ```
 
 ## Merge Order

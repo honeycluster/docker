@@ -31,12 +31,24 @@ function portHasUserSslPaths(port: XrpldPortConfig): boolean {
 }
 
 /**
+ * Check if any port uses SSL protocols (https or wss).
+ * Returns true if at least one port has https/wss protocol.
+ */
+export function hasSslPorts(config: XrpldInput): boolean {
+  const ports = config.server?.ports;
+  if (!ports) return false;
+  return ports.some((port) => hasSslProtocol(port));
+}
+
+/**
  * Check if any dual-protocol port needs auto-generated SSL certificates.
- * Returns true if at least one port has https/wss protocol without user-provided ssl_key/ssl_cert.
+ * Returns true if SSL ports exist and no ssl_key/ssl_cert paths are provided
+ * (either top-level or per-port).
  */
 export function needsSslCerts(config: XrpldInput): boolean {
   const ports = config.server?.ports;
   if (!ports) return false;
+  if (config.ssl_key && config.ssl_cert) return false;
   return ports.some((port) => hasSslProtocol(port) && !portHasUserSslPaths(port));
 }
 
@@ -48,12 +60,15 @@ export function injectSslPaths(config: XrpldInput): XrpldInput {
   const ports = config.server?.ports;
   if (!ports) return config;
 
+  const sslKeyPath = config.ssl_key ?? './certs/server.key';
+  const sslCertPath = config.ssl_cert ?? './certs/server.crt';
+
   const updatedPorts = ports.map((port) => {
     if (hasSslProtocol(port) && !portHasUserSslPaths(port)) {
       return {
         ...port,
-        ssl_key: './certs/server.key',
-        ssl_cert: './certs/server.crt',
+        ssl_key: sslKeyPath,
+        ssl_cert: sslCertPath,
       };
     }
     return port;
@@ -61,6 +76,8 @@ export function injectSslPaths(config: XrpldInput): XrpldInput {
 
   return {
     ...config,
+    ssl_key: sslKeyPath,
+    ssl_cert: sslCertPath,
     server: { ...config.server, ports: updatedPorts },
   };
 }
@@ -76,10 +93,7 @@ export function injectSslPaths(config: XrpldInput): XrpldInput {
  * @param options - Certificate options (email, validity days, common name)
  * @returns Paths to the generated key and certificate files
  */
-export function generateSslCerts(
-  outputDir: string,
-  options: SslCertOptions = {},
-): SslCertResult {
+export function generateSslCerts(outputDir: string, options: SslCertOptions = {}): SslCertResult {
   const certsDir = join(outputDir, 'certs');
   const keyPath = join(certsDir, 'server.key');
   const certPath = join(certsDir, 'server.crt');
@@ -97,10 +111,7 @@ export function generateSslCerts(
   const subject = subjectParts.join('');
 
   // Generate RSA 2048-bit private key
-  const keyPem = execFileSync('openssl', [
-    'genrsa',
-    '2048',
-  ]);
+  const keyPem = execFileSync('openssl', ['genrsa', '2048']);
 
   writeFileSync(keyPath, keyPem);
   chmodSync(keyPath, 0o600);
@@ -110,10 +121,14 @@ export function generateSslCerts(
     'req',
     '-new',
     '-x509',
-    '-key', keyPath,
-    '-out', certPath,
-    '-days', String(validityDays),
-    '-subj', subject,
+    '-key',
+    keyPath,
+    '-out',
+    certPath,
+    '-days',
+    String(validityDays),
+    '-subj',
+    subject,
     '-batch',
   ]);
 

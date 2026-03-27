@@ -24,9 +24,7 @@ const TESTNET_DEFAULTS: Partial<XrpldInput> = {
   ips: ['s.altnet.rippletest.net 51235'],
   vl: {
     validator_list_sites: ['https://vl.altnet.rippletest.net'],
-    validator_list_keys: [
-      'ED264807102805220DA0F312E71FC2C69E1552C9C5790F6C25E3729DEB573D5860',
-    ],
+    validator_list_keys: ['ED264807102805220DA0F312E71FC2C69E1552C9C5790F6C25E3729DEB573D5860'],
   },
 };
 
@@ -35,9 +33,7 @@ const DEVNET_DEFAULTS: Partial<XrpldInput> = {
   ips: ['s.devnet.rippletest.net 51235'],
   vl: {
     validator_list_sites: ['https://vl.devnet.rippletest.net'],
-    validator_list_keys: [
-      'EDBB54B0D9AEE071BB37784AF5A9E7CC49AC7A0EFCE868C54532BCB966B9CFC13B',
-    ],
+    validator_list_keys: ['EDBB54B0D9AEE071BB37784AF5A9E7CC49AC7A0EFCE868C54532BCB966B9CFC13B'],
   },
 };
 
@@ -52,9 +48,7 @@ const NETWORK_MAP: Record<NetworkName, Partial<XrpldInput>> = {
  * @param network - Target network: 'mainnet', 'testnet', or 'devnet'
  * @returns Partial XrpldInput with network-specific defaults (network_id, VL sites/keys, IPs)
  */
-export function getNetworkDefaults(
-  network: NetworkName,
-): Partial<XrpldInput> {
+export function getNetworkDefaults(network: NetworkName): Partial<XrpldInput> {
   return NETWORK_MAP[network];
 }
 
@@ -117,10 +111,7 @@ function isPlainObject(val: unknown): val is Record<string, unknown> {
   return typeof val === 'object' && val !== null && !Array.isArray(val);
 }
 
-function deepMerge<T extends Record<string, unknown>>(
-  base: T,
-  override: Partial<T>,
-): T {
+function deepMerge<T extends Record<string, unknown>>(base: T, override: Partial<T>): T {
   const result = { ...base } as Record<string, unknown>;
   for (const key of Object.keys(override)) {
     const overrideVal = (override as Record<string, unknown>)[key];
@@ -129,7 +120,7 @@ function deepMerge<T extends Record<string, unknown>>(
     if (isPlainObject(baseVal) && isPlainObject(overrideVal)) {
       result[key] = deepMerge(
         baseVal as Record<string, unknown>,
-        overrideVal as Record<string, unknown>,
+        overrideVal as Record<string, unknown>
       );
     } else {
       result[key] = overrideVal;
@@ -148,9 +139,7 @@ function deepMerge<T extends Record<string, unknown>>(
  * @param input - Partial user configuration (user overrides always win)
  * @returns Fully resolved XrpldInput with all defaults applied
  */
-export function resolveXrpldConfig(
-  input: Partial<XrpldInput> = {},
-): XrpldInput {
+export function resolveXrpldConfig(input: Partial<XrpldInput> = {}): XrpldInput {
   const network = input.presets?.network ?? 'mainnet';
   const role = input.presets?.role ?? 'stock';
   const size = input.presets?.size ?? 'medium';

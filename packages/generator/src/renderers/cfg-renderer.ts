@@ -10,17 +10,14 @@ const CFG_HEADER = `# xrpld configuration file
 
 // #region -- Primitive Renderers ----------------------
 
-export function renderSingleValueSection(
-  name: string,
-  value: string | number | undefined,
-): string {
+export function renderSingleValueSection(name: string, value: string | number | undefined): string {
   if (value === undefined) return '';
   return `[${name}]\n${value}\n`;
 }
 
 export function renderKeyValueSection(
   name: string,
-  pairs: Record<string, unknown> | undefined,
+  pairs: Record<string, unknown> | undefined
 ): string {
   if (!pairs) return '';
   const lines: string[] = [];
@@ -32,10 +29,7 @@ export function renderKeyValueSection(
   return `[${name}]\n${lines.join('\n')}\n`;
 }
 
-export function renderListSection(
-  name: string,
-  items: ReadonlyArray<unknown> | undefined,
-): string {
+export function renderListSection(name: string, items: ReadonlyArray<unknown> | undefined): string {
   if (!items || items.length === 0) return '';
   const lines = items.map((item) => {
     if (typeof item === 'object' && item !== null) {
@@ -61,9 +55,14 @@ export function renderPortSection(port: XrpldPortConfig): string {
 
 export function renderServerSection(
   ports: ReadonlyArray<XrpldPortConfig>,
+  config?: Partial<XrpldInput>
 ): string {
-  const names = ports.map((p) => p.name);
-  return `[server]\n${names.join('\n')}\n`;
+  const lines = ports.map((p) => p.name);
+  if (config?.ssl_key) lines.push(`ssl_key = ${config.ssl_key}`);
+  if (config?.ssl_cert) lines.push(`ssl_cert = ${config.ssl_cert}`);
+  if (config?.ssl_chain) lines.push(`ssl_chain = ${config.ssl_chain}`);
+  if (config?.ssl_ciphers) lines.push(`ssl_ciphers = ${config.ssl_ciphers}`);
+  return `[server]\n${lines.join('\n')}\n`;
 }
 
 // #endregion -- Port Renderers ------------------------
@@ -151,12 +150,14 @@ const KEY_VALUE_KEYS: ReadonlyArray<keyof XrpldInput> = [
 export function renderXrpldCfg(config: XrpldInput): string {
   const sections: string[] = [CFG_HEADER];
 
-  // Server + ports
+  // Server + ports (ssl_key/ssl_cert/ssl_chain/ssl_ciphers rendered inside [server])
   if (config.server?.ports && config.server.ports.length > 0) {
     if (config.server_comment) {
-      sections.push(`${config.server_comment}\n${renderServerSection(config.server.ports)}`);
+      sections.push(
+        `${config.server_comment}\n${renderServerSection(config.server.ports, config)}`
+      );
     } else {
-      sections.push(renderServerSection(config.server.ports));
+      sections.push(renderServerSection(config.server.ports, config));
     }
     for (const port of config.server.ports) {
       sections.push(renderPortSection(port));
@@ -165,7 +166,9 @@ export function renderXrpldCfg(config: XrpldInput): string {
 
   // Node DB (key-value but rendered first among key-value sections)
   if (config.node_db) {
-    sections.push(renderKeyValueSection('node_db', config.node_db as unknown as Record<string, unknown>));
+    sections.push(
+      renderKeyValueSection('node_db', config.node_db as unknown as Record<string, unknown>)
+    );
   }
 
   // Single-value sections

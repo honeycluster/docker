@@ -1,0 +1,12 @@
+{
+  "presets": {
+    "network": "mainnet",
+    "role": "stock",
+    "size": "large",
+    "verbosity": "warning"
+  },
+  "path_search": 7,
+  "path_search_fast": 2,
+  "path_search_max": 10,
+  "path_search_old": 7
+}

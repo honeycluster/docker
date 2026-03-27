@@ -80,16 +80,21 @@ const KEY_MAP: Record<string, string> = {
   TRANSACTION_QUEUE_LEDGERS_IN_QUEUE: 'transaction_queue.ledgers_in_queue',
   TRANSACTION_QUEUE_MINIMUM_QUEUE_SIZE: 'transaction_queue.minimum_queue_size',
   TRANSACTION_QUEUE_RETRY_SEQUENCE_PERCENT: 'transaction_queue.retry_sequence_percent',
-  TRANSACTION_QUEUE_MINIMUM_ESCALATION_MULTIPLIER: 'transaction_queue.minimum_escalation_multiplier',
+  TRANSACTION_QUEUE_MINIMUM_ESCALATION_MULTIPLIER:
+    'transaction_queue.minimum_escalation_multiplier',
   TRANSACTION_QUEUE_MINIMUM_TXN_IN_LEDGER: 'transaction_queue.minimum_txn_in_ledger',
-  TRANSACTION_QUEUE_MINIMUM_TXN_IN_LEDGER_STANDALONE: 'transaction_queue.minimum_txn_in_ledger_standalone',
+  TRANSACTION_QUEUE_MINIMUM_TXN_IN_LEDGER_STANDALONE:
+    'transaction_queue.minimum_txn_in_ledger_standalone',
   TRANSACTION_QUEUE_TARGET_TXN_IN_LEDGER: 'transaction_queue.target_txn_in_ledger',
   TRANSACTION_QUEUE_MAXIMUM_TXN_IN_LEDGER: 'transaction_queue.maximum_txn_in_ledger',
   TRANSACTION_QUEUE_MAXIMUM_TXN_PER_ACCOUNT: 'transaction_queue.maximum_txn_per_account',
   TRANSACTION_QUEUE_MINIMUM_LAST_LEDGER_BUFFER: 'transaction_queue.minimum_last_ledger_buffer',
-  TRANSACTION_QUEUE_ZERO_BASEFEE_TRANSACTION_FEELEVEL: 'transaction_queue.zero_basefee_transaction_feelevel',
-  TRANSACTION_QUEUE_NORMAL_CONSENSUS_INCREASE_PERCENT: 'transaction_queue.normal_consensus_increase_percent',
-  TRANSACTION_QUEUE_SLOW_CONSENSUS_DECREASE_PERCENT: 'transaction_queue.slow_consensus_decrease_percent',
+  TRANSACTION_QUEUE_ZERO_BASEFEE_TRANSACTION_FEELEVEL:
+    'transaction_queue.zero_basefee_transaction_feelevel',
+  TRANSACTION_QUEUE_NORMAL_CONSENSUS_INCREASE_PERCENT:
+    'transaction_queue.normal_consensus_increase_percent',
+  TRANSACTION_QUEUE_SLOW_CONSENSUS_DECREASE_PERCENT:
+    'transaction_queue.slow_consensus_decrease_percent',
 
   // voting nested
   VOTING_REFERENCE_FEE: 'voting.reference_fee',
@@ -128,7 +133,11 @@ const KEY_MAP: Record<string, string> = {
   IMPORT_DB_ONLINE_DELETE: 'import_db.online_delete',
   IMPORT_DB_ADVISORY_DELETE: 'import_db.advisory_delete',
 
-  // SSL cert generation
+  // SSL
+  SSL_KEY: 'ssl_key',
+  SSL_CERT: 'ssl_cert',
+  SSL_CHAIN: 'ssl_chain',
+  SSL_CIPHERS: 'ssl_ciphers',
   SSL_CERT_EMAIL: 'ssl_cert_email',
   SSL_CERT_VALIDITY_DAYS: 'ssl_cert_validity_days',
 
@@ -233,16 +242,25 @@ const PORT_KEY_RE = /^PORT_(\d+)_(.+)$/;
 
 /** Port field keys whose values should be numeric */
 const PORT_NUMERIC_FIELDS = new Set([
-  'port', 'limit', 'send_queue_limit', 'compress_level', 'memory_level',
-  'client_max_window_bits', 'server_max_window_bits',
+  'port',
+  'limit',
+  'send_queue_limit',
+  'compress_level',
+  'memory_level',
+  'client_max_window_bits',
+  'server_max_window_bits',
 ]);
 
 /** Port field keys whose values should be boolean */
 const PORT_BOOLEAN_FIELDS = new Set([
-  'permessage_deflate', 'client_no_context_takeover', 'server_no_context_takeover',
+  'permessage_deflate',
+  'client_no_context_takeover',
+  'server_no_context_takeover',
 ]);
 
-function parsePortEntries(entries: Map<number, Record<string, string>>): ReadonlyArray<XrpldPortConfig> {
+function parsePortEntries(
+  entries: Map<number, Record<string, string>>
+): ReadonlyArray<XrpldPortConfig> {
   const indices = [...entries.keys()].sort((a, b) => a - b);
   const ports: XrpldPortConfig[] = [];
 
@@ -325,7 +343,7 @@ export function parseTextFile(content: string): Partial<XrpldInput> {
     if (!/^[A-Z][A-Z0-9_]*$/.test(key)) {
       throw new TextParseException(
         `Invalid variable name '${key}': must match [A-Z][A-Z0-9_]*`,
-        lineNum,
+        lineNum
       );
     }
 
@@ -365,7 +383,10 @@ export function parseTextFile(content: string): Partial<XrpldInput> {
 
     // Determine the value to assign
     if (LIST_KEYS.has(path)) {
-      const items = value.split(',').map(s => s.trim()).filter(s => s !== '');
+      const items = value
+        .split(',')
+        .map((s) => s.trim())
+        .filter((s) => s !== '');
       setNestedValue(result, path, items);
     } else if (NUMERIC_KEYS.has(path)) {
       const num = Number(value);

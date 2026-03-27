@@ -167,6 +167,10 @@ export interface XrpldInput {
   readonly debug_logfile?: string;
 
   // SSL
+  readonly ssl_key?: string;
+  readonly ssl_cert?: string;
+  readonly ssl_chain?: string;
+  readonly ssl_ciphers?: string;
   readonly ssl_verify?: string;
   readonly ssl_verify_file?: string;
   readonly ssl_verify_dir?: string;
@@ -266,6 +270,7 @@ export interface XrpldGeneratorResult {
   readonly validatorsTxt: string;
   readonly warnings: ReadonlyArray<string>;
   readonly sslCertRequired: boolean;
+  readonly sslEnabled: boolean;
 }
 
 export interface ValidationEntry {
