@@ -1,0 +1,39 @@
+rippled image - XRPL Node — honeycluster/nodekit
+=========================================
+
+Binary:       /opt/ripple/bin/rippled
+Config:       /opt/ripple/etc/rippled.cfg
+Validators:   /opt/ripple/etc/validators.txt
+Scripts:      /opt/ripple/scripts/
+Logs:         /var/log/rippled/debug.log
+Data:         /var/lib/rippled/db/
+Logrotate:    /etc/logrotate.d/rippled
+
+Useful commands
+---------------
+  rippled server_info                              Show server status
+  rippled validation_create                        Generate a validator key pair
+  rippled --conf /opt/ripple/etc/rippled.cfg       Start rippled manually
+  cat /opt/ripple/etc/rippled.cfg                  View current config
+
+Scripts
+-------
+  ./scripts/entrypoint.sh    Container entrypoint (runs on start)
+  ./scripts/startup.sh       Daemon mode with logrotate
+  ./scripts/shutdown.sh      Graceful shutdown
+  ./scripts/logrotate.sh     Log rotation setup
+
+Environment
+-----------
+  NETWORK          Network to connect to (mainnet, testnet, devnet)
+  PATH             Includes /opt/ripple/bin
+
+Aliases
+-------
+  Config is symlinked for default search paths:
+    /etc/opt/ripple/rippled.cfg -> /opt/ripple/etc/rippled.cfg
+    /etc/opt/xrpld/rippled.cfg  -> /opt/ripple/etc/rippled.cfg
+
+Documentation:  https://github.com/honeycluster/nodekit/blob/develop/docs/rippled/
+Config Ref:     https://github.com/honeycluster/nodekit/blob/develop/docs/xrpld/configuration.md
+Source:         https://github.com/XRPLF/rippled

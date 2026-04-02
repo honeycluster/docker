@@ -8,9 +8,9 @@ LABEL org.opencontainers.image.description="XRPL node (standard image from rippl
 LABEL org.opencontainers.image.authors="honeycluster <r@honeycluster.io>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="honeycluster"
-LABEL org.opencontainers.image.url="https://github.com/honeycluster/docker"
-LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/packages/docker/xrpld/images/base.dockerfile"
-LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/docs/xrpld/base.md"
+LABEL org.opencontainers.image.url="https://github.com/honeycluster/nodekit"
+LABEL org.opencontainers.image.source="https://github.com/honeycluster/nodekit/blob/develop/packages/docker/xrpld/images/base.dockerfile"
+LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/nodekit/blob/develop/docs/xrpld/base.md"
 
 # xrpld deb version to install (apt-cache madison rippled)
 # https://github.com/ripple/rippled/releases
@@ -67,7 +67,8 @@ RUN mkdir -p db log etc
 RUN rm -f /etc/logrotate.d/rippled
 COPY logrotate/xrpld /etc/logrotate.d/xrpld
 
-# Copy all entrypoint/configure scripts and make executable
+# Copy README and scripts
+COPY README ./README
 COPY scripts ./scripts
 RUN find /opt/xrpl/scripts -name '*.sh' -exec chmod +x {} \;
 

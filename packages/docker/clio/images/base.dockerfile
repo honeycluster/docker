@@ -8,9 +8,9 @@ LABEL org.opencontainers.image.description="Clio server (standard image from cli
 LABEL org.opencontainers.image.authors="honeycluster <r@honeycluster.io>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="honeycluster"
-LABEL org.opencontainers.image.url="https://github.com/honeycluster/docker"
-LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/packages/docker/clio/images/base.dockerfile"
-LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/docs/clio/base.md"
+LABEL org.opencontainers.image.url="https://github.com/honeycluster/nodekit"
+LABEL org.opencontainers.image.source="https://github.com/honeycluster/nodekit/blob/develop/packages/docker/clio/images/base.dockerfile"
+LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/nodekit/blob/develop/docs/clio/base.md"
 
 # Clio deb version to install (apt-cache madison clio)
 # https://github.com/XRPLF/clio/releases
@@ -23,6 +23,7 @@ RUN apt-get -y update && \
     apt-get -y install --no-install-recommends \
     apt-transport-https \
     ca-certificates \
+    curl \
     wget \
     gnupg
 
@@ -45,6 +46,7 @@ RUN mkdir -p /etc/opt/clio && \
 WORKDIR /opt/clio
 
 # Overlay our entrypoint/configure scripts and optional config
+COPY README ./README
 COPY scripts ./scripts
 RUN find /opt/clio/scripts -name '*.sh' -exec chmod +x {} \;
 

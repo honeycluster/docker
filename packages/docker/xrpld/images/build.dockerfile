@@ -63,7 +63,8 @@ COPY etc/xrpld-example.cfg ./etc/xrpld.cfg
 # Logrotate for xrpld logs (default LOGS_DIR)
 COPY logrotate/xrpld /etc/logrotate.d/xrpld
 
-# Copy and prepare scripts
+# Copy README and scripts
+COPY README ./README
 COPY scripts ./scripts
 RUN find /opt/xrpl/scripts -name '*.sh' -exec chmod +x {} \;
 
@@ -80,8 +81,8 @@ LABEL org.opencontainers.image.description="XRPL node (standard image from sourc
 LABEL org.opencontainers.image.authors="honeycluster <r@honeycluster.io>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="honeycluster"
-LABEL org.opencontainers.image.url="https://github.com/honeycluster/docker"
-LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/packages/docker/xrpld/images/build.dockerfile"
-LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/docs/xrpld/base.md"
+LABEL org.opencontainers.image.url="https://github.com/honeycluster/nodekit"
+LABEL org.opencontainers.image.source="https://github.com/honeycluster/nodekit/blob/develop/packages/docker/xrpld/images/build.dockerfile"
+LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/nodekit/blob/develop/docs/xrpld/base.md"
 
 ENTRYPOINT ["./scripts/entrypoint.sh"]

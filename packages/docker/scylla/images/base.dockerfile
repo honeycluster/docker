@@ -6,9 +6,9 @@ LABEL org.opencontainers.image.description="ScyllaDB base image with entrypoint"
 LABEL org.opencontainers.image.authors="honeycluster <r@honeycluster.io>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="honeycluster"
-LABEL org.opencontainers.image.url="https://github.com/honeycluster/docker"
-LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/src/scylla/images/base.dockerfile"
-LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/src/scylla/docs/base.md"
+LABEL org.opencontainers.image.url="https://github.com/honeycluster/nodekit"
+LABEL org.opencontainers.image.source="https://github.com/honeycluster/nodekit/blob/develop/src/scylla/images/base.dockerfile"
+LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/nodekit/blob/develop/src/scylla/docs/base.md"
 
 COPY etc/scylla.yaml /etc/scylla/scylla.yaml
 

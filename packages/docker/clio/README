@@ -1,0 +1,27 @@
+# Clio XRPL API Server — honeycluster/nodekit
+
+Binary: /opt/clio/bin/clio_server
+Config: /opt/clio/etc/config.json
+Scripts: /opt/clio/scripts/
+Logs: /opt/clio/log/
+
+## Useful commands
+
+clio_server --conf /opt/clio/etc/config.json Start Clio manually
+curl -sd '{"method":"server_info"}' http://127.0.0.1:51233 | python3 -m json.tool
+Check server status
+cat /opt/clio/etc/config.json View current config
+
+## Scripts
+
+./scripts/entrypoint.sh Container entrypoint (runs on start)
+./scripts/startup.sh Startup logic
+./scripts/shutdown.sh Graceful shutdown
+
+## Environment
+
+NETWORK Network to connect to (mainnet, testnet, devnet)
+PATH Includes /opt/clio/bin
+
+Documentation: https://github.com/honeycluster/nodekit/blob/develop/docs/clio/
+Source: https://github.com/XRPLF/clio

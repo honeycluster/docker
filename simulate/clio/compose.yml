@@ -16,6 +16,12 @@ services:
       - ./config.json:/opt/clio/etc/config.json:ro
     ports:
       - "51233:51233"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "-o", "/dev/null", "-d", "{\"method\":\"server_info\"}", "http://127.0.0.1:51233"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     networks:
       nodekit-simulate-net:
         ipv4_address: 10.201.0.4
@@ -38,6 +44,12 @@ services:
       - ./config.json:/opt/clio/etc/config.json:ro
     ports:
       - "61233:51233"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "-o", "/dev/null", "-d", "{\"method\":\"server_info\"}", "http://127.0.0.1:51233"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     networks:
       nodekit-simulate-net:
         ipv4_address: 10.201.0.6

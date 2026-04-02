@@ -61,7 +61,8 @@ COPY etc/rippled-example.cfg ./etc/rippled.cfg
 # Logrotate for rippled logs (default LOGS_DIR)
 COPY logrotate/rippled /etc/logrotate.d/rippled
 
-# Copy and prepare scripts
+# Copy README and scripts
+COPY README ./README
 COPY scripts ./scripts
 RUN find /opt/ripple/scripts -name '*.sh' -exec chmod +x {} \;
 
@@ -78,8 +79,8 @@ LABEL org.opencontainers.image.description="XRPL node (standard image from sourc
 LABEL org.opencontainers.image.authors="honeycluster <r@honeycluster.io>"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="honeycluster"
-LABEL org.opencontainers.image.url="https://github.com/honeycluster/docker"
-LABEL org.opencontainers.image.source="https://github.com/honeycluster/docker/blob/develop/packages/docker/rippled/images/build.dockerfile"
-LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/docker/blob/develop/docs/rippled/base.md"
+LABEL org.opencontainers.image.url="https://github.com/honeycluster/nodekit"
+LABEL org.opencontainers.image.source="https://github.com/honeycluster/nodekit/blob/develop/packages/docker/rippled/images/build.dockerfile"
+LABEL org.opencontainers.image.documentation="https://github.com/honeycluster/nodekit/blob/develop/docs/rippled/base.md"
 
 ENTRYPOINT ["./scripts/entrypoint.sh"]
