@@ -13,6 +13,6 @@ catalog:
   ts-jest: ^29.4.6
   tsc-alias: ^1.8.16
   typescript: ^6.0.2
-  vitest: ^3.2.4
+  vitest: ^4.1.5
 
 cleanupUnusedCatalogs: true
