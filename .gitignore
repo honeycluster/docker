@@ -57,6 +57,9 @@ tmp
 .pnpm*
 
 
+.claude
+_.claude
+
 # Docker simulate
 docker/claude
 docker/_claude
