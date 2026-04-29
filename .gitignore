@@ -55,3 +55,17 @@ tasks
 
 tmp
 .pnpm*
+
+
+# Docker simulate
+docker/claude
+docker/_claude
+simulate/claude
+simulate/_claude
+docker/images/claude
+docker/images/_claude
+
+scripts/ralph
+scripts/_ralph
+references
+tasks/*
